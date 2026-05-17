@@ -32,7 +32,6 @@ body {
   background-color: var(--bg-main);
   color: var(--text-main); 
   min-height: 100vh;
-  /* Premium adaptive notch/safe-area optimization for modern edge-to-edge displays */
   padding: calc(1rem + env(safe-area-inset-top)) calc(1rem + env(safe-area-inset-right)) calc(1rem + env(safe-area-inset-bottom)) calc(1rem + env(safe-area-inset-left));
   letter-spacing: 0.02em;
   overflow-x: hidden;
@@ -77,7 +76,6 @@ body {
 .panel { display: none; width: 100%; animation: fadeIn 0.15s ease-out; }
 .panel.active { display: block; }
 
-/* 🚀 Responsive Fluid Grid Matrix System */
 .tables-grid { 
   display: grid; 
   grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
@@ -116,22 +114,42 @@ body {
 .bg-low  { background: var(--status-low-bg); color: var(--status-low-text); }
 
 /* Table Configurator Layouts */
-.detail-wrap { display: flex; gap: 1.5rem; align-items: flex-start; flex-wrap: wrap; justify-content: center; margin-top: 0.5rem; width: 100%;}
-@media (min-width: 640px) { .detail-wrap { flex-wrap: nowrap; text-align: left; } }
+.detail-wrap { display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap; justify-content: center; margin-top: 0.5rem; width: 100%;}
+@media (min-width: 768px) { .detail-wrap { flex-wrap: nowrap; text-align: left; } }
 
-.seat-panel { flex: 1; min-width: 290px; background: var(--bg-panel); padding: 1.25rem; border-radius: 14px; border: 1px solid var(--border-color); }
-.rename-section { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
-.rename-input { background: #121826; border: 1px solid var(--border-color); border-radius: 6px; color: #fff; padding: 6px 10px; font-size: 13px; font-weight: 700; width: 100px; outline: none; }
-.rename-confirm { background: #1e293b; border: 1px solid var(--border-color); color: white; padding: 6px 12px; font-size: 11px; font-weight: 700; border-radius: 6px; cursor: pointer; }
+/* 🚀 FELT CONTAINER UPGRADED: 扩大桌子外框容器 max-width 从 280px 提升至 360px */
+.felt-container { width: 100%; max-width: 360px; display: flex; justify-content: center; align-items: center; }
 
-.seat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 1rem; }
-.seat-btn { border-radius: 10px; padding: 12px 4px; font-size: 11px; text-align: center; cursor: pointer; border: 1px solid var(--border-color); font-weight: 700; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-.sb-occ   { background: rgba(234, 179, 8, 0.1); color: var(--color-seat-occ); border-color: rgba(234, 179, 8, 0.35); }
-.sb-empty { background: #121826; color: var(--text-muted); border-color: transparent; }
+.seat-panel { flex: 1; min-width: 320px; background: var(--bg-panel); padding: 1.5rem; border-radius: 14px; border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+.rename-section { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+.rename-input { background: #121826; border: 1px solid var(--border-color); border-radius: 6px; color: #fff; padding: 8px 12px; font-size: 14px; font-weight: 700; width: 120px; outline: none; }
+.rename-confirm { background: #1e293b; border: 1px solid var(--border-color); color: white; padding: 8px 16px; font-size: 12px; font-weight: 700; border-radius: 6px; cursor: pointer; transition: all 0.1s; }
+.rename-confirm:active { background: var(--color-active); color: #000; }
 
-.break-btn { font-size: 11px; padding: 6px 12px; cursor: pointer; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; color: #f87171; font-weight: 700; }
+.seat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 1.25rem; }
 
-/* Balancing Curve Engine Graphs */
+.seat-btn { 
+  border-radius: 12px; 
+  height: 58px; 
+  font-size: 16px; 
+  text-align: center; 
+  cursor: pointer; 
+  border: 1px solid var(--border-color); 
+  font-weight: 900; 
+  display: flex; 
+  flex-direction: column; 
+  justify-content: center; 
+  align-items: center;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+  transition: transform 0.05s linear, background-color 0.1s ease;
+}
+.seat-btn:active { transform: scale(0.96); }
+
+.sb-occ   { background: linear-gradient(135deg, rgba(234, 179, 8, 0.25) 0%, rgba(245, 158, 11, 0.15) 100%); color: #fff; border: 2px solid var(--color-seat-occ); box-shadow: 0 0 10px rgba(234, 179, 8, 0.2); }
+.sb-empty { background: #121826; color: var(--text-muted); border-color: var(--border-color); }
+
+.break-btn { font-size: 12px; padding: 8px 14px; cursor: pointer; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; color: #f87171; font-weight: 700; }
+
 .bar-row { display: flex; gap: 8px; align-items: flex-end; height: 110px; margin-bottom: 12px; background: var(--bg-panel); padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); width: 100%; }
 .bar-col { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 4px; }
 .bar { border-radius: 3px 3px 0 0; min-height: 4px; width: 100%; transition: height .2s; }
@@ -145,10 +163,7 @@ body {
 .exec-btn { font-size: 11px; padding: 6px 14px; cursor: pointer; background: #1e293b; border: 1px solid #eab308; border-radius: 6px; color: var(--color-active); font-weight: 700; }
 
 .sec-title { font-size: 13px; font-weight: 800; text-transform: uppercase; color: var(--text-main); margin-bottom: 0.5rem; margin-top: 1.25rem; }
-.detail-select { font-size: 13px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); margin-bottom: 1rem; cursor: pointer; font-weight: 700; outline: none; }
-.legend { display: flex; gap: 12px; font-size: 10px; font-weight: 600; margin-bottom: 1rem; flex-wrap: wrap; }
-.legend span { display: flex; align-items: center; gap: 4px; color: var(--text-muted); }
-.legend i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.detail-select { font-size: 14px; padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); margin-bottom: 1rem; cursor: pointer; font-weight: 700; outline: none; width: 100%; max-width: 320px; }
 
 .alert-box { margin-top: 1rem; padding: 12px; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.15); border-radius: 10px; font-size: 12px; color: #f87171; display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%; }
 .info-box { padding: 12px 0; font-size: 13px; color: var(--status-ok-text); font-weight: 700; text-transform: uppercase; width: 100%; }
@@ -375,38 +390,39 @@ function renderGrid(){
   updateStats();
 }
 
+/* 🚀 CANVAS RESIZED & SEAT NODES ENLARGED: 提升基础分辨率，增大外圈座位圆点的半径与触控区域 */
 function feltSVG(t) {
-  const W=340,H=220,cx=170,cy=115,rx=100,ry=58,sR=12;
+  const W=360, H=240, cx=180, cy=125, rx=110, ry=65, sR=15; // 提高基础尺寸，sR (座位圆点半径) 从 12 增加至 15
   let seats='';
   
   seats += `<g>
-    <rect x="${cx - 24}" y="${cy - ry - 2}" width="48" height="18" rx="4" fill="#0e1320" stroke="#10b981" stroke-width="1.2"/>
-    <text x="${cx}" y="${cy - ry + 7}" text-anchor="middle" dominant-baseline="central" font-size="8" fill="#10b981" font-weight="800">DEALER</text>
+    <rect x="${cx - 26}" y="${cy - ry - 4}" width="52" height="20" rx="5" fill="#0e1320" stroke="#10b981" stroke-width="1.5"/>
+    <text x="${cx}" y="${cy - ry + 6}" text-anchor="middle" dominant-baseline="central" font-size="9" fill="#10b981" font-weight="900">DEALER</text>
   </g>`;
 
   t.seats.forEach((s,i)=>{
     const angleOffset = (-55 + (290 / (MAX_PLAYERS - 1)) * i) * Math.PI / 180;
-    const sx=(cx+(rx+24)*Math.cos(angleOffset)).toFixed(1);
-    const sy=(cy+(ry+22)*Math.sin(angleOffset)).toFixed(1);
+    const sx=(cx+(rx+26)*Math.cos(angleOffset)).toFixed(1);
+    const sy=(cy+(ry+24)*Math.sin(angleOffset)).toFixed(1);
     
     let fill = s.occ ? '#eab308' : '#121826';
     let stroke = s.occ ? '#facc15' : '#222f4d';
     let tc = s.occ ? '#000' : '#64748b';
     
     seats+=`<g style="cursor:pointer" onclick="toggleSeat(${t.id},${s.id})">
-      <circle cx="${sx}" cy="${sy}" r="${sR}" fill="${fill}" stroke="${stroke}" stroke-width="1.2"/>
-      <text x="${sx}" y="${sy}" text-anchor="middle" dominant-baseline="central" font-size="9" fill="${tc}" font-weight="700">${s.id}</text>
+      <circle cx="${sx}" cy="${sy}" r="${sR}" fill="${fill}" stroke="${stroke}" stroke-width="1.5"/>
+      <text x="${sx}" y="${sy}" text-anchor="middle" dominant-baseline="central" font-size="11" fill="${tc}" font-weight="900">${s.id}</text>
     </g>`;
   });
   
   const c=getCount(t);
-  return `<svg width="100%" height="100%" viewBox="0 0 ${W} ${H}" style="max-width:280px; filter:drop-shadow(0 6px 15px rgba(0,0,0,.4))">
+  return `<svg width="100%" height="100%" viewBox="0 0 ${W} ${H}" style="filter:drop-shadow(0 6px 15px rgba(0,0,0,.4))">
     <defs><radialGradient id="fg${t.id}" cx="50%" cy="50%" r="50%">
       <stop offset="0%" stop-color="var(--poker-green-start)"/><stop offset="100%" stop-color="var(--poker-green-end)"/>
     </radialGradient></defs>
     <ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="url(#fg${t.id})" stroke="#022c22" stroke-width="5"/>
-    <text x="${cx}" y="${cy-4}" text-anchor="middle" font-size="14" fill="#fff" font-weight="800">TABLE ${t.tableName}</text>
-    <text x="${cx}" y="${cy+12}" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.4)" font-weight="700">${c} ACTIVE ENTRANTS</text>
+    <text x="${cx}" y="${cy-6}" text-anchor="middle" font-size="15" fill="#fff" font-weight="800">TABLE ${t.tableName}</text>
+    <text x="${cx}" y="${cy+12}" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.4)" font-weight="700">${c} ENTRANTS</text>
     ${seats}
   </svg>`;
 }
@@ -425,7 +441,7 @@ function showDetail(tid){
   const seatBtns=t.seats.map(s=>{
     let cls = s.occ ? 'sb-occ' : 'sb-empty';
     return`<div class="seat-btn ${cls}" onclick="toggleSeat(${t.id},${s.id})">
-      <span style="font-size:12px;font-weight:800">Seat ${s.id}</span>
+      <span>SEAT ${s.id}</span>
     </div>`;
   }).join('');
   
@@ -433,7 +449,7 @@ function showDetail(tid){
   
   document.getElementById('detail-body').innerHTML=`
     <div class="detail-wrap">
-      <div style="width:100%; max-width:280px; display:flex; justify-content:center; align-items:center;">
+      <div class="felt-container">
         ${feltSVG(t)}
       </div>
       <div class="seat-panel">
