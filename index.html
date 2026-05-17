@@ -149,56 +149,74 @@ body {
 
 .break-btn { font-size: 12px; padding: 8px 14px; cursor: pointer; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; color: #f87171; font-weight: 700; }
 
-/* 🚀 BALANCING ENGINE RESPONSIVE CHART SYSTEM: 智能双向响应式图表 */
-/* 默认（手机竖屏）：转为垂直堆叠的横向条形图，永不溢出 */
+/* 🚀 NEW GRID-BASED BALANCING CHART SYSTEM */
+/* 默认手机竖屏：强制分成 10 列网格，多出的桌子（11-20号）完美排到第二排 */
 .bar-row { 
-  display: flex; 
-  flex-direction: column;
-  gap: 10px; 
-  align-items: stretch; 
-  height: auto; 
+  display: grid; 
+  grid-template-columns: repeat(10, 1fr); 
+  gap: 6px; 
+  align-items: end; 
+  height: 200px; /* 竖屏由于有两排，将总高度调高以留足空间 */
   margin-bottom: 12px; 
   background: var(--bg-panel); 
-  padding: 14px; 
+  padding: 12px 8px; 
   border-radius: 12px; 
   border: 1px solid var(--border-color); 
   width: 100%; 
 }
+
 .bar-col { 
   display: flex; 
-  flex-direction: row; 
+  flex-direction: column; 
   align-items: center; 
-  justify-content: space-between;
-  flex: 1; 
-  gap: 12px; 
-  background: rgba(255,255,255,0.02);
-  padding: 6px 10px;
-  border-radius: 6px;
+  justify-content: flex-end;
+  height: 90px; /* 每排固定占 90px 高度 */
+  gap: 2px;
 }
-.bar-lbl { font-size: 11px; color: #fff; font-weight: 800; width: 55px; text-align: left; }
-.bar-track { flex: 1; background: #121826; height: 12px; border-radius: 6px; overflow: hidden; display: block; position: relative;}
-.bar { border-radius: 6px; height: 100%; width: 0%; transition: width .2s ease-out; }
-.bar-val { font-size: 12px; color: var(--color-active); font-weight: 900; width: 30px; text-align: right; }
 
-/* 大屏或手机横屏下：自动切回经典的横向排布柱状图 */
+.bar-track { 
+  width: 100%; 
+  height: 54px; /* 柱状图本身的轨道高度 */
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.bar { 
+  border-radius: 3px 3px 0 0; 
+  min-height: 2px; 
+  width: 75%; 
+  transition: height .2s ease-out; 
+}
+
+.bar-lbl { 
+  font-size: 9px; 
+  color: var(--text-muted); 
+  font-weight: 700; 
+  text-align: center;
+  white-space: nowrap;
+}
+
+.bar-val { 
+  font-size: 10px; 
+  color: var(--text-main); 
+  font-weight: 800; 
+  text-align: center;
+}
+
+/* 当检测到横屏或较大屏幕时：无缝切换为一整排 20 个并列 */
 @media (min-width: 640px) {
   .bar-row { 
-    flex-direction: row; 
-    align-items: flex-end; 
+    grid-template-columns: repeat(auto-fit, minmax(1px, 1fr)); 
     height: 120px; 
+    align-items: flex-end;
   }
-  .bar-col { 
-    flex-direction: column; 
-    align-items: center; 
-    justify-content: flex-end;
-    background: none;
-    padding: 0;
-    gap: 4px;
+  .bar-col {
+    height: 100px;
   }
-  .bar-lbl { font-size: 9px; color: var(--text-muted); margin-top: 2px; font-weight: 700; width: auto; text-align: center; }
-  .bar-track { width: 100%; height: auto; background: none; overflow: visible; }
-  .bar { border-radius: 3px 3px 0 0; min-height: 4px; width: 100% !important; } /* JS 计算的高度通过 style 内联注入 */
-  .bar-val { font-size: 10px; color: var(--text-main); font-weight: 700; width: auto; text-align: center; }
+  .bar-track {
+    height: 65px;
+  }
 }
 
 .bar.ok   { background: var(--status-ok-text); opacity: .8; }
@@ -252,7 +270,7 @@ body {
 
   <div id="panel-overview" class="panel active">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:6px">
-      <span style="font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;">Notice: Lock your mobile orientation to horizontal layout for maximum coverage.</span>
+      <span style="font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;">Notice: Grid allocation updates live with tournament density.</span>
       <div style="display:flex;gap:6px;font-size:10px">
         <span class="badge bg-ok" style="position:static">✓ OPTIMAL</span>
         <span class="badge bg-warn" style="position:static">⚠️ UNEVEN</span>
@@ -550,35 +568,26 @@ function executeMove(fromId, toId){
   if(selectedTable === fromId || selectedTable === toId) showDetail(selectedTable);
 }
 
-/* 🚀 RENDERING REDEFINED FOR RESPONSIVE BARS: 优化 JS 渲染逻辑以兼容“竖屏进度条”与“横屏柱状图” */
+/* 🚀 PURE CSS-DRIVEN RESPONSIVE HEIGHTS: 用纯百分比控制柱体高度，完美对接两排网格 */
 function renderBalance(){
   const at=getActive();
   if (at.length === 0) return;
-  const maxC=Math.max(...at.map(t=>getCount(t))) || 1;
   
   document.getElementById('bar-chart').innerHTML=at.map(t=>{
     const c=getCount(t), st=status(t);
-    // 计算百分比宽度/高度
-    const pct = Math.round((c / MAX_PLAYERS) * 100); 
-    const vPct = Math.round((c / maxC) * 65) + 4; // 用于横屏下柱状图的高
+    // 柱子高度计算：按当前人数占最大人数的百分比呈现
+    const hPct = Math.round((c / MAX_PLAYERS) * 100); 
     
-    // 使用 CSS 变量传递这两种尺寸，并在行内样式中动态结合
     return `
       <div class="bar-col">
-        <div class="bar-lbl">T-${t.tableName}</div>
-        <div class="bar-track">
-          <div class="bar ${st}" style="width: ${pct}%; --v-height: ${vPct}px;"></div>
-        </div>
         <div class="bar-val">${c}P</div>
+        <div class="bar-track">
+          <div class="bar ${st}" style="height: calc(${hPct}% + 2px);"></div>
+        </div>
+        <div class="bar-lbl">T-${t.tableName}</div>
       </div>
     `;
   }).join('');
-  
-  // 注入一个简单的样式hack，确保在大屏横屏下，高度覆盖宽度占比
-  const styleHack = document.getElementById('chart-hack') || document.createElement('style');
-  styleHack.id = 'chart-hack';
-  styleHack.innerHTML = `@media (min-width: 640px) { .bar-row .bar { width: 100% !important; height: var(--v-height) !important; } }`;
-  if(!styleHack.parentNode) document.head.appendChild(styleHack);
 
   const scoringTables = at.filter(t => getCount(t) > 0);
   let sugg = [];
