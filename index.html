@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Tournament Floor Matrix - Sapphire Gold Premium</title>
+<style>
+:root {
+  --bg-main: #0a0e17;          
+  --bg-card: #121826;          
+  --bg-panel: #0e1320;         
+  --border-color: #222f4d;     
+  --text-main: #f1f5f9;        
+  --text-muted: #64748b;       
+  --color-active: #eab308;     
+  --color-seat-occ: #f59e0b;  
+  --poker-green-start: #064e3b;
+  --poker-green-end: #022c22;
+  --status-ok-bg: rgba(16, 185, 129, 0.12);
+  --status-ok-text: #10b981;
+  --status-warn-bg: rgba(234, 179, 8, 0.12);
+  --status-warn-text: #facc15;
+  --status-low-bg: rgba(239, 68, 68, 0.12);
+  --status-low-text: #f87171;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body { 
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Arial, sans-serif;
+  background: radial-gradient(circle at 50% 30%, #111a2e 0%, var(--bg-main) 100%);
+  background-color: var(--bg-main);
+  color: var(--text-main); 
+  min-height: 100vh;
+  /* Premium adaptive notch/safe-area optimization for modern edge-to-edge displays */
+  padding: calc(1rem + env(safe-area-inset-top)) calc(1rem + env(safe-area-inset-right)) calc(1rem + env(safe-area-inset-bottom)) calc(1rem + env(safe-area-inset-left));
+  letter-spacing: 0.02em;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.container { max-width: 1200px; margin: 0 auto; width: 100%; }
+
+.top-bar { 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  margin-bottom: 1rem; 
+  flex-wrap: wrap; 
+  gap: 12px; 
+}
+.top-bar h1 { font-size: 20px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+
+.stats-row { display: flex; gap: 8px; flex-wrap: wrap; width: 100%; }
+@media (min-width: 768px) { .stats-row { width: auto; } }
+
+.stat { 
+  background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; 
+  padding: 8px 14px; font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); 
+  flex: 1; min-width: 100px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+.stat b { color: var(--color-active); font-weight: 800; font-size: 20px; display: block; margin-top: 2px; }
+
+.nav-bar { display: flex; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; }
+.tabs { display: flex; background: var(--bg-panel); padding: 4px; border-radius: 10px; border: 1px solid var(--border-color); flex: 1; min-width: 280px; }
+.tab { flex: 1; text-align: center; padding: 8px 0; font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; color: var(--text-muted); background: none; border: none; border-radius: 6px; transition: all .2s; }
+.tab.active { color: #fff; background: #1e293b; border: 1px solid var(--color-active); }
+
+.floor-config-panel { background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px; padding: 0.6rem 1rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.config-title { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
+.config-controls-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.stepper-container { display: flex; align-items: center; gap: 4px; }
+.step-btn { background: #1e293b; border: 1px solid var(--border-color); color: #fff; font-size: 14px; font-weight: 700; width: 34px; height: 34px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.floor-input-box { background: rgba(234, 179, 8, 0.06); border: 1px solid rgba(234, 179, 8, 0.4); color: #fff; font-size: 14px; font-weight: 700; width: 50px; height: 34px; text-align: center; border-radius: 6px; outline: none; }
+.clear-field-btn { background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; font-size: 11px; font-weight: 700; height: 34px; padding: 0 12px; border-radius: 6px; cursor: pointer; }
+
+.panel { display: none; width: 100%; animation: fadeIn 0.15s ease-out; }
+.panel.active { display: block; }
+
+/* 🚀 Responsive Fluid Grid Matrix System */
+.tables-grid { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
+  gap: 12px; 
+  width: 100%;
+}
+@media (min-width: 768px) {
+  .tables-grid { grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 16px; }
+}
+
+.table-card {
+  background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px;
+  padding: 16px 8px 12px; cursor: pointer; text-align: center; position: relative;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: border-color 0.15s, transform 0.15s;
+}
+.table-card:hover { border-color: var(--color-active); }
+.table-card.selected { border: 2px solid var(--color-active); box-shadow: 0 0 12px rgba(234, 179, 8, 0.25); }
+.table-card.st-warn { border-color: rgba(234, 179, 8, 0.35); }
+.table-card.st-low  { border-color: rgba(239, 68, 68, 0.35); }
+
+.t-header-row { display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 2px; }
+.t-num { font-size: 13px; color: #fff; font-weight: 700; }
+.edit-btn { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 11px; opacity: 0.5; padding: 2px; }
+
+.t-cnt { font-size: 30px; font-weight: 800; color: var(--color-active); line-height: 1.1; margin: 2px 0; }
+.t-sub { font-size: 10px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+
+.mini-seats { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin-top: 6px; max-width: 75px; margin-left: auto; margin-right: auto; }
+.md { width: 5px; height: 5px; border-radius: 50%; }
+.md-occ { background: var(--color-active); box-shadow: 0 0 4px var(--color-active); }
+.md-empty { background: #1e293b; }
+
+.badge { position: absolute; top: 6px; right: 6px; font-size: 8px; padding: 2px 5px; border-radius: 5px; font-weight: 800; }
+.bg-ok   { background: var(--status-ok-bg); color: var(--status-ok-text); }
+.bg-warn { background: var(--status-warn-bg); color: var(--status-warn-text); }
+.bg-low  { background: var(--status-low-bg); color: var(--status-low-text); }
+
+/* Table Configurator Layouts */
+.detail-wrap { display: flex; gap: 1.5rem; align-items: flex-start; flex-wrap: wrap; justify-content: center; margin-top: 0.5rem; width: 100%;}
+@media (min-width: 640px) { .detail-wrap { flex-wrap: nowrap; text-align: left; } }
+
+.seat-panel { flex: 1; min-width: 290px; background: var(--bg-panel); padding: 1.25rem; border-radius: 14px; border: 1px solid var(--border-color); }
+.rename-section { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.rename-input { background: #121826; border: 1px solid var(--border-color); border-radius: 6px; color: #fff; padding: 6px 10px; font-size: 13px; font-weight: 700; width: 100px; outline: none; }
+.rename-confirm { background: #1e293b; border: 1px solid var(--border-color); color: white; padding: 6px 12px; font-size: 11px; font-weight: 700; border-radius: 6px; cursor: pointer; }
+
+.seat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 1rem; }
+.seat-btn { border-radius: 10px; padding: 12px 4px; font-size: 11px; text-align: center; cursor: pointer; border: 1px solid var(--border-color); font-weight: 700; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+.sb-occ   { background: rgba(234, 179, 8, 0.1); color: var(--color-seat-occ); border-color: rgba(234, 179, 8, 0.35); }
+.sb-empty { background: #121826; color: var(--text-muted); border-color: transparent; }
+
+.break-btn { font-size: 11px; padding: 6px 12px; cursor: pointer; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; color: #f87171; font-weight: 700; }
+
+/* Balancing Curve Engine Graphs */
+.bar-row { display: flex; gap: 8px; align-items: flex-end; height: 110px; margin-bottom: 12px; background: var(--bg-panel); padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); width: 100%; }
+.bar-col { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 4px; }
+.bar { border-radius: 3px 3px 0 0; min-height: 4px; width: 100%; transition: height .2s; }
+.bar.ok   { background: var(--status-ok-text); opacity: .8; }
+.bar.warn { background: var(--status-warn-text); opacity: .9; }
+.bar.low  { background: var(--status-low-text); opacity: 1; }
+.bar-lbl { font-size: 9px; color: var(--text-muted); margin-top: 2px; font-weight: 700; }
+.bar-val { font-size: 10px; color: var(--text-main); font-weight: 700; }
+
+.move-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 16px; font-size: 12px; width: 100%; }
+.exec-btn { font-size: 11px; padding: 6px 14px; cursor: pointer; background: #1e293b; border: 1px solid #eab308; border-radius: 6px; color: var(--color-active); font-weight: 700; }
+
+.sec-title { font-size: 13px; font-weight: 800; text-transform: uppercase; color: var(--text-main); margin-bottom: 0.5rem; margin-top: 1.25rem; }
+.detail-select { font-size: 13px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); margin-bottom: 1rem; cursor: pointer; font-weight: 700; outline: none; }
+.legend { display: flex; gap: 12px; font-size: 10px; font-weight: 600; margin-bottom: 1rem; flex-wrap: wrap; }
+.legend span { display: flex; align-items: center; gap: 4px; color: var(--text-muted); }
+.legend i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+.alert-box { margin-top: 1rem; padding: 12px; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.15); border-radius: 10px; font-size: 12px; color: #f87171; display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%; }
+.info-box { padding: 12px 0; font-size: 13px; color: var(--status-ok-text); font-weight: 700; text-transform: uppercase; width: 100%; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="top-bar">
+    <h1>🃏 TOURNAMENT FLOOR MATRIX</h1>
+    <div class="stats-row">
+      <div class="stat">Total Entrants <b id="s-total">0</b></div>
+      <div class="stat">Active Tables <b id="s-tables">0</b></div>
+      <div class="stat">Avg Density <b id="s-avg">0</b></div>
+      <div class="stat">Alert Flags <b id="s-needs">0</b></div>
+    </div>
+  </div>
+
+  <div class="floor-config-panel">
+    <div class="config-title">⚙️ Floor Allocation Bounds (1 - 20 Tables Max)</div>
+    <div class="config-controls-right">
+      <div class="stepper-container">
+        <button class="step-btn" title="Decrease" onclick="stepActiveFloor(-1)">—</button>
+        <input type="number" id="floor-input" class="floor-input-box" min="1" max="20" value="10" onchange="directTypeFloorCount(this.value)">
+        <button class="step-btn" title="Increase" onclick="stepActiveFloor(1)">+</button>
+      </div>
+      <button class="clear-field-btn" onclick="clearAllPlayers()">🧹 Clear All Seats</button>
+    </div>
+  </div>
+
+  <div class="nav-bar">
+    <div class="tabs">
+      <button class="tab active" id="btn-overview" onclick="showTab('overview')">Floor Matrix</button>
+      <button class="tab" id="btn-detail" onclick="showTab('detail')">Table Configurator</button>
+      <button class="tab" id="btn-balance" onclick="showTab('balance')">Balancing Engine</button>
+    </div>
+  </div>
+
+  <div id="panel-overview" class="panel active">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:6px">
+      <span style="font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;">Notice: Lock your mobile orientation to horizontal layout for maximum coverage.</span>
+      <div style="display:flex;gap:6px;font-size:10px">
+        <span class="badge bg-ok" style="position:static">✓ OPTIMAL</span>
+        <span class="badge bg-warn" style="position:static">⚠️ UNEVEN</span>
+        <span class="badge bg-low" style="position:static">! VACANT</span>
+      </div>
+    </div>
+    <div class="tables-grid" id="tables-grid"></div>
+  </div>
+
+  <div id="panel-detail" class="panel">
+    <select class="detail-select" id="detail-sel" onchange="dropdownTableSelect(+this.value)"></select>
+    <div id="detail-body"></div>
+  </div>
+
+  <div id="panel-balance" class="panel">
+    <div class="sec-title" style="margin-top:0">Live Floor Seating Density Curve</div>
+    <div class="bar-row" id="bar-chart"></div>
+    <div class="sec-title">Official TDA Compliant Seating Recommendations</div>
+    <div id="suggestions"></div>
+    <div id="break-wrap" style="display:none">
+      <div class="sec-title" style="color:#f87171">High Risk Table Consolidation Directives</div>
+      <div id="break-list"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const MAX_PLAYERS = 9; 
+const IDEAL_MIN = 6, IDEAL_MAX = 8;
+
+let tables = [], selectedTable = 1, activeFloorSize = 10;
+
+function initTables() {
+  tables = Array.from({length: 20}, (_, i) => ({
+    id: i+1, 
+    tableName: `${i+1}`, 
+    active: i < activeFloorSize, 
+    seats: Array.from({length: MAX_PLAYERS}, (_,s) => ({ id:s+1, occ: false }))
+  }));
+}
+
+function clearAllPlayers() {
+  if (confirm("Are you sure you want to completely flush and clear all player rosters on the field?")) {
+    tables.forEach(t => t.seats.forEach(s => s.occ = false));
+    renderGrid();
+    if (document.getElementById('panel-detail').classList.contains('active')) {
+      populateSelect();
+      if(selectedTable) showDetail(selectedTable);
+    } else if (document.getElementById('panel-balance').classList.contains('active')) {
+      renderBalance();
+    }
+  }
+}
+
+function stepActiveFloor(delta) {
+  let target = activeFloorSize + delta;
+  if(target < 1) target = 1;
+  if(target > 20) target = 20;
+  applyFloorSizeChange(target);
+}
+
+function directTypeFloorCount(val) {
+  let target = parseInt(val, 10);
+  if(isNaN(target) || target < 1) target = 1;
+  if(target > 20) target = 20;
+  applyFloorSizeChange(target);
+}
+
+function applyFloorSizeChange(targetCount) {
+  activeFloorSize = targetCount;
+  document.getElementById('floor-input').value = activeFloorSize;
+  
+  tables.forEach((t, i) => {
+    t.active = (i < activeFloorSize);
+    if (!t.active) t.seats.forEach(s => s.occ = false);
+  });
+
+  const currentActiveTables = getActive();
+  if (currentActiveTables.length > 0) {
+    const stillExists = currentActiveTables.find(t => t.id === selectedTable);
+    if (!stillExists) selectedTable = currentActiveTables[0].id;
+  } else {
+    selectedTable = null;
+  }
+
+  renderGrid();
+  if (document.getElementById('panel-detail').classList.contains('active')) {
+    populateSelect();
+    if(selectedTable) showDetail(selectedTable);
+  }
+}
+
+const getActive = () => tables.filter(t => t.active);
+const getCount  = t  => t.seats.filter(s => s.occ).length;
+const getEmpty  = t  => t.seats.filter(s => !s.occ);
+const getTotal  = () => tables.reduce((a,t) => a+getCount(t), 0);
+const getAvg    = () => { const at=getActive(); return at.length?(getTotal()/at.length).toFixed(1):0; };
+
+function status(t){ 
+  const c=getCount(t); 
+  if (c === 0) return 'ok'; 
+  if (c <= 3) return 'low'; 
+  if (c < IDEAL_MIN || c > IDEAL_MAX) return 'warn'; 
+  return 'ok'; 
+}
+
+function updateStats() {
+  const at=getActive();
+  document.getElementById('s-total').textContent=getTotal();
+  document.getElementById('s-tables').textContent=at.length;
+  document.getElementById('s-avg').textContent=getAvg();
+  document.getElementById('s-needs').textContent=at.filter(t=>status(t)!=='ok' && getCount(t)>0).length;
+}
+
+function renameTable(tid, event) {
+  if (event) event.stopPropagation();
+  const t = tables.find(x => x.id === tid);
+  if (!t) return;
+  const newName = prompt(`Enter custom identifier tag for Table ${t.tableName}:`, t.tableName);
+  if (newName !== null && newName.trim() !== "") {
+    t.tableName = newName.trim();
+    renderGrid();
+    if(selectedTable === tid) showDetail(tid);
+  }
+}
+
+function submitRename(tid) {
+  const input = document.getElementById(`rename-input-${tid}`);
+  const t = tables.find(x => x.id === tid);
+  if (t && input && input.value.trim() !== "") {
+    t.tableName = input.value.trim();
+    renderGrid();
+    showDetail(tid);
+  }
+}
+
+function dropdownTableSelect(tid) {
+  selectedTable = tid;
+  showDetail(tid);
+  renderGrid();
+}
+
+function renderGrid(){
+  const g=document.getElementById('tables-grid');
+  g.innerHTML='';
+  
+  const activeTables = getActive();
+  if (activeTables.length === 0) {
+    g.innerHTML = `<div class="info-box" style="color:var(--text-muted); text-align:center; padding: 2rem;">No active rings allocated on the field. Expansion required.</div>`;
+    updateStats();
+    return;
+  }
+
+  activeTables.forEach(t=>{
+    const c=getCount(t), st=status(t);
+    const d=document.createElement('div');
+    const hasPlayers = c > 0;
+    
+    d.className='table-card'+((hasPlayers && st==='warn')?' st-warn':(hasPlayers && st==='low')?' st-low':'')+(selectedTable===t.id?' selected':'');
+    d.onclick=()=>{ 
+      selectedTable=t.id; 
+      renderGrid(); 
+      showTab('detail'); 
+      showDetail(t.id); 
+    };
+    
+    const bCls=(!hasPlayers || st==='ok')?'bg-ok':st==='warn'?'bg-warn':'bg-low';
+    const bTxt=!hasPlayers?'VACANT':(st==='ok'?'✓ BALANCED':st==='warn'?'⚠️ UNEVEN':'! CRITICAL');
+    const pDots = t.seats.map(s => `<div class="md ${s.occ?'md-occ':'md-empty'}"></div>`).join('');
+    
+    d.innerHTML=`<span class="badge ${bCls}">${bTxt}</span>
+      <div class="t-header-row">
+        <div class="t-num">Table ${t.tableName}</div>
+        <button class="edit-btn" onclick="renameTable(${t.id}, event)">✏️</button>
+      </div>
+      <div class="t-cnt">${c}</div>
+      <div class="t-sub">/ ${MAX_PLAYERS} Max Seats</div>
+      <div class="mini-seats">${pDots}</div>`;
+    g.appendChild(d);
+  });
+  updateStats();
+}
+
+function feltSVG(t) {
+  const W=340,H=220,cx=170,cy=115,rx=100,ry=58,sR=12;
+  let seats='';
+  
+  seats += `<g>
+    <rect x="${cx - 24}" y="${cy - ry - 2}" width="48" height="18" rx="4" fill="#0e1320" stroke="#10b981" stroke-width="1.2"/>
+    <text x="${cx}" y="${cy - ry + 7}" text-anchor="middle" dominant-baseline="central" font-size="8" fill="#10b981" font-weight="800">DEALER</text>
+  </g>`;
+
+  t.seats.forEach((s,i)=>{
+    const angleOffset = (-55 + (290 / (MAX_PLAYERS - 1)) * i) * Math.PI / 180;
+    const sx=(cx+(rx+24)*Math.cos(angleOffset)).toFixed(1);
+    const sy=(cy+(ry+22)*Math.sin(angleOffset)).toFixed(1);
+    
+    let fill = s.occ ? '#eab308' : '#121826';
+    let stroke = s.occ ? '#facc15' : '#222f4d';
+    let tc = s.occ ? '#000' : '#64748b';
+    
+    seats+=`<g style="cursor:pointer" onclick="toggleSeat(${t.id},${s.id})">
+      <circle cx="${sx}" cy="${sy}" r="${sR}" fill="${fill}" stroke="${stroke}" stroke-width="1.2"/>
+      <text x="${sx}" y="${sy}" text-anchor="middle" dominant-baseline="central" font-size="9" fill="${tc}" font-weight="700">${s.id}</text>
+    </g>`;
+  });
+  
+  const c=getCount(t);
+  return `<svg width="100%" height="100%" viewBox="0 0 ${W} ${H}" style="max-width:280px; filter:drop-shadow(0 6px 15px rgba(0,0,0,.4))">
+    <defs><radialGradient id="fg${t.id}" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="var(--poker-green-start)"/><stop offset="100%" stop-color="var(--poker-green-end)"/>
+    </radialGradient></defs>
+    <ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="url(#fg${t.id})" stroke="#022c22" stroke-width="5"/>
+    <text x="${cx}" y="${cy-4}" text-anchor="middle" font-size="14" fill="#fff" font-weight="800">TABLE ${t.tableName}</text>
+    <text x="${cx}" y="${cy+12}" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.4)" font-weight="700">${c} ACTIVE ENTRANTS</text>
+    ${seats}
+  </svg>`;
+}
+
+function showDetail(tid){
+  selectedTable=tid;
+  const t=tables.find(x=>x.id===tid);
+  if(!t || !t.active) return;
+  const c=getCount(t), st=status(t);
+  
+  const stLabel=c===0?`<span style="color:var(--text-muted)">Unoccupied Ring</span>`:
+    st==='ok'?`<span style="color:var(--status-ok-text)">Optimal Range Balanced (TDA Compliant)</span>`:
+    st==='warn'?`<span style="color:var(--status-warn-text)">Asymmetric Seating Profile Detected</span>`:
+    `<span style="color:var(--status-low-text)">Shorthanded State - Breaking Imminent</span>`;
+    
+  const seatBtns=t.seats.map(s=>{
+    let cls = s.occ ? 'sb-occ' : 'sb-empty';
+    return`<div class="seat-btn ${cls}" onclick="toggleSeat(${t.id},${s.id})">
+      <span style="font-size:12px;font-weight:800">Seat ${s.id}</span>
+    </div>`;
+  }).join('');
+  
+  const breakBtnHtml = (c>0 && c<=3) ? `<div class="alert-box"><span>⚠️ Ring under critical thresholds. Consolidation highly recommended.</span><button class="break-btn" onclick="breakTable(${tid})">Break Table</button></div>` : '';
+  
+  document.getElementById('detail-body').innerHTML=`
+    <div class="detail-wrap">
+      <div style="width:100%; max-width:280px; display:flex; justify-content:center; align-items:center;">
+        ${feltSVG(t)}
+      </div>
+      <div class="seat-panel">
+        <div style="font-size: 20px; font-weight: 800; margin-bottom: 4px; color: var(--color-active);">Table ${t.tableName} Roster</div>
+        <div class="rename-section">
+          <input type="text" id="rename-input-${t.id}" class="rename-input" value="${t.tableName}">
+          <button class="rename-confirm" onclick="submitRename(${t.id})">Assign</button>
+        </div>
+        <div style="font-size:11px;font-weight:600;margin-bottom:0.5rem">Diagnostics: ${stLabel}</div>
+        <div class="seat-grid">${seatBtns}</div>
+        ${breakBtnHtml}
+      </div>
+    </div>`;
+  document.getElementById('detail-sel').value=tid;
+}
+
+function toggleSeat(tid,sid){
+  const t = tables.find(x=>x.id===tid);
+  const seat = t.seats.find(s=>s.id===sid);
+  seat.occ = !seat.occ;
+  renderGrid();
+  if(selectedTable===tid) showDetail(tid);
+}
+
+function breakTable(tid){
+  const t=tables.find(x=>x.id===tid);
+  const players=getCount(t);
+  const actives=getActive().filter(x=>x.id!==tid && getCount(x) > 0);
+  
+  for(let i=0;i<players;i++){
+    const target=actives.slice().sort((a,b)=>getCount(a)-getCount(b))[0];
+    if(!target) break;
+    const empty=getEmpty(target);
+    if(empty.length) empty[0].occ=true;
+  }
+  t.seats.forEach(s=>s.occ=false);
+  renderGrid();
+  if(selectedTable) showDetail(selectedTable);
+}
+
+function executeMove(fromId, toId){
+  const from = tables.find(t => t.id === fromId);
+  const to = tables.find(t => t.id === toId);
+  const occupiedSeats = from.seats.filter(s => s.occ);
+  const emptySeats = getEmpty(to);
+  
+  if(occupiedSeats.length > 0 && emptySeats.length > 0) {
+    occupiedSeats[occupiedSeats.length - 1].occ = false;
+    emptySeats[0].occ = true;
+  }
+  renderGrid();
+  renderBalance();
+  if(selectedTable === fromId || selectedTable === toId) showDetail(selectedTable);
+}
+
+function renderBalance(){
+  const at=getActive();
+  if (at.length === 0) return;
+  const maxC=Math.max(...at.map(t=>getCount(t)));
+  
+  document.getElementById('bar-chart').innerHTML=at.map(t=>{
+    const c=getCount(t),st=status(t);
+    const h=maxC?Math.round((c/maxC)*65)+4:4;
+    return`<div class="bar-col"><div class="bar-val">${c}P</div><div class="bar ${st}" style="height:${h}px"></div><div class="bar-lbl">T-${t.tableName}</div></div>`;
+  }).join('');
+  
+  const scoringTables = at.filter(t => getCount(t) > 0);
+  let sugg = [];
+  
+  if(scoringTables.length > 1) {
+    const sortedMax = [...scoringTables].sort((a,b) => getCount(b) - getCount(a)); 
+    const sortedMin = [...scoringTables].sort((a,b) => getCount(a) - getCount(b)); 
+    let i = 0, j = 0;
+    while(i < sortedMax.length && j < sortedMin.length) {
+      const topT = sortedMax[i], botT = sortedMin[j];
+      if(topT.id !== botT.id && (getCount(topT) - getCount(botT) >= 2) && getCount(topT) > IDEAL_MIN) {
+        sugg.push({fromId: topT.id, toId: botT.id, fromName: topT.tableName, toName: botT.tableName, fc: getCount(topT), tc: getCount(botT)});
+        i++; j++;
+      } else { break; }
+    }
+  }
+
+  document.getElementById('suggestions').innerHTML=sugg.length
+    ?sugg.map(s=>`<div class="move-row"><span>⚠️ Reallocate 1 entrant from <b>Table ${s.fromName}</b> → <b>Table ${s.toName}</b></span><button class="exec-btn" onclick="executeMove(${s.fromId},${s.toId})">Execute Balancing</button></div>`).join('')
+    :(getTotal() === 0 ? '<div class="info-box" style="color:var(--text-muted)">No action required. Floor is empty.</div>' : '<div class="info-box">✓ Floor variance optimal. Equilibrium maintained across active tables.</div>');
+    
+  const brk=scoringTables.filter(t=>getCount(t)<=3);
+  const bw=document.getElementById('break-wrap');
+  if(brk.length){
+    bw.style.display='block';
+    document.getElementById('break-list').innerHTML=brk.map(t=>`<div class="move-row"><span>🚨 <b>Table ${t.tableName}</b> Shorthanded Vulnerability (${getCount(t)} Players Left)</span><button class="break-btn" onclick="breakTable(${t.id});renderBalance()">Collapse & Break</button></div>`).join('');
+  } else { bw.style.display='none'; }
+}
+
+function populateSelect(){
+  const sel=document.getElementById('detail-sel');
+  const activeTables = getActive();
+  sel.innerHTML=activeTables.map(t=>`<option value="${t.id}">Table ${t.tableName} (${getCount(t)} Players Active)</option>`).join('');
+  if(selectedTable && activeTables.find(t => t.id === selectedTable)) sel.value=selectedTable;
+}
+
+function showTab(name){
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['overview','detail','balance'][i]===name));
+  ['overview','detail','balance'].forEach(n=>document.getElementById('panel-'+n).classList.toggle('active',n===name));
+  if(name==='balance') renderBalance();
+  if(name==='detail'){populateSelect(); if(selectedTable) showDetail(selectedTable);}
+}
+
+function bootstrap(){
+  initTables(); 
+  renderGrid(); 
+  selectedTable = 1; 
+  document.getElementById('floor-input').value = activeFloorSize;
+}
+bootstrap();
+</script>
+</body>
+</html>
