@@ -609,4 +609,240 @@ function renderGrid(){
   
   const activeTables = getActive();
   if (activeTables.length === 0) {
-    g
+    g.innerHTML = `<div class="info-box" style="color:var(--text-muted); text-align:center; padding: 2rem;">No active rings allocated on the field. Expansion required.</div>`;
+    updateStats();
+    return;
+  }
+
+  activeTables.forEach(t=>{
+    const c=getCount(t), st=status(t);
+    const d=document.createElement('div');
+    const hasPlayers = c > 0;
+    
+    d.className='table-card'+((hasPlayers && st==='warn')?' st-warn':(hasPlayers && st==='low')?' st-low':'')+(selectedTable===t.id?' selected':'');
+    d.onclick=()=>{ 
+      selectedTable=t.id; 
+      renderGrid(); 
+      showTab('detail'); 
+      showDetail(t.id); 
+    };
+    
+    const bCls=(!hasPlayers || st==='ok')?'bg-ok':st==='warn'?'bg-warn':'bg-low';
+    const bTxt=!hasPlayers?'VACANT':(st==='ok'?'✓ BALANCED':st==='warn'?'⚠️ UNEVEN':'! CRITICAL');
+    const pDots = t.seats.map(s => `<div class="md ${s.occ?'md-occ':'md-empty'}"></div>`).join('');
+    
+    d.innerHTML=`<span class="badge ${bCls}">${bTxt}</span>
+      <div class="t-header-row">
+        <div class="t-num">Table ${t.tableName}</div>
+        <button class="edit-btn" onclick="renameTable(${t.id}, event)">✏️</button>
+      </div>
+      <div class="t-cnt">${c}</div>
+      <div class="t-sub">/ ${globalMaxPlayers} Max Seats</div>
+      <div class="mini-seats">${pDots}</div>`;
+    g.appendChild(d);
+  });
+  updateStats();
+}
+
+function feltSVG(t) {
+  const W=360, H=240, cx=180, cy=125, rx=110, ry=65, sR=14; 
+  let seats='';
+  
+  seats += `<g>
+    <rect x="${cx - 26}" y="${cy - ry - 4}" width="52" height="20" rx="5" fill="#0e1320" stroke="#10b981" stroke-width="1.5"/>
+    <text x="${cx}" y="${cy - ry + 6}" text-anchor="middle" dominant-baseline="central" font-size="9" fill="#10b981" font-weight="900">DEALER</text>
+  </g>`;
+
+  const totalSeats = t.seats.length;
+  t.seats.forEach((s, i) => {
+    let angleOffset;
+    if (totalSeats === 1) {
+      angleOffset = 115 * Math.PI / 180;
+    } else {
+      angleOffset = (-50 + (280 / (totalSeats - 1)) * i) * Math.PI / 180;
+    }
+    
+    const sx=(cx+(rx+25)*Math.cos(angleOffset)).toFixed(1);
+    const sy=(cy+(ry+24)*Math.sin(angleOffset)).toFixed(1);
+    
+    let fill = s.occ ? '#eab308' : '#121826';
+    let stroke = s.occ ? '#facc15' : '#222f4d';
+    let tc = s.occ ? '#000' : '#64748b';
+    
+    seats+=`<g style="cursor:pointer" onclick="toggleSeat(${t.id},${s.id})">
+      <circle cx="${sx}" cy="${sy}" r="${sR}" fill="${fill}" stroke="${stroke}" stroke-width="1.5"/>
+      <text x="${sx}" y="${sy}" text-anchor="middle" dominant-baseline="central" font-size="10" fill="${tc}" font-weight="900">${s.id}</text>
+    </g>`;
+  });
+  
+  const c=getCount(t);
+  return `<svg width="100%" height="100%" viewBox="0 0 ${W} ${H}" style="filter:drop-shadow(0 6px 15px rgba(0,0,0,.4))">
+    <defs><radialGradient id="fg${t.id}" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="var(--poker-green-start)"/><stop offset="100%" stop-color="var(--poker-green-end)"/>
+    </radialGradient></defs>
+    <ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="url(#fg${t.id})" stroke="#022c22" stroke-width="5"/>
+    <text x="${cx}" y="${cy-6}" text-anchor="middle" font-size="15" fill="#fff" font-weight="800">TABLE ${t.tableName}</text>
+    <text x="${cx}" y="${cy+12}" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.4)" font-weight="700">${c} / ${globalMaxPlayers} SEATS</text>
+    ${seats}
+  </svg>`;
+}
+
+function showDetail(tid){
+  selectedTable=tid;
+  const t=tables.find(x=>x.id===tid);
+  if(!t || !t.active) return;
+  const c=getCount(t), st=status(t);
+  
+  const stLabel=c===0?`<span style="color:var(--text-muted)">Unoccupied Ring</span>`:
+    st==='ok'?`<span style="color:var(--status-ok-text)">Optimal Range Balanced (TDA Compliant)</span>`:
+    st==='warn'?`<span style="color:var(--status-warn-text)">Asymmetric Seating Profile Detected</span>`:
+    `<span style="color:var(--status-low-text)">Shorthanded State - Breaking Imminent</span>`;
+    
+  const seatBtns=t.seats.map(s=>{
+    let cls = s.occ ? 'sb-occ' : 'sb-empty';
+    return`<div class="seat-btn ${cls}" onclick="toggleSeat(${t.id},${s.id})">
+      <span>SEAT ${s.id}</span>
+    </div>`;
+  }).join('');
+  
+  const breakBtnHtml = (c>0 && c<=3) ? `<div class="alert-box"><span>⚠️ Ring under critical thresholds. Consolidation highly recommended.</span><button class="break-btn" onclick="breakTable(${tid})">Break Table</button></div>` : '';
+  
+  document.getElementById('detail-body').innerHTML=`
+    <div class="detail-wrap">
+      <div class="felt-container">
+        ${feltSVG(t)}
+      </div>
+      <div class="seat-panel">
+        <div style="font-size: 20px; font-weight: 800; margin-bottom: 4px; color: var(--color-active);">Table ${t.tableName} Roster</div>
+        <div class="rename-section">
+          <input type="text" id="rename-input-${t.id}" class="rename-input" value="${t.tableName}">
+          <button class="rename-confirm" onclick="submitRename(${t.id})">Assign</button>
+        </div>
+        <div style="font-size:11px;font-weight:600;margin-bottom:0.5rem">Diagnostics: ${stLabel}</div>
+        <div class="seat-grid">${seatBtns}</div>
+        ${breakBtnHtml}
+      </div>
+    </div>`;
+  document.getElementById('detail-sel').value=tid;
+}
+
+function toggleSeat(tid,sid){
+  const t = tables.find(x=>x.id===tid);
+  const seat = t.seats.find(s=>s.id===sid);
+  seat.occ = !seat.occ;
+  renderGrid();
+  if(selectedTable===tid) showDetail(tid);
+}
+
+function breakTable(tid){
+  const t=tables.find(x=>x.id===tid);
+  const name=t.tableName;
+  const players=getCount(t);
+  const actives=getActive().filter(x=>x.id!==tid && getCount(x) > 0);
+  
+  for(let i=0;i<players;i++){
+    const target=actives.slice().sort((a,b)=>getCount(a)-getCount(b))[0];
+    if(!target) break;
+    const empty=getEmpty(target);
+    if(empty.length) empty[0].occ=true;
+  }
+  t.seats.forEach(s=>s.occ=false);
+  renderGrid();
+  showToast(`🚨 Table ${name} broken & collapsed successfully`);
+  if(selectedTable) showDetail(selectedTable);
+}
+
+function executeMove(fromId, toId){
+  const from = tables.find(t => t.id === fromId);
+  const to = tables.find(t => t.id === toId);
+  const occupiedSeats = from.seats.filter(s => s.occ);
+  const emptySeats = getEmpty(to);
+  
+  if(occupiedSeats.length > 0 && emptySeats.length > 0) {
+    occupiedSeats[occupiedSeats.length - 1].occ = false;
+    emptySeats[0].occ = true;
+    showToast(`🔄 Moved 1 player: Table ${from.tableName} → Table ${to.tableName}`);
+  }
+  renderGrid();
+  renderBalance();
+  if(selectedTable === fromId || selectedTable === toId) showDetail(selectedTable);
+}
+
+function renderBalance(){
+  const at=getActive();
+  if (at.length === 0) return;
+  
+  document.getElementById('bar-chart').innerHTML=at.map(t=>{
+    const c=getCount(t), st=status(t);
+    const hPct = Math.round((c / globalMaxPlayers) * 100); 
+    
+    const isVacant = c === 0;
+    const isCritical = c > 0 && c <= 3;
+    
+    const colClass = isVacant ? 'bar-col vacant-mode' : 'bar-col';
+    const valClass = isCritical ? 'bar-val crit-text' : 'bar-val';
+    
+    return `
+      <div class="${colClass}">
+        <div class="bar-lbl">T-${t.tableName}</div>
+        <div class="bar-track">
+          <div class="bar ${st}" style="height: calc(${hPct}% + 2px);"></div>
+        </div>
+        <div class="${valClass}">${c}P</div>
+      </div>
+    `;
+  }).join('');
+
+  const scoringTables = at.filter(t => getCount(t) > 0);
+  let sugg = [];
+  
+  if(scoringTables.length > 1) {
+    const sortedMax = [...scoringTables].sort((a,b) => getCount(b) - getCount(a)); 
+    const sortedMin = [...scoringTables].sort((a,b) => getCount(a) - getCount(b)); 
+    let i = 0, j = 0;
+    while(i < sortedMax.length && j < sortedMin.length) {
+      const topT = sortedMax[i], botT = sortedMin[j];
+      if(topT.id !== botT.id && (getCount(topT) - getCount(botT) >= 2) && getCount(topT) > IDEAL_MIN) {
+        sugg.push({fromId: topT.id, toId: botT.id, fromName: topT.tableName, toName: botT.tableName, fc: getCount(topT), tc: getCount(botT)});
+        i++; j++;
+      } else { break; }
+    }
+  }
+
+  document.getElementById('suggestions').innerHTML=sugg.length
+    ?sugg.map(s=>`<div class="move-row"><span>⚠️ Reallocate 1 entrant from <b>Table ${s.fromName}</b> → <b>Table ${s.toName}</b></span><button class="exec-btn" onclick="executeMove(${s.fromId},${s.toId})">Execute Balancing</button></div>`).join('')
+    :(getTotal() === 0 ? '<div class="info-box" style="color:var(--text-muted)">No action required. Floor is empty.</div>' : '<div class="info-box">✓ Floor variance optimal. Equilibrium maintained across active tables.</div>');
+    
+  const brk=scoringTables.filter(t=>getCount(t)<=3);
+  const bw=document.getElementById('break-wrap');
+  if(brk.length){
+    bw.style.display='block';
+    document.getElementById('break-list').innerHTML=brk.map(t=>`<div class="move-row"><span>🚨 <b>Table ${t.tableName}</b> Shorthanded Vulnerability (${getCount(t)} Players Left)</span><button class="break-btn" onclick="breakTable(${t.id});renderBalance()">Collapse & Break</button></div>`).join('');
+  } else { bw.style.display='none'; }
+}
+
+function populateSelect(){
+  const sel=document.getElementById('detail-sel');
+  const activeTables = getActive();
+  sel.innerHTML=activeTables.map(t=>`<option value="${t.id}">Table ${t.tableName} (${getCount(t)} Players Active)</option>`).join('');
+  if(selectedTable && activeTables.find(t => t.id === selectedTable)) sel.value=selectedTable;
+}
+
+function showTab(name){
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['overview','detail','balance'][i]===name));
+  ['overview','detail','balance'].forEach(n=>document.getElementById('panel-'+n).classList.toggle('active',n===name));
+  if(name==='balance') renderBalance();
+  if(name==='detail'){populateSelect(); if(selectedTable) showDetail(selectedTable);}
+}
+
+function bootstrap(){
+  initTables(); 
+  renderGrid(); 
+  selectedTable = 1; 
+  document.getElementById('floor-input').value = activeFloorSize;
+  document.getElementById('seats-input').value = globalMaxPlayers;
+}
+bootstrap();
+</script>
+</body>
+</html>
