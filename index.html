@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Tournament Floor Matrix [v2.4.2]</title>
-<script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=nb4PdnjYxfxD0J0A8NeTrAPvR161gosMWZELPIYrqchMpp_RCi3yaohQ_xj61J1M5b7vMiQDhMJLi5acfb6bBwyQPP3HtOZdSTwC9NTZJy9hmMfdpFCxmiY0UDSM3mGdaAffj0Ex0R_My1wQoknQ1DDe2l2I3-R-T3-ZLGEsHzd6AENvleATdlLaFsWcChspoMnhmqx1yd6oPPJnIp4nmvLI8hZecrXJTrVtLx-IoDp-sZlXKnSdbAj9KPhrQ4xzTlYMZwCzi3yVOw4l-cSWN7fYTWbMqLEuz0O5fCWBYBdqZTM8ZCuI6bOr5Huy74Wizh6O1OTxpMCV6YM6uts-PA" charset="UTF-8"></script><link rel="stylesheet" crossorigin="anonymous" href="https://gc.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cHM6Ly9jb250cmlidXRpb24udXNlcmNvbnRlbnQuZ29vZ2xlLmNvbS9kb3dubG9hZD9jPUNneGlZWEprWDNOMGIzSmhaMlVTVUJJTmNtVnpjRzl1YzJWZlpHRjBZUm9fQ2pCbVpXTmpPRFV4WXpBeE1UUmpaREExTURBd05qVXlOREU0TjJJNU9EazFaakF5WVRCa1lXSXpPV1V4TXpkak5tRVNDeElIRU12dnRaMmZGaGdCJmZpbGVuYW1lPWluZGV4Lmh0bWwmb3BpPTEwMzEzNTA1MCZhdXRodXNlcj0x"/><style>
+<script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=CZPfTfOAkpgRoyS9nh0FXNJq7n0OidyMkiSpr0uXJ8kw9IEdTDOHeWM4_yWTLz31Rg8tk2QSZJI7k3GPWPq1jmndl88E-Pm-x1l57d2P2aXti9GiJeUtqkGU3vaGAQd1PwKneKf5FwYZgYkVtu33noIEwPFMjqeviUZFWAvgSJ7g_o4CETqL9IUcZV3G7_1ng4vcDgmcqGtmZ2X2UY_s1aOB1xlN9ZPWJ5Sa3pS89ApekakQyKksXuzvLMUcVQEustALJ0IGfe3hIYykJHzUVFlZ7gtDWJTPA6-rAFyr6nwrdhaE-Yh8cK9XAZt5kbz1kAyaMBeG06aZKHYcm_hQpA" charset="UTF-8"></script><link rel="stylesheet" crossorigin="anonymous" href="https://gc.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cHM6Ly9jb250cmlidXRpb24udXNlcmNvbnRlbnQuZ29vZ2xlLmNvbS9kb3dubG9hZD9jPUNneGlZWEprWDNOMGIzSmhaMlVTVEJJSmRHVnRjRjlrWVhSaEdqOEtNRFE0WXpBMlpXVTROR1ExTURVMU5URXdNREEyTlRJME1XRTJZMkk1TlRoa01ESmhNR1k1TkRVeVpESXlPV1ppWlJJTEVnY1F5LS0xblo4V0dBRSZmaWxlbmFtZT1pbmRleC5odG1sJm9waT0xMDMxMzUwNTAmYXV0aHVzZXI9MQ"/><style>
 :root {
   --bg-main: #0a0e17;          
   --bg-card: #121826;          
@@ -80,7 +80,7 @@ body {
 }
 .danger-zone-trigger:hover { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); }
 
-/* 🎛️ 核心控制区（绝对置顶） */
+/* 🎛️ 核心控制区 */
 .floor-config-panel { 
   background: linear-gradient(180deg, var(--bg-panel) 0%, #0a0e17 100%); 
   border: 1px solid var(--border-color); 
@@ -101,7 +101,7 @@ body {
 .step-btn:active { background: #121929; transform: scale(0.95); }
 .floor-input-box { background: #0d1321; border: 1px solid var(--border-color); color: var(--color-active); font-size: 14px; font-weight: 800; width: 45px; height: 34px; text-align: center; border-radius: 6px; outline: none; }
 
-/* 📊 数据看板（下移紧凑化） */
+/* 📊 数据看板 */
 .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 0.8rem; width: 100%; }
 .stat { 
   background: linear-gradient(145deg, #111827 0%, var(--bg-card) 100%); 
@@ -204,6 +204,7 @@ body {
 .bar.ok   { background: var(--status-ok-text); opacity: .85; }
 .bar.warn { background: var(--status-warn-text); opacity: .95; }
 .bar-lbl { font-size: 8px; color: #fff; font-weight: 800; margin-bottom: 2px; }
+.bar-track-wrap { width: 100%; flex: 1; display: flex; align-items: flex-end; } /* Fixed a potential reference styling block */
 .bar-val { font-size: 9px; color: var(--color-active); font-weight: 900; margin-top: 2px; }
 .bar-val.crit-text { color: var(--status-low-text); }
 
@@ -293,7 +294,7 @@ body {
     <div id="detail-body"></div>
   </div>
 
-  <!-- 📊 平衡引擎面板 -->
+  <!-- 📊 平平衡引擎面板 -->
   <div id="panel-balance" class="panel">
     <div class="sec-title" style="margin-top:0">Seating Density Curve</div>
     <div class="bar-row" id="bar-chart"></div>
@@ -345,7 +346,6 @@ function loadStateFromLocalStorage() {
   }
 }
 
-// 🛑 防误触离开拦截
 window.addEventListener('beforeunload', function (e) {
   if (getTotal() > 0) {
     e.preventDefault();
@@ -359,7 +359,7 @@ function initTables() {
 
   tables = Array.from({length: 20}, (_, i) => {
     let seatsArray = [];
-    for(let s = 0; s < 10; s++) { // 初始化固定创建 10 个物理座位，方便后续随意扩容
+    for(let s = 0; s < 10; s++) {
       seatsArray.push({ id: s + 1, occ: false });
     }
     return {
@@ -373,7 +373,6 @@ function initTables() {
 
 function syncTableSeatsCapacity() {
   tables.forEach(t => {
-    // 裁剪溢出玩家
     t.seats.forEach(s => {
       if (s.id > globalMaxPlayers) s.occ = false;
     });
@@ -388,8 +387,7 @@ function showToast(message) {
 }
 
 function clearAllPlayers() {
-  if (confirm("⚠️ RESET MATRIX?
-Clear all tournament player fields?")) {
+  if (confirm("⚠️ RESET MATRIX?\nClear all tournament player fields?")) {
     tables.forEach(t => t.seats.forEach(s => s.occ = false));
     saveStateToLocalStorage();
     renderGrid();
@@ -694,7 +692,7 @@ function breakTable(tid){
   const name=t.tableName;
   const players=getCount(t);
   
-  t.seats.forEach(s=>s.occ=false); // 先清空被拆桌
+  t.seats.forEach(s=>s.occ=false);
   
   for(let i=0; i<players; i++){
     const validTargets = getActive().filter(x => x.id !== tid && getCount(x) > 0 && getCount(x) < globalMaxPlayers);
