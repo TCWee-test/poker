@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Tournament Floor Matrix [v2.2.0-Alpha]</title>
+<title>Tournament Floor Matrix [v2.3.0-RC]</title>
 <style>
 :root {
   --bg-main: #0a0e17;          
@@ -22,6 +22,7 @@
   --status-warn-text: #facc15;
   --status-low-bg: rgba(239, 68, 68, 0.12);
   --status-low-text: #f87171;
+  --panel-glow: rgba(59, 130, 246, 0.15);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -44,103 +45,136 @@ body {
   display: flex; 
   align-items: center; 
   justify-content: space-between; 
-  margin-bottom: 1rem; 
+  margin-bottom: 1.2rem; 
   flex-wrap: wrap; 
   gap: 12px; 
 }
-.title-area { display: flex; flex-direction: column; gap: 2px; }
-.top-bar h1 { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: -0.5px; line-height: 1.2; }
+.title-area { display: flex; flex-direction: column; gap: 4px; }
+.top-bar h1 { font-size: 20px; font-weight: 900; color: #fff; letter-spacing: -0.5px; line-height: 1.2; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
 
 .version-tag {
   font-size: 10px;
   font-weight: 700;
   color: var(--color-active);
-  background: rgba(234, 179, 8, 0.1);
-  border: 1px solid rgba(234, 179, 8, 0.25);
-  padding: 1px 6px;
-  border-radius: 4px;
+  background: rgba(234, 179, 8, 0.08);
+  border: 1px solid rgba(234, 179, 8, 0.2);
+  padding: 2px 8px;
+  border-radius: 6px;
   width: fit-content;
   letter-spacing: 0.05em;
 }
 
-.stats-row { display: flex; gap: 6px; flex-wrap: wrap; width: 100%; }
+/* 数据看板美化 */
+.stats-row { display: flex; gap: 10px; flex-wrap: wrap; width: 100%; }
 @media (min-width: 768px) { .stats-row { width: auto; } }
 
 .stat { 
-  background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; 
-  padding: 8px 12px; font-size: 9px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); 
-  flex: 1; min-width: 85px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-}
-.stat b { color: var(--color-active); font-weight: 800; font-size: 18px; display: block; margin-top: 2px; }
-.stat b.alert-danger { color: var(--status-low-text); text-shadow: 0 0 8px rgba(239, 68, 68, 0.4); }
-
-.nav-bar { display: flex; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; }
-.tabs { display: flex; background: var(--bg-panel); padding: 4px; border-radius: 10px; border: 1px solid var(--border-color); flex: 1; min-width: 280px; }
-.tab { flex: 1; text-align: center; padding: 8px 0; font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; color: var(--text-muted); background: none; border: none; border-radius: 6px; transition: all .2s; }
-.tab.active { color: #fff; background: #1e293b; border: 1px solid var(--color-active); }
-
-/* 双步进控制面板弹性布局 */
-.floor-config-panel { 
-  background: var(--bg-panel); 
+  background: linear-gradient(145deg, #131a2a 0%, var(--bg-card) 100%); 
   border: 1px solid var(--border-color); 
   border-radius: 12px; 
-  padding: 0.8rem 1rem; 
-  margin-bottom: 1rem; 
+  padding: 10px 14px; font-size: 9px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); 
+  flex: 1; min-width: 88px; box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+}
+.stat b { color: var(--color-active); font-weight: 900; font-size: 22px; display: block; margin-top: 2px; transition: color 0.3s; }
+
+/* 🌟 新增：高危警报卡片低频红光呼吸闪烁 */
+.stat.pulse-alert {
+  border-color: rgba(239, 68, 68, 0.5);
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.15);
+  animation: card-alert-glow 2s infinite ease-in-out;
+}
+.stat.pulse-alert b {
+  color: var(--status-low-text);
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+}
+
+@keyframes card-alert-glow {
+  0% { background: linear-gradient(145deg, #1e1318 0%, var(--bg-card) 100%); border-color: rgba(239, 68, 68, 0.3); box-shadow: 0 0 10px rgba(239, 68, 68, 0.1); }
+  50% { background: linear-gradient(145deg, #2d141b 0%, #17111a 100%); border-color: rgba(239, 68, 68, 0.7); box-shadow: 0 0 20px rgba(239, 68, 68, 0.3); }
+  100% { background: linear-gradient(145deg, #1e1318 0%, var(--bg-card) 100%); border-color: rgba(239, 68, 68, 0.3); box-shadow: 0 0 10px rgba(239, 68, 68, 0.1); }
+}
+
+/* 导航选项卡美化 */
+.nav-bar { display: flex; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; flex-wrap: wrap; }
+.tabs { display: flex; background: #090d16; padding: 4px; border-radius: 12px; border: 1px solid var(--border-color); flex: 1; min-width: 280px; box-shadow: inset 0 2px 8px rgba(0,0,0,0.5); }
+.tab { flex: 1; text-align: center; padding: 10px 0; font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; color: var(--text-muted); background: none; border: none; border-radius: 8px; transition: all .2s ease; }
+.tab.active { color: #fff; background: linear-gradient(135deg, #1e293b 0%, #111827 100%); border: 1px solid var(--color-active); box-shadow: 0 4px 10px rgba(234, 179, 8, 0.15); text-shadow: 0 1px 2px #000; }
+
+/* 中控控制面板 UI 调优 */
+.floor-config-panel { 
+  background: linear-gradient(180deg, var(--bg-panel) 0%, #0a0e17 100%); 
+  border: 1px solid var(--border-color); 
+  border-radius: 16px; 
+  padding: 1rem 1.2rem; 
+  margin-bottom: 1.2rem; 
   display: flex; 
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.02);
 }
 @media (min-width: 768px) {
   .floor-config-panel { flex-direction: row; align-items: center; justify-content: space-between; }
 }
 
-.config-groups-left { display: flex; flex-wrap: wrap; gap: 16px; flex: 1; }
-.config-item { display: flex; flex-direction: column; gap: 6px; }
-.config-title { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+.config-groups-left { display: flex; flex-wrap: wrap; gap: 20px; flex: 1; }
+.config-item { display: flex; flex-direction: column; gap: 8px; }
+.config-title { font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 4px; }
 
-.config-controls-right { display: flex; align-items: center; justify-content: flex-end; }
-.stepper-container { display: flex; align-items: center; gap: 4px; background: #121826; padding: 2px; border-radius: 8px; border: 1px solid var(--border-color); }
-.step-btn { background: #1e293b; border: 1px solid var(--border-color); color: #fff; font-size: 14px; font-weight: 700; width: 34px; height: 34px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.floor-input-box { background: rgba(234, 179, 8, 0.03); border: 1px solid rgba(234, 179, 8, 0.2); color: #fff; font-size: 14px; font-weight: 700; width: 50px; height: 34px; text-align: center; border-radius: 6px; outline: none; }
-.clear-field-btn { background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; font-size: 11px; font-weight: 700; height: 38px; padding: 0 16px; border-radius: 8px; cursor: pointer; width: 100%; }
+.config-controls-right { display: flex; align-items: center; justify-content: flex-end; width: 100%; }
+@media (min-width: 768px) { .config-controls-right { width: auto; } }
+
+/* 步进器高级立体感打磨 */
+.stepper-container { display: flex; align-items: center; gap: 6px; background: #070a12; padding: 3px; border-radius: 10px; border: 1px solid #1e293b; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
+.step-btn { background: linear-gradient(180deg, #222f4d 0%, #161f33 100%); border: 1px solid #2e3f66; color: #fff; font-size: 15px; font-weight: 800; width: 38px; height: 38px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3); transition: all 0.1s ease; }
+.step-btn:active { background: #121929; transform: scale(0.95); box-shadow: none; border-color: #1e293b; }
+.floor-input-box { background: #0d1321; border: 1px solid var(--border-color); color: var(--color-active); font-size: 15px; font-weight: 800; width: 55px; height: 38px; text-align: center; border-radius: 8px; outline: none; box-shadow: inset 0 1px 3px rgba(0,0,0,0.6); transition: border-color 0.2s; }
+.floor-input-box:focus { border-color: var(--color-active); }
+
+/* 清空所有按钮安全降权、美化 */
+.clear-field-btn { background: rgba(239, 68, 68, 0.03); border: 1px solid rgba(239, 68, 68, 0.25); color: #f87171; font-size: 11px; font-weight: 700; height: 36px; padding: 0 16px; border-radius: 8px; cursor: pointer; width: 100%; transition: all 0.2s ease; letter-spacing: 0.02em; text-transform: uppercase; }
+.clear-field-btn:hover { background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.4); }
+.clear-field-btn:active { background: rgba(239, 68, 68, 0.2); transform: scale(0.98); }
 @media (min-width: 768px) { .clear-field-btn { width: auto; } }
 
-.panel { display: none; width: 100%; animation: fadeIn 0.15s ease-out; }
+.panel { display: none; width: 100%; animation: fadeIn 0.18s cubic-bezier(0.4, 0, 0.2, 1); }
 .panel.active { display: block; }
 
+/* 赛事矩阵网格 */
 .tables-grid { 
   display: grid; 
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
+  grid-template-columns: repeat(auto-fill, minmax(135px, 1fr)); 
   gap: 12px; 
   width: 100%;
 }
 @media (min-width: 768px) {
-  .tables-grid { grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 16px; }
+  .tables-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; }
 }
 
 .table-card {
-  background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px;
-  padding: 16px 8px 12px; cursor: pointer; text-align: center; position: relative;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: border-color 0.15s, transform 0.15s;
+  background: linear-gradient(145deg, #151c2c 0%, var(--bg-card) 100%); border: 1px solid var(--border-color); border-radius: 14px;
+  padding: 18px 8px 14px; cursor: pointer; text-align: center; position: relative;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.25); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.table-card:hover { border-color: var(--color-active); }
-.table-card.selected { border: 2px solid var(--color-active); box-shadow: 0 0 12px rgba(234, 179, 8, 0.25); }
+.table-card:hover { border-color: var(--color-active); transform: translateY(-2px); }
+.table-card.selected { border: 2px solid var(--color-active); box-shadow: 0 0 15px rgba(234, 179, 8, 0.25); background: linear-gradient(145deg, #1a2236 0%, #121826 100%); }
 .table-card.st-warn { border-color: rgba(234, 179, 8, 0.35); }
-.table-card.st-low  { border-color: rgba(239, 68, 68, 0.35); }
+.table-card.st-low  { border-color: rgba(239, 68, 68, 0.4); }
 
 .t-header-row { display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 2px; }
-.t-num { font-size: 13px; color: #fff; font-weight: 700; }
-.edit-btn { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 11px; opacity: 0.5; padding: 2px; }
+.t-num { font-size: 13px; color: #fff; font-weight: 700; letter-spacing: -0.2px; }
+.edit-btn { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 11px; opacity: 0.4; padding: 2px; transition: opacity 0.2s; }
+.edit-btn:hover { opacity: 1; }
 
-.t-cnt { font-size: 30px; font-weight: 800; color: var(--color-active); line-height: 1.1; margin: 2px 0; }
-.t-sub { font-size: 10px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+.t-cnt { font-size: 32px; font-weight: 900; color: var(--color-active); line-height: 1.1; margin: 2px 0; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+.t-sub { font-size: 10px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
 
-.mini-seats { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin-top: 6px; max-width: 85px; margin-left: auto; margin-right: auto; }
-.md { width: 5px; height: 5px; border-radius: 50%; }
+.mini-seats { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin-top: 8px; max-width: 90px; margin-left: auto; margin-right: auto; }
+.md { width: 5px; height: 5px; border-radius: 50%; transition: all 0.2s ease; }
 .md-occ { background: var(--color-active); box-shadow: 0 0 4px var(--color-active); }
-.md-empty { background: #1e293b; }
+.md-empty { background: #222f4d; }
 
-.badge { position: absolute; top: 6px; right: 6px; font-size: 8px; padding: 2px 5px; border-radius: 5px; font-weight: 800; }
+.badge { position: absolute; top: 6px; right: 6px; font-size: 8px; padding: 2px 6px; border-radius: 5px; font-weight: 800; letter-spacing: 0.03em; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 .bg-ok   { background: var(--status-ok-bg); color: var(--status-ok-text); }
 .bg-warn { background: var(--status-warn-bg); color: var(--status-warn-text); }
 .bg-low  { background: var(--status-low-bg); color: var(--status-low-text); }
@@ -150,11 +184,12 @@ body {
 
 .felt-container { width: 100%; max-width: 360px; display: flex; justify-content: center; align-items: center; }
 
-.seat-panel { flex: 1; min-width: 320px; background: var(--bg-panel); padding: 1.5rem; border-radius: 14px; border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+.seat-panel { flex: 1; min-width: 320px; background: var(--bg-panel); padding: 1.5rem; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 12px 35px rgba(0,0,0,0.4); }
 .rename-section { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
-.rename-input { background: #121826; border: 1px solid var(--border-color); border-radius: 6px; color: #fff; padding: 8px 12px; font-size: 14px; font-weight: 700; width: 120px; outline: none; }
-.rename-confirm { background: #1e293b; border: 1px solid var(--border-color); color: white; padding: 8px 16px; font-size: 12px; font-weight: 700; border-radius: 6px; cursor: pointer; transition: all 0.1s; }
-.rename-confirm:active { background: var(--color-active); color: #000; }
+.rename-input { background: #070a12; border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 8px 12px; font-size: 14px; font-weight: 700; width: 130px; outline: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.4); }
+.rename-input:focus { border-color: var(--color-active); }
+.rename-confirm { background: linear-gradient(180deg, #222f4d 0%, #161f33 100%); border: 1px solid #2e3f66; color: white; padding: 8px 16px; font-size: 12px; font-weight: 700; border-radius: 8px; cursor: pointer; transition: all 0.1s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+.rename-confirm:active { background: var(--color-active); color: #000; border-color: #facc15; }
 
 .seat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 1.25rem; }
 
@@ -171,15 +206,17 @@ body {
   justify-content: center; 
   align-items: center;
   box-shadow: 0 4px 6px rgba(0,0,0,0.15);
-  transition: transform 0.05s linear, background-color 0.1s ease;
+  transition: transform 0.05s linear, background-color 0.1s ease, border-color 0.1s;
 }
 .seat-btn:active { transform: scale(0.96); }
 
 .sb-occ   { background: linear-gradient(135deg, rgba(234, 179, 8, 0.25) 0%, rgba(245, 158, 11, 0.15) 100%); color: #fff; border: 2px solid var(--color-seat-occ); box-shadow: 0 0 10px rgba(234, 179, 8, 0.2); }
-.sb-empty { background: #121826; color: var(--text-muted); border-color: var(--border-color); }
+.sb-empty { background: #070a12; color: var(--text-muted); border-color: var(--border-color); box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); }
 
-.break-btn { font-size: 12px; padding: 8px 14px; cursor: pointer; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; color: #f87171; font-weight: 700; }
+.break-btn { font-size: 12px; padding: 8px 14px; cursor: pointer; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; color: #f87171; font-weight: 700; transition: all 0.2s; }
+.break-btn:hover { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.5); }
 
+/* 柱状密度图美化 */
 .bar-row { 
   display: grid; 
   grid-template-columns: repeat(10, 1fr); 
@@ -187,12 +224,13 @@ body {
   align-items: end; 
   height: 220px; 
   margin-bottom: 12px; 
-  background: var(--bg-panel); 
+  background: #080c14; 
   padding: 16px 8px; 
-  border-radius: 12px; 
+  border-radius: 14px; 
   border: 1px solid var(--border-color); 
   width: 100%; 
   position: relative;
+  box-shadow: inset 0 4px 12px rgba(0,0,0,0.6);
 }
 
 .bar-row::after {
@@ -200,7 +238,7 @@ body {
   position: absolute;
   left: 4px; right: 4px; top: 50%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--border-color) 20%, var(--border-color) 80%, transparent);
+  background: linear-gradient(90deg, transparent, rgba(34, 47, 77, 0.5) 20%, rgba(34, 47, 77, 0.5) 80%, transparent);
   pointer-events: none;
 }
 
@@ -212,11 +250,11 @@ body {
   height: 94px; 
 }
 
-.bar-col.vacant-mode { opacity: 0.18; }
+.bar-col.vacant-mode { opacity: 0.15; }
 
 .bar-track { 
   width: 100%; 
-  height: 52px; 
+  height: 54px; 
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -225,19 +263,19 @@ body {
 }
 
 .bar { 
-  border-radius: 3px 3px 0 0; 
+  border-radius: 4px 4px 0 0; 
   min-height: 2px; 
-  width: 80%; 
-  transition: height .2s ease-out; 
+  width: 75%; 
+  transition: height .2s cubic-bezier(0.4, 0, 0.2, 1); 
 }
 
 .bar.low { 
   background: var(--status-low-text); 
-  box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.6);
   animation: pulse-red 1.4s infinite ease-in-out;
 }
-.bar.ok   { background: var(--status-ok-text); opacity: .85; }
-.bar.warn { background: var(--status-warn-text); opacity: .95; }
+.bar.ok   { background: var(--status-ok-text); opacity: .85; box-shadow: 0 0 6px rgba(16, 185, 129, 0.2); }
+.bar.warn { background: var(--status-warn-text); opacity: .95; box-shadow: 0 0 8px rgba(234, 179, 8, 0.3); }
 
 .bar-lbl { font-size: 9px; color: #fff; font-weight: 800; text-align: center; white-space: nowrap; }
 .vacant-mode .bar-lbl { color: var(--text-muted); font-weight: 500; }
@@ -247,29 +285,30 @@ body {
 .vacant-mode .bar-val { color: rgba(255,255,255,0.2); }
 
 @keyframes pulse-red {
-  0% { opacity: 0.6; }
+  0% { opacity: 0.5; filter: brightness(0.9); }
   50% { opacity: 1; filter: brightness(1.2); }
-  100% { opacity: 0.6; }
+  100% { opacity: 0.5; filter: brightness(0.9); }
 }
 
 @media (min-width: 640px) {
   .bar-row { 
     grid-template-columns: repeat(auto-fit, minmax(1px, 1fr)); 
-    height: 130px; 
+    height: 140px; 
     align-items: flex-end;
   }
   .bar-row::after { display: none; }
-  .bar-col { height: 105px; }
-  .bar-track { height: 65px; }
+  .bar-col { height: 115px; }
+  .bar-track { height: 75px; }
 }
 
-.move-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 16px; font-size: 12px; width: 100%; }
-.exec-btn { font-size: 11px; padding: 6px 14px; cursor: pointer; background: #1e293b; border: 1px solid #eab308; border-radius: 6px; color: var(--color-active); font-weight: 700; }
+.move-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 16px; font-size: 12px; width: 100%; box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+.exec-btn { font-size: 11px; padding: 6px 14px; cursor: pointer; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); border: 1px solid #eab308; border-radius: 6px; color: var(--color-active); font-weight: 700; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+.exec-btn:active { transform: scale(0.96); }
 
-.sec-title { font-size: 13px; font-weight: 800; text-transform: uppercase; color: var(--text-main); margin-bottom: 0.5rem; margin-top: 1.25rem; }
-.detail-select { font-size: 14px; padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); margin-bottom: 1rem; cursor: pointer; font-weight: 700; outline: none; width: 100%; max-width: 320px; }
+.sec-title { font-size: 13px; font-weight: 800; text-transform: uppercase; color: var(--text-main); margin-bottom: 0.6rem; margin-top: 1.4rem; letter-spacing: 0.03em; }
+.detail-select { font-size: 14px; padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border-color); background: #070a12; color: var(--text-main); margin-bottom: 1rem; cursor: pointer; font-weight: 700; outline: none; width: 100%; max-width: 320px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
 
-.alert-box { margin-top: 1rem; padding: 12px; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.15); border-radius: 10px; font-size: 12px; color: #f87171; display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%; }
+.alert-box { margin-top: 1rem; padding: 12px; background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2); border-radius: 10px; font-size: 12px; color: #f87171; display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%; }
 .info-box { padding: 12px 0; font-size: 13px; color: var(--status-ok-text); font-weight: 700; text-transform: uppercase; width: 100%; }
 
 #toast-notification {
@@ -292,7 +331,7 @@ body {
 }
 #toast-notification.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-@keyframes fadeIn { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 </head>
 <body>
@@ -301,13 +340,13 @@ body {
   <div class="top-bar">
     <div class="title-area">
       <h1>🃏 TOURNAMENT FLOOR MATRIX</h1>
-      <div class="version-tag">v2.2.0-Alpha (Dynamic Seats)</div>
+      <div class="version-tag">v2.3.0-RC (Visual & Glow)</div>
     </div>
     <div class="stats-row">
-      <div class="stat">Total Entrants <b id="s-total">0</b></div>
-      <div class="stat">Active Rings <b id="s-tables">0</b></div>
-      <div class="stat">Max Spread <b id="s-spread">0</b></div>
-      <div class="stat">Alert Flags <b id="s-needs">0</b></div>
+      <div class="stat" id="card-total">Total Entrants <b id="s-total">0</b></div>
+      <div class="stat" id="card-tables">Active Rings <b id="s-tables">0</b></div>
+      <div class="stat" id="card-spread">Max Spread <b id="s-spread">0</b></div>
+      <div class="stat" id="card-alerts">Alert Flags <b id="s-needs">0</b></div>
     </div>
   </div>
 
@@ -375,15 +414,13 @@ body {
 <div id="toast-notification">Action Executed Successfully</div>
 
 <script>
-let globalMaxPlayers = 9; // 动态最大座位数
+let globalMaxPlayers = 9; 
 const IDEAL_MIN = 6, IDEAL_MAX = 8;
 
 let tables = [], selectedTable = 1, activeFloorSize = 10;
 
-// 初始化20张桌子，支持动态最大座位数变更
 function initTables() {
   tables = Array.from({length: 20}, (_, i) => {
-    // 如果已经存在数据，保留已有的、合法的座位数据，防止毁灭性清空
     const existingTable = tables[i];
     let seatsArray = [];
     
@@ -425,7 +462,6 @@ function clearAllPlayers() {
   }
 }
 
-// 增加/减少 桌子数
 function stepActiveFloor(delta) {
   let target = activeFloorSize + delta;
   if(target < 1) target = 1;
@@ -460,7 +496,6 @@ function applyFloorSizeChange(targetCount) {
   }
 }
 
-// 💡 核心升级：增加/减少 每桌最大人数上限并进行安全熔断拦截
 function stepMaxSeats(delta) {
   let target = globalMaxPlayers + delta;
   if(target < 2) target = 2;
@@ -474,7 +509,6 @@ function directTypeSeatsCount(val) {
   applyMaxSeatsChange(target);
 }
 function applyMaxSeatsChange(targetSeats) {
-  // 安全检测：检查是否有张激活的桌子的当前在座人数已经超过了目标压缩上限
   const violationTable = getActive().find(t => getCount(t) > targetSeats);
   if (violationTable) {
     alert(`⚠️ Cannot downsize: Table ${violationTable.tableName} currently has ${getCount(violationTable)} players seated, which exceeds your target constraint of ${targetSeats}. Please reallocate them first.`);
@@ -485,7 +519,6 @@ function applyMaxSeatsChange(targetSeats) {
   globalMaxPlayers = targetSeats;
   document.getElementById('seats-input').value = globalMaxPlayers;
   
-  // 重新分配底层座位数组结构
   initTables();
   renderGrid();
   showToast(`⚙️ Max seats configured to ${globalMaxPlayers} per table`);
@@ -511,23 +544,34 @@ function status(t){
   return 'ok'; 
 }
 
+// 💡核心功能升级：触发高危阈值时动态挂载 CSS 呼吸灯类名
 function updateStats() {
   const at=getActive();
-  document.getElementById('s-total').textContent=getTotal();
-  document.getElementById('s-tables').textContent=at.length;
-  document.getElementById('s-needs').textContent=at.filter(t=>status(t)!=='ok' && getCount(t)>0).length;
+  const total = getTotal();
+  const alertCount = at.filter(t=>status(t)!=='ok' && getCount(t)>0).length;
+  
+  document.getElementById('s-total').textContent = total;
+  document.getElementById('s-tables').textContent = at.length;
+  
+  const alertsCard = document.getElementById('card-alerts');
+  document.getElementById('s-needs').textContent = alertCount;
+  // 如果异常桌子大于 0，触发呼吸灯
+  if (alertCount > 0) { alertsCard.classList.add('pulse-alert'); } else { alertsCard.classList.remove('pulse-alert'); }
 
   const scoringCounts = at.filter(t => getCount(t) > 0).map(t => getCount(t));
   const spreadEl = document.getElementById('s-spread');
+  const spreadCard = document.getElementById('card-spread');
+  
   if(scoringCounts.length <= 1) {
     spreadEl.textContent = "0";
-    spreadEl.className = "";
+    spreadCard.classList.remove('pulse-alert');
   } else {
     const max = Math.max(...scoringCounts);
     const min = Math.min(...scoringCounts);
     const spread = max - min;
     spreadEl.textContent = spread;
-    if(spread >= 3) { spreadEl.className = "alert-danger"; } else { spreadEl.className = ""; }
+    // 如果最大最小桌差距 >= 3，触发呼吸灯
+    if(spread >= 3) { spreadCard.classList.add('pulse-alert'); } else { spreadCard.classList.remove('pulse-alert'); }
   }
 }
 
@@ -565,242 +609,4 @@ function renderGrid(){
   
   const activeTables = getActive();
   if (activeTables.length === 0) {
-    g.innerHTML = `<div class="info-box" style="color:var(--text-muted); text-align:center; padding: 2rem;">No active rings allocated on the field. Expansion required.</div>`;
-    updateStats();
-    return;
-  }
-
-  activeTables.forEach(t=>{
-    const c=getCount(t), st=status(t);
-    const d=document.createElement('div');
-    const hasPlayers = c > 0;
-    
-    d.className='table-card'+((hasPlayers && st==='warn')?' st-warn':(hasPlayers && st==='low')?' st-low':'')+(selectedTable===t.id?' selected':'');
-    d.onclick=()=>{ 
-      selectedTable=t.id; 
-      renderGrid(); 
-      showTab('detail'); 
-      showDetail(t.id); 
-    };
-    
-    const bCls=(!hasPlayers || st==='ok')?'bg-ok':st==='warn'?'bg-warn':'bg-low';
-    const bTxt=!hasPlayers?'VACANT':(st==='ok'?'✓ BALANCED':st==='warn'?'⚠️ UNEVEN':'! CRITICAL');
-    const pDots = t.seats.map(s => `<div class="md ${s.occ?'md-occ':'md-empty'}"></div>`).join('');
-    
-    d.innerHTML=`<span class="badge ${bCls}">${bTxt}</span>
-      <div class="t-header-row">
-        <div class="t-num">Table ${t.tableName}</div>
-        <button class="edit-btn" onclick="renameTable(${t.id}, event)">✏️</button>
-      </div>
-      <div class="t-cnt">${c}</div>
-      <div class="t-sub">/ ${globalMaxPlayers} Max Seats</div>
-      <div class="mini-seats">${pDots}</div>`;
-    g.appendChild(d);
-  });
-  updateStats();
-}
-
-// 💡 核心升级：基于极坐标等分平分算法的 SVG 动态马蹄形桌布排列
-function feltSVG(t) {
-  const W=360, H=240, cx=180, cy=125, rx=110, ry=65, sR=14; 
-  let seats='';
-  
-  seats += `<g>
-    <rect x="${cx - 26}" y="${cy - ry - 4}" width="52" height="20" rx="5" fill="#0e1320" stroke="#10b981" stroke-width="1.5"/>
-    <text x="${cx}" y="${cy - ry + 6}" text-anchor="middle" dominant-baseline="central" font-size="9" fill="#10b981" font-weight="900">DEALER</text>
-  </g>`;
-
-  const totalSeats = t.seats.length;
-  t.seats.forEach((s, i) => {
-    let angleOffset;
-    if (totalSeats === 1) {
-      angleOffset = 115 * Math.PI / 180;
-    } else {
-      // 动态将马蹄形的有效扇区 (180度 到 290度角范围) 按照当前总人数等分平铺
-      angleOffset = (-50 + (280 / (totalSeats - 1)) * i) * Math.PI / 180;
-    }
-    
-    const sx=(cx+(rx+25)*Math.cos(angleOffset)).toFixed(1);
-    const sy=(cy+(ry+24)*Math.sin(angleOffset)).toFixed(1);
-    
-    let fill = s.occ ? '#eab308' : '#121826';
-    let stroke = s.occ ? '#facc15' : '#222f4d';
-    let tc = s.occ ? '#000' : '#64748b';
-    
-    seats+=`<g style="cursor:pointer" onclick="toggleSeat(${t.id},${s.id})">
-      <circle cx="${sx}" cy="${sy}" r="${sR}" fill="${fill}" stroke="${stroke}" stroke-width="1.5"/>
-      <text x="${sx}" y="${sy}" text-anchor="middle" dominant-baseline="central" font-size="10" fill="${tc}" font-weight="900">${s.id}</text>
-    </g>`;
-  });
-  
-  const c=getCount(t);
-  return `<svg width="100%" height="100%" viewBox="0 0 ${W} ${H}" style="filter:drop-shadow(0 6px 15px rgba(0,0,0,.4))">
-    <defs><radialGradient id="fg${t.id}" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="var(--poker-green-start)"/><stop offset="100%" stop-color="var(--poker-green-end)"/>
-    </radialGradient></defs>
-    <ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="url(#fg${t.id})" stroke="#022c22" stroke-width="5"/>
-    <text x="${cx}" y="${cy-6}" text-anchor="middle" font-size="15" fill="#fff" font-weight="800">TABLE ${t.tableName}</text>
-    <text x="${cx}" y="${cy+12}" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.4)" font-weight="700">${c} / ${globalMaxPlayers} SEATS</text>
-    ${seats}
-  </svg>`;
-}
-
-function showDetail(tid){
-  selectedTable=tid;
-  const t=tables.find(x=>x.id===tid);
-  if(!t || !t.active) return;
-  const c=getCount(t), st=status(t);
-  
-  const stLabel=c===0?`<span style="color:var(--text-muted)">Unoccupied Ring</span>`:
-    st==='ok'?`<span style="color:var(--status-ok-text)">Optimal Range Balanced (TDA Compliant)</span>`:
-    st==='warn'?`<span style="color:var(--status-warn-text)">Asymmetric Seating Profile Detected</span>`:
-    `<span style="color:var(--status-low-text)">Shorthanded State - Breaking Imminent</span>`;
-    
-  const seatBtns=t.seats.map(s=>{
-    let cls = s.occ ? 'sb-occ' : 'sb-empty';
-    return`<div class="seat-btn ${cls}" onclick="toggleSeat(${t.id},${s.id})">
-      <span>SEAT ${s.id}</span>
-    </div>`;
-  }).join('');
-  
-  const breakBtnHtml = (c>0 && c<=3) ? `<div class="alert-box"><span>⚠️ Ring under critical thresholds. Consolidation highly recommended.</span><button class="break-btn" onclick="breakTable(${tid})">Break Table</button></div>` : '';
-  
-  document.getElementById('detail-body').innerHTML=`
-    <div class="detail-wrap">
-      <div class="felt-container">
-        ${feltSVG(t)}
-      </div>
-      <div class="seat-panel">
-        <div style="font-size: 20px; font-weight: 800; margin-bottom: 4px; color: var(--color-active);">Table ${t.tableName} Roster</div>
-        <div class="rename-section">
-          <input type="text" id="rename-input-${t.id}" class="rename-input" value="${t.tableName}">
-          <button class="rename-confirm" onclick="submitRename(${t.id})">Assign</button>
-        </div>
-        <div style="font-size:11px;font-weight:600;margin-bottom:0.5rem">Diagnostics: ${stLabel}</div>
-        <div class="seat-grid">${seatBtns}</div>
-        ${breakBtnHtml}
-      </div>
-    </div>`;
-  document.getElementById('detail-sel').value=tid;
-}
-
-function toggleSeat(tid,sid){
-  const t = tables.find(x=>x.id===tid);
-  const seat = t.seats.find(s=>s.id===sid);
-  seat.occ = !seat.occ;
-  renderGrid();
-  if(selectedTable===tid) showDetail(tid);
-}
-
-function breakTable(tid){
-  const t=tables.find(x=>x.id===tid);
-  const name=t.tableName;
-  const players=getCount(t);
-  const actives=getActive().filter(x=>x.id!==tid && getCount(x) > 0);
-  
-  for(let i=0;i<players;i++){
-    const target=actives.slice().sort((a,b)=>getCount(a)-getCount(b))[0];
-    if(!target) break;
-    const empty=getEmpty(target);
-    if(empty.length) empty[0].occ=true;
-  }
-  t.seats.forEach(s=>s.occ=false);
-  renderGrid();
-  showToast(`🚨 Table ${name} broken & collapsed successfully`);
-  if(selectedTable) showDetail(selectedTable);
-}
-
-function executeMove(fromId, toId){
-  const from = tables.find(t => t.id === fromId);
-  const to = tables.find(t => t.id === toId);
-  const occupiedSeats = from.seats.filter(s => s.occ);
-  const emptySeats = getEmpty(to);
-  
-  if(occupiedSeats.length > 0 && emptySeats.length > 0) {
-    occupiedSeats[occupiedSeats.length - 1].occ = false;
-    emptySeats[0].occ = true;
-    showToast(`🔄 Moved 1 player: Table ${from.tableName} → Table ${to.tableName}`);
-  }
-  renderGrid();
-  renderBalance();
-  if(selectedTable === fromId || selectedTable === toId) showDetail(selectedTable);
-}
-
-function renderBalance(){
-  const at=getActive();
-  if (at.length === 0) return;
-  
-  document.getElementById('bar-chart').innerHTML=at.map(t=>{
-    const c=getCount(t), st=status(t);
-    const hPct = Math.round((c / globalMaxPlayers) * 100); 
-    
-    const isVacant = c === 0;
-    const isCritical = c > 0 && c <= 3;
-    
-    const colClass = isVacant ? 'bar-col vacant-mode' : 'bar-col';
-    const valClass = isCritical ? 'bar-val crit-text' : 'bar-val';
-    
-    return `
-      <div class="${colClass}">
-        <div class="bar-lbl">T-${t.tableName}</div>
-        <div class="bar-track">
-          <div class="bar ${st}" style="height: calc(${hPct}% + 2px);"></div>
-        </div>
-        <div class="${valClass}">${c}P</div>
-      </div>
-    `;
-  }).join('');
-
-  const scoringTables = at.filter(t => getCount(t) > 0);
-  let sugg = [];
-  
-  if(scoringTables.length > 1) {
-    const sortedMax = [...scoringTables].sort((a,b) => getCount(b) - getCount(a)); 
-    const sortedMin = [...scoringTables].sort((a,b) => getCount(a) - getCount(b)); 
-    let i = 0, j = 0;
-    while(i < sortedMax.length && j < sortedMin.length) {
-      const topT = sortedMax[i], botT = sortedMin[j];
-      if(topT.id !== botT.id && (getCount(topT) - getCount(botT) >= 2) && getCount(topT) > IDEAL_MIN) {
-        sugg.push({fromId: topT.id, toId: botT.id, fromName: topT.tableName, toName: botT.tableName, fc: getCount(topT), tc: getCount(botT)});
-        i++; j++;
-      } else { break; }
-    }
-  }
-
-  document.getElementById('suggestions').innerHTML=sugg.length
-    ?sugg.map(s=>`<div class="move-row"><span>⚠️ Reallocate 1 entrant from <b>Table ${s.fromName}</b> → <b>Table ${s.toName}</b></span><button class="exec-btn" onclick="executeMove(${s.fromId},${s.toId})">Execute Balancing</button></div>`).join('')
-    :(getTotal() === 0 ? '<div class="info-box" style="color:var(--text-muted)">No action required. Floor is empty.</div>' : '<div class="info-box">✓ Floor variance optimal. Equilibrium maintained across active tables.</div>');
-    
-  const brk=scoringTables.filter(t=>getCount(t)<=3);
-  const bw=document.getElementById('break-wrap');
-  if(brk.length){
-    bw.style.display='block';
-    document.getElementById('break-list').innerHTML=brk.map(t=>`<div class="move-row"><span>🚨 <b>Table ${t.tableName}</b> Shorthanded Vulnerability (${getCount(t)} Players Left)</span><button class="break-btn" onclick="breakTable(${t.id});renderBalance()">Collapse & Break</button></div>`).join('');
-  } else { bw.style.display='none'; }
-}
-
-function populateSelect(){
-  const sel=document.getElementById('detail-sel');
-  const activeTables = getActive();
-  sel.innerHTML=activeTables.map(t=>`<option value="${t.id}">Table ${t.tableName} (${getCount(t)} Players Active)</option>`).join('');
-  if(selectedTable && activeTables.find(t => t.id === selectedTable)) sel.value=selectedTable;
-}
-
-function showTab(name){
-  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['overview','detail','balance'][i]===name));
-  ['overview','detail','balance'].forEach(n=>document.getElementById('panel-'+n).classList.toggle('active',n===name));
-  if(name==='balance') renderBalance();
-  if(name==='detail'){populateSelect(); if(selectedTable) showDetail(selectedTable);}
-}
-
-function bootstrap(){
-  initTables(); 
-  renderGrid(); 
-  selectedTable = 1; 
-  document.getElementById('floor-input').value = activeFloorSize;
-  document.getElementById('seats-input').value = globalMaxPlayers;
-}
-bootstrap();
-</script>
-</body>
-</html>
+    g
