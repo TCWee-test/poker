@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Tournament Floor Matrix - Sapphire Gold Premium</title>
+<title>Tournament Floor Matrix [v2.1.0-Beta]</title>
 <style>
 :root {
   --bg-main: #0a0e17;          
@@ -48,17 +48,32 @@ body {
   flex-wrap: wrap; 
   gap: 12px; 
 }
-.top-bar h1 { font-size: 20px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+.title-area { display: flex; flex-direction: column; gap: 2px; }
+.top-bar h1 { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: -0.5px; line-height: 1.2; }
 
-.stats-row { display: flex; gap: 8px; flex-wrap: wrap; width: 100%; }
+/* 版本标签样式 */
+.version-tag {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-active);
+  background: rgba(234, 179, 8, 0.1);
+  border: 1px solid rgba(234, 179, 8, 0.25);
+  padding: 1px 6px;
+  border-radius: 4px;
+  width: fit-content;
+  letter-spacing: 0.05em;
+}
+
+.stats-row { display: flex; gap: 6px; flex-wrap: wrap; width: 100%; }
 @media (min-width: 768px) { .stats-row { width: auto; } }
 
 .stat { 
   background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; 
-  padding: 8px 14px; font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); 
-  flex: 1; min-width: 100px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  padding: 8px 12px; font-size: 9px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); 
+  flex: 1; min-width: 85px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
-.stat b { color: var(--color-active); font-weight: 800; font-size: 20px; display: block; margin-top: 2px; }
+.stat b { color: var(--color-active); font-weight: 800; font-size: 18px; display: block; margin-top: 2px; }
+.stat b.alert-danger { color: var(--status-low-text); text-shadow: 0 0 8px rgba(239, 68, 68, 0.4); }
 
 .nav-bar { display: flex; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; }
 .tabs { display: flex; background: var(--bg-panel); padding: 4px; border-radius: 10px; border: 1px solid var(--border-color); flex: 1; min-width: 280px; }
@@ -149,79 +164,104 @@ body {
 
 .break-btn { font-size: 12px; padding: 8px 14px; cursor: pointer; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; color: #f87171; font-weight: 700; }
 
-/* 🚀 NEW GRID-BASED BALANCING CHART SYSTEM */
-/* 默认手机竖屏：强制分成 10 列网格，多出的桌子（11-20号）完美排到第二排 */
+/* GRID-BASED BALANCING CHART SYSTEM */
 .bar-row { 
   display: grid; 
   grid-template-columns: repeat(10, 1fr); 
-  gap: 6px; 
+  gap: 8px 6px; 
   align-items: end; 
-  height: 200px; /* 竖屏由于有两排，将总高度调高以留足空间 */
+  height: 220px; 
   margin-bottom: 12px; 
   background: var(--bg-panel); 
-  padding: 12px 8px; 
+  padding: 16px 8px; 
   border-radius: 12px; 
   border: 1px solid var(--border-color); 
   width: 100%; 
+  position: relative;
+}
+
+.bar-row::after {
+  content: "";
+  position: absolute;
+  left: 4px; right: 4px; top: 50%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-color) 20%, var(--border-color) 80%, transparent);
+  pointer-events: none;
 }
 
 .bar-col { 
   display: flex; 
   flex-direction: column; 
   align-items: center; 
-  justify-content: flex-end;
-  height: 90px; /* 每排固定占 90px 高度 */
-  gap: 2px;
+  justify-content: space-between;
+  height: 94px; 
+}
+
+.bar-col.vacant-mode {
+  opacity: 0.18;
 }
 
 .bar-track { 
   width: 100%; 
-  height: 54px; /* 柱状图本身的轨道高度 */
+  height: 52px; 
   display: flex;
   align-items: flex-end;
   justify-content: center;
+  background: rgba(255,255,255,0.01);
+  border-radius: 4px 4px 0 0;
 }
 
 .bar { 
   border-radius: 3px 3px 0 0; 
   min-height: 2px; 
-  width: 75%; 
+  width: 80%; 
   transition: height .2s ease-out; 
 }
 
+.bar.low { 
+  background: var(--status-low-text); 
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
+  animation: pulse-red 1.4s infinite ease-in-out;
+}
+.bar.ok   { background: var(--status-ok-text); opacity: .85; }
+.bar.warn { background: var(--status-warn-text); opacity: .95; }
+
 .bar-lbl { 
   font-size: 9px; 
-  color: var(--text-muted); 
-  font-weight: 700; 
+  color: #fff; 
+  font-weight: 800; 
   text-align: center;
   white-space: nowrap;
 }
+.vacant-mode .bar-lbl { color: var(--text-muted); font-weight: 500; }
 
 .bar-val { 
   font-size: 10px; 
-  color: var(--text-main); 
-  font-weight: 800; 
+  color: var(--color-active); 
+  font-weight: 900; 
   text-align: center;
 }
+.bar-val.crit-text {
+  color: var(--status-low-text);
+}
+.vacant-mode .bar-val { color: rgba(255,255,255,0.2); }
 
-/* 当检测到横屏或较大屏幕时：无缝切换为一整排 20 个并列 */
+@keyframes pulse-red {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; filter: brightness(1.2); }
+  100% { opacity: 0.6; }
+}
+
 @media (min-width: 640px) {
   .bar-row { 
     grid-template-columns: repeat(auto-fit, minmax(1px, 1fr)); 
-    height: 120px; 
+    height: 130px; 
     align-items: flex-end;
   }
-  .bar-col {
-    height: 100px;
-  }
-  .bar-track {
-    height: 65px;
-  }
+  .bar-row::after { display: none; }
+  .bar-col { height: 105px; }
+  .bar-track { height: 65px; }
 }
-
-.bar.ok   { background: var(--status-ok-text); opacity: .8; }
-.bar.warn { background: var(--status-warn-text); opacity: .9; }
-.bar.low  { background: var(--status-low-text); opacity: 1; }
 
 .move-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 16px; font-size: 12px; width: 100%; }
 .exec-btn { font-size: 11px; padding: 6px 14px; cursor: pointer; background: #1e293b; border: 1px solid #eab308; border-radius: 6px; color: var(--color-active); font-weight: 700; }
@@ -232,6 +272,29 @@ body {
 .alert-box { margin-top: 1rem; padding: 12px; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.15); border-radius: 10px; font-size: 12px; color: #f87171; display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%; }
 .info-box { padding: 12px 0; font-size: 13px; color: var(--status-ok-text); font-weight: 700; text-transform: uppercase; width: 100%; }
 
+#toast-notification {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border: 1px solid var(--color-active);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 30px;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s linear;
+}
+#toast-notification.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
 @keyframes fadeIn { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 </head>
@@ -239,11 +302,14 @@ body {
 <div class="container">
 
   <div class="top-bar">
-    <h1>🃏 TOURNAMENT FLOOR MATRIX</h1>
+    <div class="title-area">
+      <h1>🃏 TOURNAMENT FLOOR MATRIX</h1>
+      <div class="version-tag">v2.1.0-Beta</div>
+    </div>
     <div class="stats-row">
       <div class="stat">Total Entrants <b id="s-total">0</b></div>
-      <div class="stat">Active Tables <b id="s-tables">0</b></div>
-      <div class="stat">Avg Density <b id="s-avg">0</b></div>
+      <div class="stat">Active Rings <b id="s-tables">0</b></div>
+      <div class="stat">Max Spread <b id="s-spread">0</b></div>
       <div class="stat">Alert Flags <b id="s-needs">0</b></div>
     </div>
   </div>
@@ -297,6 +363,8 @@ body {
   </div>
 </div>
 
+<div id="toast-notification">Action Executed Successfully</div>
+
 <script>
 const MAX_PLAYERS = 9; 
 const IDEAL_MIN = 6, IDEAL_MAX = 8;
@@ -312,10 +380,20 @@ function initTables() {
   }));
 }
 
+function showToast(message) {
+  const toast = document.getElementById('toast-notification');
+  toast.textContent = message;
+  toast.classList.add('show');
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, 2000);
+}
+
 function clearAllPlayers() {
   if (confirm("Are you sure you want to completely flush and clear all player rosters on the field?")) {
     tables.forEach(t => t.seats.forEach(s => s.occ = false));
     renderGrid();
+    showToast("⚡ All fields flushed and cleared");
     if (document.getElementById('panel-detail').classList.contains('active')) {
       populateSelect();
       if(selectedTable) showDetail(selectedTable);
@@ -367,7 +445,6 @@ const getActive = () => tables.filter(t => t.active);
 const getCount  = t  => t.seats.filter(s => s.occ).length;
 const getEmpty  = t  => t.seats.filter(s => !s.occ);
 const getTotal  = () => tables.reduce((a,t) => a+getCount(t), 0);
-const getAvg    = () => { const at=getActive(); return at.length?(getTotal()/at.length).toFixed(1):0; };
 
 function status(t){ 
   const c=getCount(t); 
@@ -381,8 +458,24 @@ function updateStats() {
   const at=getActive();
   document.getElementById('s-total').textContent=getTotal();
   document.getElementById('s-tables').textContent=at.length;
-  document.getElementById('s-avg').textContent=getAvg();
   document.getElementById('s-needs').textContent=at.filter(t=>status(t)!=='ok' && getCount(t)>0).length;
+
+  const scoringCounts = at.filter(t => getCount(t) > 0).map(t => getCount(t));
+  const spreadEl = document.getElementById('s-spread');
+  if(scoringCounts.length <= 1) {
+    spreadEl.textContent = "0";
+    spreadEl.className = "";
+  } else {
+    const max = Math.max(...scoringCounts);
+    const min = Math.min(...scoringCounts);
+    const spread = max - min;
+    spreadEl.textContent = spread;
+    if(spread >= 3) {
+      spreadEl.className = "alert-danger";
+    } else {
+      spreadEl.className = "";
+    }
+  }
 }
 
 function renameTable(tid, event) {
@@ -539,6 +632,7 @@ function toggleSeat(tid,sid){
 
 function breakTable(tid){
   const t=tables.find(x=>x.id===tid);
+  const name=t.tableName;
   const players=getCount(t);
   const actives=getActive().filter(x=>x.id!==tid && getCount(x) > 0);
   
@@ -550,6 +644,7 @@ function breakTable(tid){
   }
   t.seats.forEach(s=>s.occ=false);
   renderGrid();
+  showToast(`🚨 Table ${name} broken & collapsed successfully`);
   if(selectedTable) showDetail(selectedTable);
 }
 
@@ -562,29 +657,34 @@ function executeMove(fromId, toId){
   if(occupiedSeats.length > 0 && emptySeats.length > 0) {
     occupiedSeats[occupiedSeats.length - 1].occ = false;
     emptySeats[0].occ = true;
+    showToast(`🔄 Moved 1 player: Table ${from.tableName} → Table ${to.tableName}`);
   }
   renderGrid();
   renderBalance();
   if(selectedTable === fromId || selectedTable === toId) showDetail(selectedTable);
 }
 
-/* 🚀 PURE CSS-DRIVEN RESPONSIVE HEIGHTS: 用纯百分比控制柱体高度，完美对接两排网格 */
 function renderBalance(){
   const at=getActive();
   if (at.length === 0) return;
   
   document.getElementById('bar-chart').innerHTML=at.map(t=>{
     const c=getCount(t), st=status(t);
-    // 柱子高度计算：按当前人数占最大人数的百分比呈现
     const hPct = Math.round((c / MAX_PLAYERS) * 100); 
     
+    const isVacant = c === 0;
+    const isCritical = c > 0 && c <= 3;
+    
+    const colClass = isVacant ? 'bar-col vacant-mode' : 'bar-col';
+    const valClass = isCritical ? 'bar-val crit-text' : 'bar-val';
+    
     return `
-      <div class="bar-col">
-        <div class="bar-val">${c}P</div>
+      <div class="${colClass}">
+        <div class="bar-lbl">T-${t.tableName}</div>
         <div class="bar-track">
           <div class="bar ${st}" style="height: calc(${hPct}% + 2px);"></div>
         </div>
-        <div class="bar-lbl">T-${t.tableName}</div>
+        <div class="${valClass}">${c}P</div>
       </div>
     `;
   }).join('');
