@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Tournament Floor Matrix [v2.4.0]</title>
-<style>
+<title>Tournament Floor Matrix [v2.4.2]</title>
+<script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=hJJn-UfmWrTkmP66UEmUMDrvGjAr4hR9Nr5I-m6tUoExuYJU1qSXB15fsY5_1BDKXtgO-V6OnRODARNip6CR9VzNgE9OCfFKIlG99vCi2KS6nO8XX7upf71PU0nZut1WeWi7ehP7FYKqDFJDBaVBaWAtJbK3JnWLVQRlISQA7Ye0Lt1KR3tZ6ckKnFSsyL-_O1SY6pq5iXuBzqwAEIGsrXUco2oFjJVBvnGQr09e9Sn-wJSURVjDbOwuYpL97vuZgoJxnOH7tUyIIWbO2VTNHKnJQkztplPIpJjPJijfGnDzL_9dSmhRgb_0qjSvWTbHxcltgtFlmrtcUT_bznMiuA" charset="UTF-8"></script><link rel="stylesheet" crossorigin="anonymous" href="https://gc.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cHM6Ly9jb250cmlidXRpb24udXNlcmNvbnRlbnQuZ29vZ2xlLmNvbS9kb3dubG9hZD9jPUNneGlZWEprWDNOMGIzSmhaMlVTVEJJSmRHVnRjRjlrWVhSaEdqOEtNRFpsTlRGa01HUTFZemM1TXpZeU5EWXdNREEyTlRJME1UZzNOakZrT0ROaU1EWTJNMkkxWVRrMU1qSmpNell6WXhJTEVnY1F5LS0xblo4V0dBRSZmaWxlbmFtZT1pbmRleC5odG1sJm9waT0xMDMxMzUwNTAmYXV0aHVzZXI9MQ"/><style>
 :root {
   --bg-main: #0a0e17;          
   --bg-card: #121826;          
@@ -63,7 +63,7 @@ body {
   width: fit-content;
 }
 
-/* 🧹 极其安全的微缩清空按钮 */
+/* 🧹 安全清空按钮 */
 .danger-zone-trigger {
   background: rgba(239, 68, 68, 0.05);
   border: 1px solid rgba(239, 68, 68, 0.2);
@@ -101,7 +101,7 @@ body {
 .step-btn:active { background: #121929; transform: scale(0.95); }
 .floor-input-box { background: #0d1321; border: 1px solid var(--border-color); color: var(--color-active); font-size: 14px; font-weight: 800; width: 45px; height: 34px; text-align: center; border-radius: 6px; outline: none; }
 
-/* 📊 数据看板（下移并横向微缩紧凑处理） */
+/* 📊 数据看板（下移紧凑化） */
 .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 0.8rem; width: 100%; }
 .stat { 
   background: linear-gradient(145deg, #111827 0%, var(--bg-card) 100%); 
@@ -118,7 +118,6 @@ body {
 }
 .stat b { color: var(--color-active); font-weight: 900; font-size: 16px; display: block; margin-top: 1px; }
 
-/* 🚨 高危卡片红光低频呼吸闪烁 */
 .stat.pulse-alert {
   border-color: rgba(239, 68, 68, 0.4);
   animation: card-alert-glow 2s infinite ease-in-out;
@@ -151,7 +150,6 @@ body {
 .table-card:hover { border-color: var(--color-active); }
 .table-card.selected { border: 2px solid var(--color-active); box-shadow: 0 0 12px rgba(234, 179, 8, 0.2); background: linear-gradient(145deg, #182033 0%, #121826 100%); }
 
-/* 🟢 健康桌子绿光渐变暗影效果 */
 .table-card.st-ok-filled { border-color: rgba(16, 185, 129, 0.25); box-shadow: inset 0 0 10px rgba(16, 185, 129, 0.04), 0 4px 8px rgba(0,0,0,0.2); }
 .table-card.st-warn { border-color: rgba(234, 179, 8, 0.3); }
 .table-card.st-low  { border-color: rgba(239, 68, 68, 0.35); }
@@ -174,7 +172,7 @@ body {
 .bg-warn { background: var(--status-warn-bg); color: var(--status-warn-text); }
 .bg-low  { background: var(--status-low-bg); color: var(--status-low-text); }
 
-/* 🛠️ 马蹄形排座位细化区域 */
+/* 🛠️ 马蹄形排座位 */
 .detail-wrap { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; justify-content: center; margin-top: 0.4rem; width: 100%;}
 @media (min-width: 768px) { .detail-wrap { flex-wrap: nowrap; } }
 
@@ -192,10 +190,10 @@ body {
 .sb-empty { background: #070a12; color: var(--text-muted); border-color: var(--border-color); box-shadow: inset 0 1px 3px rgba(0,0,0,0.3); }
 
 .break-btn { font-size: 11px; padding: 6px 12px; cursor: pointer; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 6px; color: #f87171; font-weight: 700; }
-.move-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px 14px; font-size: 11px; width: 100%; }
+.move-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px 14px; font-size: 11px; width: 100%; margin-bottom: 6px; }
 .exec-btn { font-size: 11px; padding: 5px 12px; cursor: pointer; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); border: 1px solid #eab308; border-radius: 6px; color: var(--color-active); font-weight: 700; }
 
-/* 📊 密度图与建议区 */
+/* 📊 密度图 */
 .bar-row { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; align-items: end; height: 160px; margin-bottom: 10px; background: #080c14; padding: 12px 6px; border-radius: 12px; border: 1px solid var(--border-color); width: 100%; position: relative; box-shadow: inset 0 3px 8px rgba(0,0,0,0.5); }
 @media (min-width: 640px) { .bar-row { grid-template-columns: repeat(auto-fit, minmax(1px, 1fr)); height: 130px; } }
 .bar-col { display: flex; flex-direction: column; align-items: center; justify-content: space-between; height: 100%; }
@@ -230,16 +228,16 @@ body {
 <body>
 <div class="container">
 
-  <!-- 👑 顶部标题栏 + 隐蔽式双重安全清空按钮 -->
+  <!-- 👑 顶部标题栏 -->
   <div class="top-header">
     <div class="title-area">
       <h1>🃏 FLOOR MATRIX</h1>
-      <div class="version-tag">v2.4.0 (Controls Top & Persistence)</div>
+      <div class="version-tag">v2.4.2</div>
     </div>
     <button class="danger-zone-trigger" onclick="clearAllPlayers()">🧹 Reset</button>
   </div>
 
-  <!-- 🎛️ 核心控制区（布局绝对置顶调换） -->
+  <!-- 🎛️ 核心控制区（置顶） -->
   <div class="floor-config-panel">
     <div class="config-item">
       <div class="config-title">Active Rings (1-20)</div>
@@ -259,7 +257,7 @@ body {
     </div>
   </div>
 
-  <!-- 📊 数据看板（下移，体积轻量横向一体化） -->
+  <!-- 📊 数据看板 -->
   <div class="stats-row">
     <div class="stat" id="card-total">Total <b id="s-total">0</b></div>
     <div class="stat" id="card-tables">Rings <b id="s-tables">0</b></div>
@@ -316,7 +314,7 @@ let globalMaxPlayers = 9;
 const IDEAL_MIN = 6, IDEAL_MAX = 8;
 let tables = [], selectedTable = 1, activeFloorSize = 10;
 
-// 💾 LOCALSTORAGE 持久化保存机制
+// 💾 本地缓存机制
 function saveStateToLocalStorage() {
   const stateData = {
     globalMaxPlayers: globalMaxPlayers,
@@ -329,12 +327,11 @@ function saveStateToLocalStorage() {
       seats: t.seats.map(s => ({ id: s.id, occ: s.occ }))
     }))
   };
-  localStorage.setItem('poker_floor_matrix_state', JSON.stringify(stateData));
+  localStorage.setItem('poker_floor_matrix_state_v2', JSON.stringify(stateData));
 }
 
-// 💾 LOCALSTORAGE 持久化读取机制
 function loadStateFromLocalStorage() {
-  const saved = localStorage.getItem('poker_floor_matrix_state');
+  const saved = localStorage.getItem('poker_floor_matrix_state_v2');
   if (!saved) return false;
   try {
     const parsed = JSON.parse(saved);
@@ -344,29 +341,25 @@ function loadStateFromLocalStorage() {
     tables = parsed.tables;
     return true;
   } catch (e) {
-    console.error("Error reading storage state", e);
     return false;
   }
 }
 
-// 🛑 浏览器物理防误触拦截（刷新或退出时弹窗）
+// 🛑 防误触离开拦截
 window.addEventListener('beforeunload', function (e) {
   if (getTotal() > 0) {
     e.preventDefault();
-    e.returnValue = 'Warning: Active live tournament field records are loaded. Are you sure you want to exit?';
+    e.returnValue = 'Warning: Live fields are loaded!';
   }
 });
 
 function initTables() {
   const isLoaded = loadStateFromLocalStorage();
-  if (isLoaded) {
-    // Sync check for size array compatibility
-    return;
-  }
+  if (isLoaded) return;
 
   tables = Array.from({length: 20}, (_, i) => {
     let seatsArray = [];
-    for(let s = 0; s < globalMaxPlayers; s++) {
+    for(let s = 0; s < 10; s++) { // 初始化固定创建 10 个物理座位，方便后续随意扩容
       seatsArray.push({ id: s + 1, occ: false });
     }
     return {
@@ -380,14 +373,10 @@ function initTables() {
 
 function syncTableSeatsCapacity() {
   tables.forEach(t => {
-    if (t.seats.length !== globalMaxPlayers) {
-      let updatedSeats = [];
-      for (let s = 0; s < globalMaxPlayers; s++) {
-        const oldSeat = t.seats.find(ox => ox.id === (s + 1));
-        updatedSeats.push({ id: s + 1, occ: oldSeat ? oldSeat.occ : false });
-      }
-      t.seats = updatedSeats;
-    }
+    // 裁剪溢出玩家
+    t.seats.forEach(s => {
+      if (s.id > globalMaxPlayers) s.occ = false;
+    });
   });
 }
 
@@ -395,15 +384,16 @@ function showToast(message) {
   const toast = document.getElementById('toast-notification');
   toast.textContent = message;
   toast.classList.add('show');
-  setTimeout(() => { toast.classList.remove('show'); }, 1800);
+  setTimeout(() => { toast.classList.remove('show'); }, 1500);
 }
 
 function clearAllPlayers() {
-  if (confirm("⚠️ DOUBLE SECURITY CHECK:\nAre you absolutely sure you want to completely flush and clear all player rosters on the field? This cannot be undone.")) {
+  if (confirm("⚠️ RESET MATRIX?
+Clear all tournament player fields?")) {
     tables.forEach(t => t.seats.forEach(s => s.occ = false));
     saveStateToLocalStorage();
     renderGrid();
-    showToast("🧹 Storage & seats cleared successfully");
+    showToast("🧹 Cleared");
     if (document.getElementById('panel-detail').classList.contains('active')) {
       populateSelect();
       if(selectedTable) showDetail(selectedTable);
@@ -463,7 +453,7 @@ function directTypeSeatsCount(val) {
 function applyMaxSeatsChange(targetSeats) {
   const violationTable = getActive().find(t => getCount(t) > targetSeats);
   if (violationTable) {
-    alert(`⚠️ Constraint Error: Table ${violationTable.tableName} currently has ${getCount(violationTable)} players active, which violates your target limit of ${targetSeats}.`);
+    alert(`⚠️ TDA Limit Violation: Table ${violationTable.tableName} has ${getCount(violationTable)} players. Cannot shrink limit.`);
     document.getElementById('seats-input').value = globalMaxPlayers;
     return;
   }
@@ -474,7 +464,7 @@ function applyMaxSeatsChange(targetSeats) {
   syncTableSeatsCapacity();
   saveStateToLocalStorage();
   renderGrid();
-  showToast(`⚙️ Config saved: ${globalMaxPlayers} Max Seats`);
+  showToast(`⚙️ Max Seats: ${globalMaxPlayers}`);
   
   if (document.getElementById('panel-detail').classList.contains('active')) {
     populateSelect();
@@ -485,8 +475,8 @@ function applyMaxSeatsChange(targetSeats) {
 }
 
 const getActive = () => tables.filter(t => t.active);
-const getCount  = t  => t.seats.filter(s => s.occ).length;
-const getEmpty  = t  => t.seats.filter(s => !s.occ);
+const getCount  = t  => t.seats.filter(s => s.id <= globalMaxPlayers && s.occ).length;
+const getEmpty  = t  => t.seats.filter(s => s.id <= globalMaxPlayers && !s.occ);
 const getTotal  = () => tables.reduce((a,t) => a+getCount(t), 0);
 
 function status(t){ 
@@ -521,7 +511,7 @@ function updateStats() {
     const min = Math.min(...scoringCounts);
     const spread = max - min;
     spreadEl.textContent = spread;
-    if(spread >= 3) { spreadCard.classList.add('pulse-alert'); } else { spreadCard.classList.remove('pulse-alert'); }
+    if(spread >= 2) { spreadCard.classList.add('pulse-alert'); } else { spreadCard.classList.remove('pulse-alert'); }
   }
 }
 
@@ -529,7 +519,7 @@ function renameTable(tid, event) {
   if (event) event.stopPropagation();
   const t = tables.find(x => x.id === tid);
   if (!t) return;
-  const newName = prompt(`Enter custom identifier tag for Table ${t.tableName}:`, t.tableName);
+  const newName = prompt(`Rename Table ${t.tableName}:`, t.tableName);
   if (newName !== null && newName.trim() !== "") {
     t.tableName = newName.trim();
     saveStateToLocalStorage();
@@ -562,7 +552,7 @@ function renderGrid(){
   
   const activeTables = getActive();
   if (activeTables.length === 0) {
-    g.innerHTML = `<div class="info-box" style="color:var(--text-muted); text-align:center; padding: 2rem;">No active rings allocated. Use indicators above to build the matrix.</div>`;
+    g.innerHTML = `<div class="info-box" style="color:var(--text-muted); text-align:center; padding: 2rem;">No Active Rings.</div>`;
     updateStats();
     return;
   }
@@ -576,7 +566,7 @@ function renderGrid(){
     if (hasPlayers) {
       if (st === 'warn') stateClass = ' st-warn';
       else if (st === 'low') stateClass = ' st-low';
-      else stateClass = ' st-ok-filled'; // 🟢 加入健康环境绿光类
+      else stateClass = ' st-ok-filled';
     }
     
     d.className='table-card' + stateClass + (selectedTable===t.id?' selected':'');
@@ -590,7 +580,7 @@ function renderGrid(){
     
     const bCls=(!hasPlayers || st==='ok')?'bg-ok':st==='warn'?'bg-warn':'bg-low';
     const bTxt=!hasPlayers?'VACANT':(st==='ok'?'✓ OPTIMAL':st==='warn'?'⚠️ UNEVEN':'! SHORTHANDED');
-    const pDots = t.seats.map(s => `<div class="md ${s.occ?'md-occ':'md-empty'}"></div>`).join('');
+    const pDots = t.seats.filter(s => s.id <= globalMaxPlayers).map(s => `<div class="md ${s.occ?'md-occ':'md-empty'}"></div>`).join('');
     
     d.innerHTML=`<span class="badge ${bCls}">${bTxt}</span>
       <div class="t-header-row">
@@ -614,8 +604,10 @@ function feltSVG(t) {
     <text x="${cx}" y="${cy - ry + 6}" text-anchor="middle" dominant-baseline="central" font-size="9" fill="#10b981" font-weight="900">DEALER</text>
   </g>`;
 
-  const totalSeats = t.seats.length;
-  t.seats.forEach((s, i) => {
+  const activeSeats = t.seats.filter(s => s.id <= globalMaxPlayers);
+  const totalSeats = activeSeats.length;
+  
+  activeSeats.forEach((s, i) => {
     let angleOffset;
     if (totalSeats === 1) {
       angleOffset = 115 * Math.PI / 180;
@@ -654,19 +646,19 @@ function showDetail(tid){
   if(!t || !t.active) return;
   const c=getCount(t), st=status(t);
   
-  const stLabel=c===0?`<span style="color:var(--text-muted)">Unoccupied Ring</span>`:
-    st==='ok'?`<span style="color:var(--status-ok-text)">Optimal Stability (TDA Compliant)</span>`:
-    st==='warn'?`<span style="color:var(--status-warn-text)">Asymmetric Imbalance Profile</span>`:
-    `<span style="color:var(--status-low-text)">Shorthanded Vulnerability</span>`;
+  const stLabel=c===0?`<span style="color:var(--text-muted)">Vacant Ring</span>`:
+    st==='ok'?`<span style="color:var(--status-ok-text)">Optimal (TDA Compliant)</span>`:
+    st==='warn'?`<span style="color:var(--status-warn-text)">Asymmetric Imbalance</span>`:
+    `<span style="color:var(--status-low-text)">Shorthanded Field</span>`;
     
-  const seatBtns=t.seats.map(s=>{
+  const seatBtns=t.seats.filter(s => s.id <= globalMaxPlayers).map(s=>{
     let cls = s.occ ? 'sb-occ' : 'sb-empty';
     return`<div class="seat-btn ${cls}" onclick="toggleSeat(${t.id},${s.id})">
       <span>SEAT ${s.id}</span>
     </div>`;
   }).join('');
   
-  const breakBtnHtml = (c>0 && c<=3) ? `<div class="alert-box"><span>⚠️ Short Field Warning. Relocate players immediately.</span><button class="break-btn" onclick="breakTable(${tid})">Break Table</button></div>` : '';
+  const breakBtnHtml = (c>0 && c<=3) ? `<div class="alert-box"><span>⚠️ Shorthanded Field Alert.</span><button class="break-btn" onclick="breakTable(${tid})">Break Ring</button></div>` : '';
   
   document.getElementById('detail-body').innerHTML=`
     <div class="detail-wrap">
@@ -674,12 +666,12 @@ function showDetail(tid){
         ${feltSVG(t)}
       </div>
       <div class="seat-panel">
-        <div style="font-size: 18px; font-weight: 800; margin-bottom: 4px; color: var(--color-active);">Roster: Table ${t.tableName}</div>
+        <div style="font-size: 18px; font-weight: 800; margin-bottom: 4px; color: var(--color-active);">Table ${t.tableName}</div>
         <div class="rename-section">
           <input type="text" id="rename-input-${t.id}" class="rename-input" value="${t.tableName}">
           <button class="rename-confirm" onclick="submitRename(${t.id})">Rename</button>
         </div>
-        <div style="font-size:10px;font-weight:600;margin-bottom:0.4rem">Diagnostics: ${stLabel}</div>
+        <div style="font-size:10px;font-weight:600;margin-bottom:0.4rem">TDA Profiler: ${stLabel}</div>
         <div class="seat-grid">${seatBtns}</div>
         ${breakBtnHtml}
       </div>
@@ -694,38 +686,48 @@ function toggleSeat(tid,sid){
   saveStateToLocalStorage();
   renderGrid();
   if(selectedTable===tid) showDetail(tid);
+  if (document.getElementById('panel-balance').classList.contains('active')) renderBalance();
 }
 
 function breakTable(tid){
   const t=tables.find(x=>x.id===tid);
   const name=t.tableName;
   const players=getCount(t);
-  const actives=getActive().filter(x=>x.id!==tid && getCount(x) > 0);
   
-  for(let i=0;i<players;i++){
-    const target=actives.slice().sort((a,b)=>getCount(a)-getCount(b))[0];
-    if(!target) break;
-    const empty=getEmpty(target);
+  t.seats.forEach(s=>s.occ=false); // 先清空被拆桌
+  
+  for(let i=0; i<players; i++){
+    const validTargets = getActive().filter(x => x.id !== tid && getCount(x) > 0 && getCount(x) < globalMaxPlayers);
+    if(validTargets.length === 0) break; 
+    
+    validTargets.sort((a,b) => getCount(a) - getCount(b));
+    const empty=getEmpty(validTargets[0]);
     if(empty.length) empty[0].occ=true;
   }
-  t.seats.forEach(s=>s.occ=false);
+  
   saveStateToLocalStorage();
   renderGrid();
-  showToast(`🚨 Broken & reallocated Table ${name}`);
+  showToast(`🚨 Broken Table ${name}`);
   if(selectedTable) showDetail(selectedTable);
 }
 
 function executeMove(fromId, toId){
   const from = tables.find(t => t.id === fromId);
   const to = tables.find(t => t.id === toId);
-  const occupiedSeats = from.seats.filter(s => s.occ);
+  
+  if (getCount(to) >= globalMaxPlayers) {
+    alert("❌ TDA Error: Target table is already full!");
+    return;
+  }
+
+  const occupiedSeats = from.seats.filter(s => s.id <= globalMaxPlayers && s.occ);
   const emptySeats = getEmpty(to);
   
   if(occupiedSeats.length > 0 && emptySeats.length > 0) {
     occupiedSeats[occupiedSeats.length - 1].occ = false;
     emptySeats[0].occ = true;
     saveStateToLocalStorage();
-    showToast(`🔄 Reallocated: T-${from.tableName} → T-${to.tableName}`);
+    showToast(`🔄 T-${from.tableName} → T-${to.tableName}`);
   }
   renderGrid();
   renderBalance();
@@ -739,56 +741,58 @@ function renderBalance(){
   document.getElementById('bar-chart').innerHTML=at.map(t=>{
     const c=getCount(t), st=status(t);
     const hPct = Math.round((c / globalMaxPlayers) * 100); 
-    
-    const isVacant = c === 0;
-    const isCritical = c > 0 && c <= 3;
-    
-    const colClass = isVacant ? 'bar-col vacant-mode' : 'bar-col';
-    const valClass = isCritical ? 'bar-val crit-text' : 'bar-val';
-    
     return `
-      <div class="${colClass}">
+      <div class="bar-col ${c === 0 ? 'vacant-mode' : ''}">
         <div class="bar-lbl">${t.tableName}</div>
-        <div class="bar-track">
-          <div class="bar ${st}" style="height: calc(${hPct}% + 2px);"></div>
-        </div>
-        <div class="${valClass}">${c}P</div>
-      </div>
-    `;
+        <div class="bar-track"><div class="bar ${st}" style="height: calc(${hPct}% + 2px);"></div></div>
+        <div class="bar-val ${c > 0 && c <= 3 ? 'crit-text' : ''}">${c}P</div>
+      </div>`;
   }).join('');
 
-  const scoringTables = at.filter(t => getCount(t) > 0);
   let sugg = [];
-  
-  if(scoringTables.length > 1) {
-    const sortedMax = [...scoringTables].sort((a,b) => getCount(b) - getCount(a)); 
-    const sortedMin = [...scoringTables].sort((a,b) => getCount(a) - getCount(b)); 
-    let i = 0, j = 0;
-    while(i < sortedMax.length && j < sortedMin.length) {
-      const topT = sortedMax[i], botT = sortedMin[j];
-      if(topT.id !== botT.id && (getCount(topT) - getCount(botT) >= 2) && getCount(topT) > IDEAL_MIN) {
-        sugg.push({fromId: topT.id, toId: botT.id, fromName: topT.tableName, toName: botT.tableName, fc: getCount(topT), tc: getCount(botT)});
-        i++; j++;
-      } else { break; }
+  let virtualFloor = at.filter(t => getCount(t) > 0).map(t => ({
+    id: t.id,
+    tableName: t.tableName,
+    count: getCount(t)
+  }));
+
+  let loopSafety = 0;
+  while (virtualFloor.length > 1 && loopSafety < 50) {
+    loopSafety++;
+    virtualFloor.sort((a,b) => b.count - a.count);
+    let maxT = virtualFloor[0];
+    let minT = virtualFloor[virtualFloor.length - 1];
+    
+    if ((maxT.count - minT.count) >= 2 && minT.count < globalMaxPlayers) {
+      sugg.push({
+        fromId: maxT.id,
+        toId: minT.id,
+        fromName: maxT.tableName,
+        toName: minT.tableName
+      });
+      maxT.count--;
+      minT.count++;
+    } else {
+      break; 
     }
   }
 
   document.getElementById('suggestions').innerHTML=sugg.length
-    ?sugg.map(s=>`<div class="move-row"><span>⚠️ Balance Directive: 1 player from <b>Table ${s.fromName}</b> → <b>Table ${s.toName}</b></span><button class="exec-btn" onclick="executeMove(${s.fromId},${s.toId})">Execute</button></div>`).join('')
-    :(getTotal() === 0 ? '<div class="info-box" style="color:var(--text-muted)">Floor empty. Equilibrium active.</div>' : '<div class="info-box">✓ Variance optimal. Floor in perfect equilibrium.</div>');
+    ? sugg.map(s=>`<div class="move-row"><span>⚠️ TDA Balance: Move 1 player from <b>Table ${s.fromName}</b> → <b>Table ${s.toName}</b></span><button class="exec-btn" onclick="executeMove(${s.fromId},${s.toId})">Execute</button></div>`).join('')
+    : (getTotal() === 0 ? '<div class="info-box" style="color:var(--text-muted)">Floor empty.</div>' : '<div class="info-box">✓ Variance optimal. Floor in perfect equilibrium.</div>');
     
-  const brk=scoringTables.filter(t=>getCount(t)<=3);
-  const bw=document.getElementById('break-wrap');
+  const brk = at.filter(t => getCount(t) > 0 && getCount(t) <= 3);
+  const bw = document.getElementById('break-wrap');
   if(brk.length){
     bw.style.display='block';
-    document.getElementById('break-list').innerHTML=brk.map(t=>`<div class="move-row"><span>🚨 <b>Table ${t.tableName}</b> Short Roster Vulnerability (${getCount(t)} players)</span><button class="break-btn" onclick="breakTable(${t.id});renderBalance()">Collapse Ring</button></div>`).join('');
+    document.getElementById('break-list').innerHTML=brk.map(t=>`<div class="move-row"><span>🚨 <b>Table ${t.tableName}</b> Shorthanded (${getCount(t)} players)</span><button class="break-btn" onclick="breakTable(${t.id});renderBalance()">Collapse Ring</button></div>`).join('');
   } else { bw.style.display='none'; }
 }
 
 function populateSelect(){
   const sel=document.getElementById('detail-sel');
   const activeTables = getActive();
-  sel.innerHTML=activeTables.map(t=>`<option value="${t.id}">Configure Table ${t.tableName} (${getCount(t)} Players)</option>`).join('');
+  sel.innerHTML=activeTables.map(t=>`<option value="${t.id}">Table ${t.tableName} (${getCount(t)} Players)</option>`).join('');
   if(selectedTable && activeTables.find(t => t.id === selectedTable)) sel.value=selectedTable;
 }
 
