@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Tournament Floor Matrix [v2.1.0-Beta]</title>
+<title>Tournament Floor Matrix [v2.2.0-Alpha]</title>
 <style>
 :root {
   --bg-main: #0a0e17;          
@@ -51,7 +51,6 @@ body {
 .title-area { display: flex; flex-direction: column; gap: 2px; }
 .top-bar h1 { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: -0.5px; line-height: 1.2; }
 
-/* 版本标签样式 */
 .version-tag {
   font-size: 10px;
   font-weight: 700;
@@ -80,13 +79,31 @@ body {
 .tab { flex: 1; text-align: center; padding: 8px 0; font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; color: var(--text-muted); background: none; border: none; border-radius: 6px; transition: all .2s; }
 .tab.active { color: #fff; background: #1e293b; border: 1px solid var(--color-active); }
 
-.floor-config-panel { background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px; padding: 0.6rem 1rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.config-title { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
-.config-controls-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.stepper-container { display: flex; align-items: center; gap: 4px; }
+/* 双步进控制面板弹性布局 */
+.floor-config-panel { 
+  background: var(--bg-panel); 
+  border: 1px solid var(--border-color); 
+  border-radius: 12px; 
+  padding: 0.8rem 1rem; 
+  margin-bottom: 1rem; 
+  display: flex; 
+  flex-direction: column;
+  gap: 12px;
+}
+@media (min-width: 768px) {
+  .floor-config-panel { flex-direction: row; align-items: center; justify-content: space-between; }
+}
+
+.config-groups-left { display: flex; flex-wrap: wrap; gap: 16px; flex: 1; }
+.config-item { display: flex; flex-direction: column; gap: 6px; }
+.config-title { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+
+.config-controls-right { display: flex; align-items: center; justify-content: flex-end; }
+.stepper-container { display: flex; align-items: center; gap: 4px; background: #121826; padding: 2px; border-radius: 8px; border: 1px solid var(--border-color); }
 .step-btn { background: #1e293b; border: 1px solid var(--border-color); color: #fff; font-size: 14px; font-weight: 700; width: 34px; height: 34px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.floor-input-box { background: rgba(234, 179, 8, 0.06); border: 1px solid rgba(234, 179, 8, 0.4); color: #fff; font-size: 14px; font-weight: 700; width: 50px; height: 34px; text-align: center; border-radius: 6px; outline: none; }
-.clear-field-btn { background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; font-size: 11px; font-weight: 700; height: 34px; padding: 0 12px; border-radius: 6px; cursor: pointer; }
+.floor-input-box { background: rgba(234, 179, 8, 0.03); border: 1px solid rgba(234, 179, 8, 0.2); color: #fff; font-size: 14px; font-weight: 700; width: 50px; height: 34px; text-align: center; border-radius: 6px; outline: none; }
+.clear-field-btn { background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; font-size: 11px; font-weight: 700; height: 38px; padding: 0 16px; border-radius: 8px; cursor: pointer; width: 100%; }
+@media (min-width: 768px) { .clear-field-btn { width: auto; } }
 
 .panel { display: none; width: 100%; animation: fadeIn 0.15s ease-out; }
 .panel.active { display: block; }
@@ -118,7 +135,7 @@ body {
 .t-cnt { font-size: 30px; font-weight: 800; color: var(--color-active); line-height: 1.1; margin: 2px 0; }
 .t-sub { font-size: 10px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
 
-.mini-seats { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin-top: 6px; max-width: 75px; margin-left: auto; margin-right: auto; }
+.mini-seats { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin-top: 6px; max-width: 85px; margin-left: auto; margin-right: auto; }
 .md { width: 5px; height: 5px; border-radius: 50%; }
 .md-occ { background: var(--color-active); box-shadow: 0 0 4px var(--color-active); }
 .md-empty { background: #1e293b; }
@@ -128,7 +145,6 @@ body {
 .bg-warn { background: var(--status-warn-bg); color: var(--status-warn-text); }
 .bg-low  { background: var(--status-low-bg); color: var(--status-low-text); }
 
-/* Table Configurator Layouts */
 .detail-wrap { display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap; justify-content: center; margin-top: 0.5rem; width: 100%;}
 @media (min-width: 768px) { .detail-wrap { flex-wrap: nowrap; text-align: left; } }
 
@@ -140,12 +156,12 @@ body {
 .rename-confirm { background: #1e293b; border: 1px solid var(--border-color); color: white; padding: 8px 16px; font-size: 12px; font-weight: 700; border-radius: 6px; cursor: pointer; transition: all 0.1s; }
 .rename-confirm:active { background: var(--color-active); color: #000; }
 
-.seat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 1.25rem; }
+.seat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 1.25rem; }
 
 .seat-btn { 
   border-radius: 12px; 
-  height: 58px; 
-  font-size: 16px; 
+  height: 52px; 
+  font-size: 14px; 
   text-align: center; 
   cursor: pointer; 
   border: 1px solid var(--border-color); 
@@ -164,7 +180,6 @@ body {
 
 .break-btn { font-size: 12px; padding: 8px 14px; cursor: pointer; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; color: #f87171; font-weight: 700; }
 
-/* GRID-BASED BALANCING CHART SYSTEM */
 .bar-row { 
   display: grid; 
   grid-template-columns: repeat(10, 1fr); 
@@ -197,9 +212,7 @@ body {
   height: 94px; 
 }
 
-.bar-col.vacant-mode {
-  opacity: 0.18;
-}
+.bar-col.vacant-mode { opacity: 0.18; }
 
 .bar-track { 
   width: 100%; 
@@ -226,24 +239,11 @@ body {
 .bar.ok   { background: var(--status-ok-text); opacity: .85; }
 .bar.warn { background: var(--status-warn-text); opacity: .95; }
 
-.bar-lbl { 
-  font-size: 9px; 
-  color: #fff; 
-  font-weight: 800; 
-  text-align: center;
-  white-space: nowrap;
-}
+.bar-lbl { font-size: 9px; color: #fff; font-weight: 800; text-align: center; white-space: nowrap; }
 .vacant-mode .bar-lbl { color: var(--text-muted); font-weight: 500; }
 
-.bar-val { 
-  font-size: 10px; 
-  color: var(--color-active); 
-  font-weight: 900; 
-  text-align: center;
-}
-.bar-val.crit-text {
-  color: var(--status-low-text);
-}
+.bar-val { font-size: 10px; color: var(--color-active); font-weight: 900; text-align: center; }
+.bar-val.crit-text { color: var(--status-low-text); }
 .vacant-mode .bar-val { color: rgba(255,255,255,0.2); }
 
 @keyframes pulse-red {
@@ -290,10 +290,7 @@ body {
   opacity: 0;
   transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s linear;
 }
-#toast-notification.show {
-  transform: translateX(-50%) translateY(0);
-  opacity: 1;
-}
+#toast-notification.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }
 </style>
@@ -304,7 +301,7 @@ body {
   <div class="top-bar">
     <div class="title-area">
       <h1>🃏 TOURNAMENT FLOOR MATRIX</h1>
-      <div class="version-tag">v2.1.0-Beta</div>
+      <div class="version-tag">v2.2.0-Alpha (Dynamic Seats)</div>
     </div>
     <div class="stats-row">
       <div class="stat">Total Entrants <b id="s-total">0</b></div>
@@ -315,13 +312,25 @@ body {
   </div>
 
   <div class="floor-config-panel">
-    <div class="config-title">⚙️ Floor Allocation Bounds (1 - 20 Tables Max)</div>
-    <div class="config-controls-right">
-      <div class="stepper-container">
-        <button class="step-btn" title="Decrease" onclick="stepActiveFloor(-1)">—</button>
-        <input type="number" id="floor-input" class="floor-input-box" min="1" max="20" value="10" onchange="directTypeFloorCount(this.value)">
-        <button class="step-btn" title="Increase" onclick="stepActiveFloor(1)">+</button>
+    <div class="config-groups-left">
+      <div class="config-item">
+        <div class="config-title">Active Floor Size (1 - 20 Rings)</div>
+        <div class="stepper-container">
+          <button class="step-btn" onclick="stepActiveFloor(-1)">—</button>
+          <input type="number" id="floor-input" class="floor-input-box" min="1" max="20" value="10" onchange="directTypeFloorCount(this.value)">
+          <button class="step-btn" onclick="stepActiveFloor(1)">+</button>
+        </div>
       </div>
+      <div class="config-item">
+        <div class="config-title">Max Seats / Table (2 - 10 Seats)</div>
+        <div class="stepper-container">
+          <button class="step-btn" onclick="stepMaxSeats(-1)">—</button>
+          <input type="number" id="seats-input" class="floor-input-box" min="2" max="10" value="9" onchange="directTypeSeatsCount(this.value)">
+          <button class="step-btn" onclick="stepMaxSeats(1)">+</button>
+        </div>
+      </div>
+    </div>
+    <div class="config-controls-right">
       <button class="clear-field-btn" onclick="clearAllPlayers()">🧹 Clear All Seats</button>
     </div>
   </div>
@@ -366,27 +375,40 @@ body {
 <div id="toast-notification">Action Executed Successfully</div>
 
 <script>
-const MAX_PLAYERS = 9; 
+let globalMaxPlayers = 9; // 动态最大座位数
 const IDEAL_MIN = 6, IDEAL_MAX = 8;
 
 let tables = [], selectedTable = 1, activeFloorSize = 10;
 
+// 初始化20张桌子，支持动态最大座位数变更
 function initTables() {
-  tables = Array.from({length: 20}, (_, i) => ({
-    id: i+1, 
-    tableName: `${i+1}`, 
-    active: i < activeFloorSize, 
-    seats: Array.from({length: MAX_PLAYERS}, (_,s) => ({ id:s+1, occ: false }))
-  }));
+  tables = Array.from({length: 20}, (_, i) => {
+    // 如果已经存在数据，保留已有的、合法的座位数据，防止毁灭性清空
+    const existingTable = tables[i];
+    let seatsArray = [];
+    
+    for(let s = 0; s < globalMaxPlayers; s++) {
+      let isOcc = false;
+      if (existingTable && existingTable.seats[s]) {
+        isOcc = existingTable.seats[s].occ;
+      }
+      seatsArray.push({ id: s + 1, occ: isOcc });
+    }
+
+    return {
+      id: i + 1, 
+      tableName: existingTable ? existingTable.tableName : `${i + 1}`, 
+      active: i < activeFloorSize, 
+      seats: seatsArray
+    };
+  });
 }
 
 function showToast(message) {
   const toast = document.getElementById('toast-notification');
   toast.textContent = message;
   toast.classList.add('show');
-  setTimeout(() => {
-    toast.classList.remove('show');
-  }, 2000);
+  setTimeout(() => { toast.classList.remove('show'); }, 2000);
 }
 
 function clearAllPlayers() {
@@ -403,20 +425,19 @@ function clearAllPlayers() {
   }
 }
 
+// 增加/减少 桌子数
 function stepActiveFloor(delta) {
   let target = activeFloorSize + delta;
   if(target < 1) target = 1;
   if(target > 20) target = 20;
   applyFloorSizeChange(target);
 }
-
 function directTypeFloorCount(val) {
   let target = parseInt(val, 10);
   if(isNaN(target) || target < 1) target = 1;
   if(target > 20) target = 20;
   applyFloorSizeChange(target);
 }
-
 function applyFloorSizeChange(targetCount) {
   activeFloorSize = targetCount;
   document.getElementById('floor-input').value = activeFloorSize;
@@ -430,14 +451,50 @@ function applyFloorSizeChange(targetCount) {
   if (currentActiveTables.length > 0) {
     const stillExists = currentActiveTables.find(t => t.id === selectedTable);
     if (!stillExists) selectedTable = currentActiveTables[0].id;
-  } else {
-    selectedTable = null;
-  }
+  } else { selectedTable = null; }
 
   renderGrid();
   if (document.getElementById('panel-detail').classList.contains('active')) {
     populateSelect();
     if(selectedTable) showDetail(selectedTable);
+  }
+}
+
+// 💡 核心升级：增加/减少 每桌最大人数上限并进行安全熔断拦截
+function stepMaxSeats(delta) {
+  let target = globalMaxPlayers + delta;
+  if(target < 2) target = 2;
+  if(target > 10) target = 10;
+  applyMaxSeatsChange(target);
+}
+function directTypeSeatsCount(val) {
+  let target = parseInt(val, 10);
+  if(isNaN(target) || target < 2) target = 2;
+  if(target > 10) target = 10;
+  applyMaxSeatsChange(target);
+}
+function applyMaxSeatsChange(targetSeats) {
+  // 安全检测：检查是否有张激活的桌子的当前在座人数已经超过了目标压缩上限
+  const violationTable = getActive().find(t => getCount(t) > targetSeats);
+  if (violationTable) {
+    alert(`⚠️ Cannot downsize: Table ${violationTable.tableName} currently has ${getCount(violationTable)} players seated, which exceeds your target constraint of ${targetSeats}. Please reallocate them first.`);
+    document.getElementById('seats-input').value = globalMaxPlayers;
+    return;
+  }
+
+  globalMaxPlayers = targetSeats;
+  document.getElementById('seats-input').value = globalMaxPlayers;
+  
+  // 重新分配底层座位数组结构
+  initTables();
+  renderGrid();
+  showToast(`⚙️ Max seats configured to ${globalMaxPlayers} per table`);
+  
+  if (document.getElementById('panel-detail').classList.contains('active')) {
+    populateSelect();
+    if(selectedTable) showDetail(selectedTable);
+  } else if (document.getElementById('panel-balance').classList.contains('active')) {
+    renderBalance();
   }
 }
 
@@ -470,11 +527,7 @@ function updateStats() {
     const min = Math.min(...scoringCounts);
     const spread = max - min;
     spreadEl.textContent = spread;
-    if(spread >= 3) {
-      spreadEl.className = "alert-danger";
-    } else {
-      spreadEl.className = "";
-    }
+    if(spread >= 3) { spreadEl.className = "alert-danger"; } else { spreadEl.className = ""; }
   }
 }
 
@@ -540,15 +593,16 @@ function renderGrid(){
         <button class="edit-btn" onclick="renameTable(${t.id}, event)">✏️</button>
       </div>
       <div class="t-cnt">${c}</div>
-      <div class="t-sub">/ ${MAX_PLAYERS} Max Seats</div>
+      <div class="t-sub">/ ${globalMaxPlayers} Max Seats</div>
       <div class="mini-seats">${pDots}</div>`;
     g.appendChild(d);
   });
   updateStats();
 }
 
+// 💡 核心升级：基于极坐标等分平分算法的 SVG 动态马蹄形桌布排列
 function feltSVG(t) {
-  const W=360, H=240, cx=180, cy=125, rx=110, ry=65, sR=15; 
+  const W=360, H=240, cx=180, cy=125, rx=110, ry=65, sR=14; 
   let seats='';
   
   seats += `<g>
@@ -556,9 +610,17 @@ function feltSVG(t) {
     <text x="${cx}" y="${cy - ry + 6}" text-anchor="middle" dominant-baseline="central" font-size="9" fill="#10b981" font-weight="900">DEALER</text>
   </g>`;
 
-  t.seats.forEach((s,i)=>{
-    const angleOffset = (-55 + (290 / (MAX_PLAYERS - 1)) * i) * Math.PI / 180;
-    const sx=(cx+(rx+26)*Math.cos(angleOffset)).toFixed(1);
+  const totalSeats = t.seats.length;
+  t.seats.forEach((s, i) => {
+    let angleOffset;
+    if (totalSeats === 1) {
+      angleOffset = 115 * Math.PI / 180;
+    } else {
+      // 动态将马蹄形的有效扇区 (180度 到 290度角范围) 按照当前总人数等分平铺
+      angleOffset = (-50 + (280 / (totalSeats - 1)) * i) * Math.PI / 180;
+    }
+    
+    const sx=(cx+(rx+25)*Math.cos(angleOffset)).toFixed(1);
     const sy=(cy+(ry+24)*Math.sin(angleOffset)).toFixed(1);
     
     let fill = s.occ ? '#eab308' : '#121826';
@@ -567,7 +629,7 @@ function feltSVG(t) {
     
     seats+=`<g style="cursor:pointer" onclick="toggleSeat(${t.id},${s.id})">
       <circle cx="${sx}" cy="${sy}" r="${sR}" fill="${fill}" stroke="${stroke}" stroke-width="1.5"/>
-      <text x="${sx}" y="${sy}" text-anchor="middle" dominant-baseline="central" font-size="11" fill="${tc}" font-weight="900">${s.id}</text>
+      <text x="${sx}" y="${sy}" text-anchor="middle" dominant-baseline="central" font-size="10" fill="${tc}" font-weight="900">${s.id}</text>
     </g>`;
   });
   
@@ -578,7 +640,7 @@ function feltSVG(t) {
     </radialGradient></defs>
     <ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="url(#fg${t.id})" stroke="#022c22" stroke-width="5"/>
     <text x="${cx}" y="${cy-6}" text-anchor="middle" font-size="15" fill="#fff" font-weight="800">TABLE ${t.tableName}</text>
-    <text x="${cx}" y="${cy+12}" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.4)" font-weight="700">${c} ENTRANTS</text>
+    <text x="${cx}" y="${cy+12}" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.4)" font-weight="700">${c} / ${globalMaxPlayers} SEATS</text>
     ${seats}
   </svg>`;
 }
@@ -670,7 +732,7 @@ function renderBalance(){
   
   document.getElementById('bar-chart').innerHTML=at.map(t=>{
     const c=getCount(t), st=status(t);
-    const hPct = Math.round((c / MAX_PLAYERS) * 100); 
+    const hPct = Math.round((c / globalMaxPlayers) * 100); 
     
     const isVacant = c === 0;
     const isCritical = c > 0 && c <= 3;
@@ -736,6 +798,7 @@ function bootstrap(){
   renderGrid(); 
   selectedTable = 1; 
   document.getElementById('floor-input').value = activeFloorSize;
+  document.getElementById('seats-input').value = globalMaxPlayers;
 }
 bootstrap();
 </script>
