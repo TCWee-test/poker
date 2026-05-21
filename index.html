@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Live Floor Matrix [v2.4.8]</title>
+<title>Live Floor Matrix [v2.4.9]</title>
 <style>
 :root {
   --bg-main: #0a0e17;          
@@ -227,7 +227,6 @@ body {
 .bar.ok   { background: var(--status-ok-text); opacity: .85; }
 .bar.warn { background: var(--status-warn-text); opacity: .95; }
 .bar-lbl { font-size: 8px; color: #fff; font-weight: 800; margin-bottom: 2px; }
-.bar-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; align-items: end; height: 160px; margin-bottom: 10px; background: #080c14; padding: 12px 6px; border-radius: 12px; border: 1px solid var(--border-color); width: 100%; position: relative; }
 .bar-val { font-size: 9px; color: var(--color-active); font-weight: 900; margin-top: 2px; }
 .bar-val.crit-text { color: var(--status-low-text); }
 
@@ -270,7 +269,7 @@ body {
   <div class="top-header">
     <div class="title-area">
       <h1>🃏 FLOOR MATRIX</h1>
-      <div class="version-tag">v2.4.8</div>
+      <div class="version-tag">v2.4.9</div>
     </div>
     <button class="danger-zone-trigger" onclick="clearAllPlayers()">Reset Floor</button>
   </div>
@@ -343,7 +342,6 @@ body {
 
 <script>
 let globalMaxPlayers = 9; 
-const IDEAL_MIN = 4; // Lowered baseline to smooth the optimal range curve
 let tables = [], selectedTable = 1, activeFloorSize = 10;
 
 function saveStateToLocalStorage() {
@@ -507,19 +505,21 @@ const getCount  = t  => t.seats.filter(s => s.id <= globalMaxPlayers && s.occ).l
 const getEmpty  = t  => t.seats.filter(s => s.id <= globalMaxPlayers && !s.occ);
 const getTotal  = () => tables.reduce((a,t) => a+getCount(t), 0);
 
-// Fixed Threshold: 9 players is now officially recognized as 'ok' (Optimal Load)
+// Optimized Status Check: 4 to Max seats is always green. 1-3 is red. 
 function status(t) { 
   const c = getCount(t); 
   if (c === 0) return 'ok'; 
   if (c <= 3) return 'low'; 
-  if (c >= IDEAL_MIN && c <= globalMaxPlayers) return 'ok'; 
+  if (c >= 4 && c <= globalMaxPlayers) return 'ok'; 
   return 'warn'; 
 }
 
 function updateStats() {
   const at = getActive();
   const total = getTotal();
-  const alertCount = at.filter(t => status(t) !== 'ok' && getCount(t) > 0).length;
+  
+  // Imbalances main purpose fix: Only alert for critical shorthanded tables (1-3 players) that need breaking
+  const alertCount = at.filter(t => status(t) === 'low' && getCount(t) > 0).length;
   
   document.getElementById('s-total').textContent = total;
   document.getElementById('s-tables').textContent = at.length;
@@ -540,7 +540,9 @@ function updateStats() {
     const min = Math.min(...scoringCounts);
     const spread = max - min;
     spreadEl.textContent = spread;
-    if(spread >= 2) { spreadCard.classList.add('pulse-alert'); } else { spreadCard.classList.remove('pulse-alert'); }
+    
+    // Spread Warning: Alerts supervisor if the delta between biggest and smallest table is uncomfortably high (>= 3)
+    if(spread >= 3) { spreadCard.classList.add('pulse-alert'); } else { spreadCard.classList.remove('pulse-alert'); }
   }
 }
 
@@ -778,8 +780,24 @@ function renderBalance(){
       </div>`;
   }).join('');
 
+  let { sugg, virtualFloor } = runVirtualBalancingEngine(at);
+
+  document.getElementById('suggestions').innerHTML = sugg.length
+    ? sugg.map(s => `<div class="move-row"><span>Balance Warning: Shift 1 player from <b>Table ${s.fromName}</b> → <b>Table ${s.toName}</b></span><button class="exec-btn" onclick="executeMove(${s.fromId},${s.toId})">Execute Shift</button></div>`).join('')
+    : (getTotal() === 0 ? '<div class="info-box" style="color:var(--text-muted)">Floor is currently unassigned.</div>' : '<div class="info-box">✓ Floor variance optimal. Equilibrium maintained.</div>');
+    
+  const brk = at.filter(t => getCount(t) > 0 && getCount(t) <= 3);
+  const bw = document.getElementById('break-wrap');
+  if(brk.length){
+    bw.style.display = 'block';
+    document.getElementById('break-list').innerHTML = brk.map(t => `<div class="move-row"><span>Critical: <b>Table ${t.tableName}</b> is running shorthanded (${getCount(t)} players).</span><button class="break-btn" onclick="breakTable(${t.id});renderBalance()">Collapse Table</button></div>`).join('');
+  } else { bw.style.display = 'none'; }
+}
+
+// Balanced Variance Core Calculator (Prevents 9-player false loop traps)
+function runVirtualBalancingEngine(activeTables) {
   let sugg = [];
-  let virtualFloor = at.filter(t => getCount(t) > 0).map(t => ({
+  let virtualFloor = activeTables.filter(t => getCount(t) > 0).map(t => ({
     id: t.id,
     tableName: t.tableName,
     count: getCount(t)
@@ -792,7 +810,8 @@ function renderBalance(){
     let maxT = virtualFloor[0];
     let minT = virtualFloor[virtualFloor.length - 1];
     
-    if ((maxT.count - minT.count) >= 2 && minT.count < globalMaxPlayers) {
+    // Balance criteria logic adjustment: only balance if spread gap is severe (>= 3) and min table is struggling
+    if ((maxT.count - minT.count) >= 3 && minT.count <= 4 && minT.count < globalMaxPlayers) {
       sugg.push({
         fromId: maxT.id,
         toId: minT.id,
@@ -805,17 +824,7 @@ function renderBalance(){
       break; 
     }
   }
-
-  document.getElementById('suggestions').innerHTML = sugg.length
-    ? sugg.map(s => `<div class="move-row"><span>Balance Warning: Shift 1 player from <b>Table ${s.fromName}</b> → <b>Table ${s.toName}</b></span><button class="exec-btn" onclick="executeMove(${s.fromId},${s.toId})">Execute Shift</button></div>`).join('')
-    : (getTotal() === 0 ? '<div class="info-box" style="color:var(--text-muted)">Floor is currently unassigned.</div>' : '<div class="info-box">✓ Floor variance optimal. Equilibrium maintained.</div>');
-    
-  const brk = at.filter(t => getCount(t) > 0 && getCount(t) <= 3);
-  const bw = document.getElementById('break-wrap');
-  if(brk.length){
-    bw.style.display = 'block';
-    document.getElementById('break-list').innerHTML = brk.map(t => `<div class="move-row"><span>Critical: <b>Table ${t.tableName}</b> is running shorthanded (${getCount(t)} players).</span><button class="break-btn" onclick="breakTable(${t.id});renderBalance()">Collapse Table</button></div>`).join('');
-  } else { bw.style.display = 'none'; }
+  return { sugg, virtualFloor };
 }
 
 function populateSelect(){
