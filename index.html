@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Tournament Floor Matrix [v2.4.5]</title>
-<script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=TWu8u3CzO4vu48XL8280XojpJKHmPJi5li0Lr_3P9Skbu4Yvhbxb6mbMNPcH9WPUlRLbBmkZlwNtNNZHQwjKOOWBTNhbBLBZjc_KdGpD3NCt2OIu5854yUOO5iku0Jbvfq7WL3ierHMncHuYeiCnryx_Ur952egwYn5vTg265367Z2HvtNtYxEfQ5FD_nR8nxef12A2LPqUYiuFaGvTVBufas32N5uxru1CRNFOUveWIOo0BhIAz0tn9h0CbLyevbY96ct7Vx75aA1LIo_fh9X7NCpWK1QGbd9unT3Ixq7ffiGB0DJMpuLf7Hm5v6vNZFDeLsTdjI9hb3tl7so1Hsg" charset="UTF-8"></script><link rel="stylesheet" crossorigin="anonymous" href="https://gc.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cHM6Ly9jb250cmlidXRpb24udXNlcmNvbnRlbnQuZ29vZ2xlLmNvbS9kb3dubG9hZD9jPUNneGlZWEprWDNOMGIzSmhaMlVTVEJJSmRHVnRjRjlrWVhSaEdqOEtNR0kzTkdKbVkyWTRZbVV6WXpCbU5qRXdNREEyTlRJME1XVXdOak15WXpnMU1EWTJZelV4T1dNMU1UQmpaVE0xT0JJTEVnY1F5LS0xblo4V0dBRSZmaWxlbmFtZT1pbmRleC5odG1sJm9waT0xMDMxMzUwNTAmYXV0aHVzZXI9MQ"/><style>
+<title>Live Floor Matrix [v2.4.7]</title>
+<style>
 :root {
   --bg-main: #0a0e17;          
   --bg-card: #121826;          
@@ -22,7 +22,6 @@
   --status-warn-text: #facc15;
   --status-low-bg: rgba(239, 68, 68, 0.12);
   --status-low-text: #f87171;
-  --panel-glow: rgba(59, 130, 246, 0.15);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -33,7 +32,6 @@ body {
   background-color: var(--bg-main);
   color: var(--text-main); 
   min-height: 100vh;
-  /* 📱 完美支持手机刘海屏与全面屏底部横条的安全边距自适应 */
   padding: calc(0.8rem + env(safe-area-inset-top)) calc(0.8rem + env(safe-area-inset-right)) calc(0.8rem + env(safe-area-inset-bottom)) calc(0.8rem + env(safe-area-inset-left));
   letter-spacing: 0.02em;
   overflow-x: hidden;
@@ -42,7 +40,7 @@ body {
 
 .container { max-width: 1200px; margin: 0 auto; width: 100%; }
 
-/* 👑 顶部标题栏 */
+/* Header Layout */
 .top-header {
   display: flex;
   align-items: center;
@@ -64,7 +62,6 @@ body {
   width: fit-content;
 }
 
-/* 🧹 安全清空按钮 */
 .danger-zone-trigger {
   background: rgba(239, 68, 68, 0.05);
   border: 1px solid rgba(239, 68, 68, 0.2);
@@ -74,14 +71,10 @@ body {
   padding: 6px 10px;
   border-radius: 8px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  transition: all 0.2s;
 }
 .danger-zone-trigger:hover { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); }
 
-/* 🎛️ 核心控制区：默认移动端单列布局 */
+/* Control Panel */
 .floor-config-panel { 
   background: linear-gradient(180deg, var(--bg-panel) 0%, #0a0e17 100%); 
   border: 1px solid var(--border-color); 
@@ -91,19 +84,60 @@ body {
   display: grid;
   grid-template-columns: 1fr;
   gap: 12px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.25);
 }
 
 .config-item { display: flex; flex-direction: column; gap: 6px; }
 .config-title { font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.03em; }
 
-/* 📱 人体工学加大版触摸控制组件 */
-.stepper-container { display: flex; align-items: center; gap: 4px; background: #070a12; padding: 2px; border-radius: 8px; border: 1px solid #1e293b; width: 100%; max-width: 100%; }
-.step-btn { background: linear-gradient(180deg, #222f4d 0%, #161f33 100%); border: 1px solid #2e3f66; color: #fff; font-size: 16px; font-weight: 800; flex: 1; height: 42px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.1s ease; }
+/* Stepper Layout (Perfect Center Alignment Fix) */
+.stepper-container { 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  background: #070a12; 
+  padding: 2px; 
+  border-radius: 8px; 
+  border: 1px solid #1e293b; 
+  width: 100%; 
+}
+.step-btn { 
+  background: linear-gradient(180deg, #222f4d 0%, #161f33 100%); 
+  border: 1px solid #2e3f66; 
+  color: #fff; 
+  font-size: 16px; 
+  font-weight: 800; 
+  flex: 1; 
+  height: 42px; 
+  border-radius: 6px; 
+  cursor: pointer; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+}
 .step-btn:active { background: #121929; transform: scale(0.95); }
-.floor-input-box { background: #0d1321; border: 1px solid var(--border-color); color: var(--color-active); font-size: 16px; font-weight: 800; width: 60px; height: 42px; text-align: center; border-radius: 6px; outline: none; }
 
-/* 📊 数据看板：移动端双列紧凑卡片，防止文本挤压溢出 */
+.floor-input-box { 
+  background: #0d1321; 
+  border: 1px solid var(--border-color); 
+  color: var(--color-active); 
+  font-size: 16px; 
+  font-weight: 800; 
+  width: 65px; 
+  height: 42px; 
+  text-align: center !important; 
+  padding: 0 !important; 
+  margin: 0 auto;
+  border-radius: 6px; 
+  outline: none; 
+  -moz-appearance: textfield;
+}
+.floor-input-box::-webkit-outer-spin-button,
+.floor-input-box::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Status Dashboard Cards */
 .stats-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 0.8rem; width: 100%; }
 .stat { 
   background: linear-gradient(145deg, #111827 0%, var(--bg-card) 100%); 
@@ -115,29 +149,24 @@ body {
   text-transform: uppercase; 
   color: var(--text-muted); 
   text-align: center;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-  transition: all 0.3s ease;
 }
 .stat b { color: var(--color-active); font-weight: 900; font-size: 18px; display: block; margin-top: 1px; }
 
-.stat.pulse-alert {
-  border-color: rgba(239, 68, 68, 0.4);
-  animation: card-alert-glow 2s infinite ease-in-out;
-}
+.stat.pulse-alert { border-color: rgba(239, 68, 68, 0.4); animation: card-alert-glow 2s infinite ease-in-out; }
 .stat.pulse-alert b { color: var(--status-low-text); text-shadow: 0 0 6px rgba(239, 68, 68, 0.4); }
 
 @keyframes card-alert-glow {
   0%, 100% { background: linear-gradient(145deg, #111827 0%, var(--bg-card) 100%); border-color: rgba(239, 68, 68, 0.3); }
-  50% { background: linear-gradient(145deg, #251218 0%, #141017 100%); border-color: rgba(239, 68, 68, 0.6); box-shadow: 0 0 10px rgba(239, 68, 68, 0.2); }
+  50% { background: linear-gradient(145deg, #251218 0%, #141017 100%); border-color: rgba(239, 68, 68, 0.6); }
 }
 
-/* 🧭 导航切换栏 */
+/* Navigation System */
 .nav-bar { display: flex; margin-bottom: 0.8rem; }
 .tabs { display: flex; background: #090d16; padding: 2px; border-radius: 10px; border: 1px solid var(--border-color); width: 100%; }
-.tab { flex: 1; text-align: center; padding: 10px 0; font-size: 11px; font-weight: 700; text-transform: uppercase; cursor: pointer; color: var(--text-muted); background: none; border: none; border-radius: 7px; transition: all .15s ease; }
-.tab.active { color: #fff; background: linear-gradient(135deg, #1e293b 0%, #111827 100%); border: 1px solid var(--color-active); box-shadow: 0 3px 6px rgba(234, 179, 8, 0.1); }
+.tab { flex: 1; text-align: center; padding: 10px 0; font-size: 11px; font-weight: 700; text-transform: uppercase; cursor: pointer; color: var(--text-muted); background: none; border: none; border-radius: 7px; }
+.tab.active { color: #fff; background: linear-gradient(135deg, #1e293b 0%, #111827 100%); border: 1px solid var(--color-active); }
 
-/* 🃏 核心内容区 */
+/* Interface Dynamic Switching Panels */
 .panel { display: none; width: 100%; animation: fadeIn 0.15s cubic-bezier(0.4, 0, 0.2, 1); }
 .panel.active { display: block; }
 
@@ -146,12 +175,9 @@ body {
 .table-card {
   background: linear-gradient(145deg, #131a28 0%, var(--bg-card) 100%); border: 1px solid var(--border-color); border-radius: 12px;
   padding: 14px 6px 10px; cursor: pointer; text-align: center; position: relative;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2); transition: all 0.15s ease;
 }
-.table-card:hover { border-color: var(--color-active); }
-.table-card.selected { border: 2px solid var(--color-active); box-shadow: 0 0 12px rgba(234, 179, 8, 0.2); background: linear-gradient(145deg, #182033 0%, #121826 100%); }
-
-.table-card.st-ok-filled { border-color: rgba(16, 185, 129, 0.25); box-shadow: inset 0 0 10px rgba(16, 185, 129, 0.04), 0 4px 8px rgba(0,0,0,0.2); }
+.table-card.selected { border: 2px solid var(--color-active); background: linear-gradient(145deg, #182033 0%, #121826 100%); }
+.table-card.st-ok-filled { border-color: rgba(16, 185, 129, 0.25); }
 .table-card.st-warn { border-color: rgba(234, 179, 8, 0.3); }
 .table-card.st-low  { border-color: rgba(239, 68, 68, 0.35); }
 
@@ -165,51 +191,46 @@ body {
 
 .mini-seats { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; margin-top: 6px; max-width: 90px; margin-left: auto; margin-right: auto; }
 .md { width: 4px; height: 4px; border-radius: 50%; }
-.md-occ { background: var(--color-active); box-shadow: 0 0 3px var(--color-active); }
+.md-occ { background: var(--color-active); }
 .md-empty { background: #222f4d; }
 
-.badge { position: absolute; top: 4px; right: 4px; font-size: 7px; padding: 1px 4px; border-radius: 4px; font-weight: 800; letter-spacing: 0.02em; }
+.badge { position: absolute; top: 4px; right: 4px; font-size: 7px; padding: 1px 4px; border-radius: 4px; font-weight: 800; }
 .bg-ok   { background: var(--status-ok-bg); color: var(--status-ok-text); }
 .bg-warn { background: var(--status-warn-bg); color: var(--status-warn-text); }
 .bg-low  { background: var(--status-low-bg); color: var(--status-low-text); }
 
-/* 🛠️ 单桌分流版面（移动端优先垂直排布） */
+/* Configurator Multi-Device Scaling Layout */
 .detail-wrap { display: flex; flex-direction: column; gap: 1rem; align-items: center; justify-content: center; margin-top: 0.4rem; width: 100%; }
 .felt-container { width: 100%; max-width: 360px; aspect-ratio: 360 / 240; display: flex; justify-content: center; align-items: center; }
-.seat-panel { width: 100%; background: var(--bg-panel); padding: 1rem; border-radius: 14px; border: 1px solid var(--border-color); box-shadow: 0 8px 25px rgba(0,0,0,0.35); }
+.seat-panel { width: 100%; background: var(--bg-panel); padding: 1rem; border-radius: 14px; border: 1px solid var(--border-color); }
 
 .rename-section { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; }
 .rename-input { background: #070a12; border: 1px solid var(--border-color); border-radius: 6px; color: #fff; padding: 8px 10px; font-size: 14px; font-weight: 700; width: 120px; outline: none; }
-.rename-input:focus { border-color: var(--color-active); }
 .rename-confirm { background: linear-gradient(180deg, #222f4d 0%, #161f33 100%); border: 1px solid #2e3f66; color: white; padding: 8px 14px; font-size: 12px; font-weight: 700; border-radius: 6px; cursor: pointer; }
 
-/* 移动端加高的点击安全矩阵按钮 */
 .seat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 1rem; }
-.seat-btn { border-radius: 10px; height: 48px; font-size: 13px; text-align: center; cursor: pointer; border: 1px solid var(--border-color); font-weight: 900; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: all 0.05s ease; }
-.seat-btn:active { transform: scale(0.96); }
+.seat-btn { border-radius: 10px; height: 48px; font-size: 13px; text-align: center; cursor: pointer; border: 1px solid var(--border-color); font-weight: 900; display: flex; flex-direction: column; justify-content: center; align-items: center; }
 .sb-occ   { background: linear-gradient(135deg, rgba(234, 179, 8, 0.2) 0%, rgba(245, 158, 11, 0.1) 100%); color: #fff; border: 2px solid var(--color-seat-occ); }
-.sb-empty { background: #070a12; color: var(--text-muted); border-color: var(--border-color); box-shadow: inset 0 1px 3px rgba(0,0,0,0.3); }
+.sb-empty { background: #070a12; color: var(--text-muted); }
 
 .break-btn { font-size: 12px; padding: 8px 14px; cursor: pointer; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 6px; color: #f87171; font-weight: 700; }
 .move-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px 14px; font-size: 11px; width: 100%; margin-bottom: 6px; }
 .exec-btn { font-size: 12px; padding: 6px 14px; cursor: pointer; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); border: 1px solid #eab308; border-radius: 6px; color: var(--color-active); font-weight: 700; }
 
-/* 📊 密度图 */
-.bar-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; align-items: end; height: 160px; margin-bottom: 10px; background: #080c14; padding: 12px 6px; border-radius: 12px; border: 1px solid var(--border-color); width: 100%; position: relative; box-shadow: inset 0 3px 8px rgba(0,0,0,0.5); }
+/* Seating Curves Chart */
+.bar-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; align-items: end; height: 160px; margin-bottom: 10px; background: #080c14; padding: 12px 6px; border-radius: 12px; border: 1px solid var(--border-color); width: 100%; position: relative; }
 .bar-col { display: flex; flex-direction: column; align-items: center; justify-content: space-between; height: 100%; }
 .bar-col.vacant-mode { opacity: 0.15; }
 .bar-track { width: 100%; flex: 1; display: flex; align-items: flex-end; justify-content: center; }
 .bar { border-radius: 3px 3px 0 0; min-height: 2px; width: 70%; transition: height .2s ease; }
-.bar.low { background: var(--status-low-text); box-shadow: 0 0 8px rgba(239, 68, 68, 0.5); animation: pulse-red 1.4s infinite ease-in-out; }
+.bar.low { background: var(--status-low-text); }
 .bar.ok   { background: var(--status-ok-text); opacity: .85; }
 .bar.warn { background: var(--status-warn-text); opacity: .95; }
 .bar-lbl { font-size: 8px; color: #fff; font-weight: 800; margin-bottom: 2px; }
 .bar-val { font-size: 9px; color: var(--color-active); font-weight: 900; margin-top: 2px; }
 .bar-val.crit-text { color: var(--status-low-text); }
 
-@keyframes pulse-red { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
-
-.sec-title { font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text-main); margin-bottom: 0.4rem; margin-top: 1rem; letter-spacing: 0.02em; }
+.sec-title { font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text-main); margin-bottom: 0.4rem; margin-top: 1rem; }
 .detail-select { font-size: 14px; padding: 10px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: #070a12; color: var(--text-main); margin-bottom: 0.8rem; cursor: pointer; font-weight: 700; width: 100%; }
 .alert-box { margin-top: 0.8rem; padding: 10px; background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.18); border-radius: 8px; font-size: 11px; color: #f87171; display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%; }
 .info-box { padding: 8px 0; font-size: 12px; color: var(--status-ok-text); font-weight: 700; text-transform: uppercase; width: 100%; }
@@ -217,36 +238,27 @@ body {
 #toast-notification {
   position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
   background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid var(--color-active);
-  color: #fff; padding: 8px 16px; border-radius: 20px; font-size: 11px; font-weight: 700;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.5); z-index: 9999; opacity: 0;
+  color: #fff; padding: 8px 16px; border-radius: 20px; font-size: 11px; font-weight: 700; z-index: 9999; opacity: 0;
   transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s linear;
 }
 #toast-notification.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }
 
-
-/* ==========================================================================
-   🚨 核心高级多端自适应响应断点
-   ========================================================================== */
-
-/* 📑 中屏或平板端（宽度 >= 640px） */
+/* Media Query Breakthrough Breakpoints */
 @media (min-width: 640px) {
   .floor-config-panel { grid-template-columns: 1fr 1fr; }
   .stats-row { grid-template-columns: repeat(4, 1fr); gap: 6px; }
   .stepper-container { max-width: 150px; }
   .step-btn { height: 34px; font-size: 14px; }
   .floor-input-box { height: 34px; font-size: 14px; }
-  
   .bar-row { grid-template-columns: repeat(10, 1fr); height: 130px; }
   .detail-select { max-width: 300px; }
 }
 
-/* 💻 宽屏或台式电脑端（宽度 >= 900px） */
 @media (min-width: 900px) {
   .detail-wrap { flex-direction: row; flex-wrap: nowrap; align-items: stretch; }
   .felt-container { flex: 1; max-width: 45%; }
   .seat-panel { flex: 1.2; }
-  
   .tables-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
 }
 </style>
@@ -254,19 +266,17 @@ body {
 <body>
 <div class="container">
 
-  <!-- 👑 顶部标题栏 -->
   <div class="top-header">
     <div class="title-area">
       <h1>🃏 FLOOR MATRIX</h1>
-      <div class="version-tag">v2.4.5</div>
+      <div class="version-tag">v2.4.7</div>
     </div>
-    <button class="danger-zone-trigger" onclick="clearAllPlayers()">🧹 Reset</button>
+    <button class="danger-zone-trigger" onclick="clearAllPlayers()">Reset Floor</button>
   </div>
 
-  <!-- 🎛️ 核心控制区 -->
   <div class="floor-config-panel">
     <div class="config-item">
-      <div class="config-title">Active Rings (1-20)</div>
+      <div class="config-title">Active Tables (1-20)</div>
       <div class="stepper-container">
         <button class="step-btn" onclick="stepActiveFloor(-1)">—</button>
         <input type="number" id="floor-input" class="floor-input-box" min="1" max="20" value="10" onchange="directTypeFloorCount(this.value)">
@@ -274,59 +284,54 @@ body {
       </div>
     </div>
     <div class="config-item">
-      <div class="config-title">Max Seats (2-10)</div>
+      <div class="config-title">Table Capacity (2-9)</div>
       <div class="stepper-container">
         <button class="step-btn" onclick="stepMaxSeats(-1)">—</button>
-        <input type="number" id="seats-input" class="floor-input-box" min="2" max="10" value="9" onchange="directTypeSeatsCount(this.value)">
+        <input type="number" id="seats-input" class="floor-input-box" min="2" max="9" value="9" onchange="directTypeSeatsCount(this.value)">
         <button class="step-btn" onclick="stepMaxSeats(1)">+</button>
       </div>
     </div>
   </div>
 
-  <!-- 📊 数据看板 -->
   <div class="stats-row">
-    <div class="stat" id="card-total">Total <b id="s-total">0</b></div>
-    <div class="stat" id="card-tables">Rings <b id="s-tables">0</b></div>
-    <div class="stat" id="card-spread">Spread <b id="s-spread">0</b></div>
-    <div class="stat" id="card-alerts">Alerts <b id="s-needs">0</b></div>
+    <div class="stat" id="card-total">Total Players <b id="s-total">0</b></div>
+    <div class="stat" id="card-tables">Active Tables <b id="s-tables">0</b></div>
+    <div class="stat" id="card-spread">Player Spread <b id="s-spread">0</b></div>
+    <div class="stat" id="card-alerts">Imbalances <b id="s-needs">0</b></div>
   </div>
 
-  <!-- 🧭 选项卡导航 -->
   <div class="nav-bar">
     <div class="tabs">
-      <button class="tab active" id="btn-overview" onclick="showTab('overview')">Matrix Grid</button>
+      <button class="tab active" id="btn-overview" onclick="showTab('overview')">Grid View</button>
       <button class="tab" id="btn-detail" onclick="showTab('detail')">Configurator</button>
-      <button class="tab" id="btn-balance" onclick="showTab('balance')">Engine</button>
+      <button class="tab" id="btn-balance" onclick="showTab('balance')">Balance Engine</button>
     </div>
   </div>
 
-  <!-- 🃏 矩阵网格面板 -->
   <div id="panel-overview" class="panel active">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;font-size:9px;color:var(--text-muted);font-weight:600;">
-      <span>STATE TRACKER ACTIVE</span>
+      <span>MONITOR EXTENSION ACTIVE</span>
       <div style="display:flex;gap:4px">
         <span class="badge bg-ok" style="position:static">✓ OPTIMAL</span>
         <span class="badge bg-warn" style="position:static">⚠️ UNEVEN</span>
-        <span class="badge bg-low" style="position:static">! SHORTHANDED</span>
+        <span class="badge bg-low" style="position:static">! SHORT</span>
       </div>
     </div>
     <div class="tables-grid" id="tables-grid"></div>
   </div>
 
-  <!-- 🛠️ 单桌排座面板 -->
   <div id="panel-detail" class="panel">
     <select class="detail-select" id="detail-sel" onchange="dropdownTableSelect(+this.value)"></select>
     <div id="detail-body"></div>
   </div>
 
-  <!-- 📊 平衡引擎面板 -->
   <div id="panel-balance" class="panel">
-    <div class="sec-title" style="margin-top:0">Seating Density Curve</div>
+    <div class="sec-title" style="margin-top:0">Seating Capacity Index</div>
     <div class="bar-row" id="bar-chart"></div>
-    <div class="sec-title">TDA Balancing Directives</div>
+    <div class="sec-title">Balancing Directives</div>
     <div id="suggestions"></div>
     <div id="break-wrap" style="display:none">
-      <div class="sec-title" style="color:#f87171">High Risk Consolidation Mandates</div>
+      <div class="sec-title" style="color:#f87171">High Variance Collapse Actions</div>
       <div id="break-list"></div>
     </div>
   </div>
@@ -340,7 +345,6 @@ let globalMaxPlayers = 9;
 const IDEAL_MIN = 6, IDEAL_MAX = 8;
 let tables = [], selectedTable = 1, activeFloorSize = 10;
 
-// 💾 本地缓存机制
 function saveStateToLocalStorage() {
   const stateData = {
     globalMaxPlayers: globalMaxPlayers,
@@ -374,7 +378,7 @@ function loadStateFromLocalStorage() {
 window.addEventListener('beforeunload', function (e) {
   if (getTotal() > 0) {
     e.preventDefault();
-    e.returnValue = 'Warning: Live fields are loaded!';
+    e.returnValue = 'Live fields are actively loaded.';
   }
 });
 
@@ -412,11 +416,11 @@ function showToast(message) {
 }
 
 function clearAllPlayers() {
-  if (confirm("⚠️ RESET MATRIX?\nClear all tournament player fields?")) {
+  if (confirm("Reset layout? All active configurations will be wiped.")) {
     tables.forEach(t => t.seats.forEach(s => s.occ = false));
     saveStateToLocalStorage();
     renderGrid();
-    showToast("🧹 Cleared");
+    showToast("Reset Complete");
     if (document.getElementById('panel-detail').classList.contains('active')) {
       populateSelect();
       if(selectedTable) showDetail(selectedTable);
@@ -464,19 +468,19 @@ function applyFloorSizeChange(targetCount) {
 function stepMaxSeats(delta) {
   let target = globalMaxPlayers + delta;
   if(target < 2) target = 2;
-  if(target > 10) target = 10;
+  if(target > 9) target = 9;
   applyMaxSeatsChange(target);
 }
 function directTypeSeatsCount(val) {
   let target = parseInt(val, 10);
   if(isNaN(target) || target < 2) target = 2;
-  if(target > 10) target = 10;
+  if(target > 9) target = 9;
   applyMaxSeatsChange(target);
 }
 function applyMaxSeatsChange(targetSeats) {
   const violationTable = getActive().find(t => getCount(t) > targetSeats);
   if (violationTable) {
-    alert(`⚠️ TDA Limit Violation: Table ${violationTable.tableName} has ${getCount(violationTable)} players. Cannot shrink limit.`);
+    alert(`Configuration Error: Table ${violationTable.tableName} has ${getCount(violationTable)} active players. Target threshold cannot be applied.`);
     document.getElementById('seats-input').value = globalMaxPlayers;
     return;
   }
@@ -487,7 +491,7 @@ function applyMaxSeatsChange(targetSeats) {
   syncTableSeatsCapacity();
   saveStateToLocalStorage();
   renderGrid();
-  showToast(`⚙️ Max Seats: ${globalMaxPlayers}`);
+  showToast(`Max Seats: ${globalMaxPlayers}`);
   
   if (document.getElementById('panel-detail').classList.contains('active')) {
     populateSelect();
@@ -502,8 +506,8 @@ const getCount  = t  => t.seats.filter(s => s.id <= globalMaxPlayers && s.occ).l
 const getEmpty  = t  => t.seats.filter(s => s.id <= globalMaxPlayers && !s.occ);
 const getTotal  = () => tables.reduce((a,t) => a+getCount(t), 0);
 
-function status(t){ 
-  const c=getCount(t); 
+function status(t) { 
+  const c = getCount(t); 
   if (c === 0) return 'ok'; 
   if (c <= 3) return 'low'; 
   if (c < IDEAL_MIN || c > IDEAL_MAX) return 'warn'; 
@@ -511,9 +515,9 @@ function status(t){
 }
 
 function updateStats() {
-  const at=getActive();
+  const at = getActive();
   const total = getTotal();
-  const alertCount = at.filter(t=>status(t)!=='ok' && getCount(t)>0).length;
+  const alertCount = at.filter(t => status(t) !== 'ok' && getCount(t) > 0).length;
   
   document.getElementById('s-total').textContent = total;
   document.getElementById('s-tables').textContent = at.length;
@@ -542,7 +546,7 @@ function renameTable(tid, event) {
   if (event) event.stopPropagation();
   const t = tables.find(x => x.id === tid);
   if (!t) return;
-  const newName = prompt(`Rename Table ${t.tableName}:`, t.tableName);
+  const newName = prompt(`Label Table ${t.tableName}:`, t.tableName);
   if (newName !== null && newName.trim() !== "") {
     t.tableName = newName.trim();
     saveStateToLocalStorage();
@@ -570,19 +574,19 @@ function dropdownTableSelect(tid) {
 }
 
 function renderGrid(){
-  const g=document.getElementById('tables-grid');
-  g.innerHTML='';
+  const g = document.getElementById('tables-grid');
+  g.innerHTML = '';
   
   const activeTables = getActive();
   if (activeTables.length === 0) {
-    g.innerHTML = `<div class="info-box" style="color:var(--text-muted); text-align:center; padding: 2rem;">No Active Rings.</div>`;
+    g.innerHTML = `<div class="info-box" style="color:var(--text-muted); text-align:center; padding: 2rem;">No Active Configurations.</div>`;
     updateStats();
     return;
   }
 
-  activeTables.forEach(t=>{
-    const c=getCount(t), st=status(t);
-    const d=document.createElement('div');
+  activeTables.forEach(t => {
+    const c = getCount(t), st = status(t);
+    const d = document.createElement('div');
     const hasPlayers = c > 0;
     
     let stateClass = '';
@@ -592,20 +596,20 @@ function renderGrid(){
       else stateClass = ' st-ok-filled';
     }
     
-    d.className='table-card' + stateClass + (selectedTable===t.id?' selected':'');
-    d.onclick=()=>{ 
-      selectedTable=t.id; 
+    d.className = 'table-card' + stateClass + (selectedTable === t.id ? ' selected' : '');
+    d.onclick = () => { 
+      selectedTable = t.id; 
       saveStateToLocalStorage();
       renderGrid(); 
       showTab('detail'); 
       showDetail(t.id); 
     };
     
-    const bCls=(!hasPlayers || st==='ok')?'bg-ok':st==='warn'?'bg-warn':'bg-low';
-    const bTxt=!hasPlayers?'VACANT':(st==='ok'?'✓ OPTIMAL':st==='warn'?'⚠️ UNEVEN':'! SHORTHANDED');
-    const pDots = t.seats.filter(s => s.id <= globalMaxPlayers).map(s => `<div class="md ${s.occ?'md-occ':'md-empty'}"></div>`).join('');
+    const bCls = (!hasPlayers || st === 'ok') ? 'bg-ok' : st === 'warn' ? 'bg-warn' : 'bg-low';
+    const bTxt = !hasPlayers ? 'VACANT' : (st === 'ok' ? '✓ OPTIMAL' : st === 'warn' ? '⚠️ UNEVEN' : '! SHORT');
+    const pDots = t.seats.filter(s => s.id <= globalMaxPlayers).map(s => `<div class="md ${s.occ ? 'md-occ' : 'md-empty'}"></div>`).join('');
     
-    d.innerHTML=`<span class="badge ${bCls}">${bTxt}</span>
+    d.innerHTML = `<span class="badge ${bCls}">${bTxt}</span>
       <div class="t-header-row">
         <div class="t-num">Table ${t.tableName}</div>
         <button class="edit-btn" onclick="renameTable(${t.id}, event)">✏️</button>
@@ -619,8 +623,8 @@ function renderGrid(){
 }
 
 function feltSVG(t) {
-  const W=360, H=240, cx=180, cy=125, rx=110, ry=65, sR=14; 
-  let seats='';
+  const W = 360, H = 240, cx = 180, cy = 125, rx = 110, ry = 65, sR = 14; 
+  let seats = '';
   
   seats += `<g>
     <rect x="${cx - 26}" y="${cy - ry - 4}" width="52" height="20" rx="5" fill="#0e1320" stroke="#10b981" stroke-width="1.5"/>
@@ -638,20 +642,20 @@ function feltSVG(t) {
       angleOffset = (-50 + (280 / (totalSeats - 1)) * i) * Math.PI / 180;
     }
     
-    const sx=(cx+(rx+25)*Math.cos(angleOffset)).toFixed(1);
-    const sy=(cy+(ry+24)*Math.sin(angleOffset)).toFixed(1);
+    const sx = (cx + (rx + 25) * Math.cos(angleOffset)).toFixed(1);
+    const sy = (cy + (ry + 24) * Math.sin(angleOffset)).toFixed(1);
     
     let fill = s.occ ? '#eab308' : '#121826';
     let stroke = s.occ ? '#facc15' : '#222f4d';
     let tc = s.occ ? '#000' : '#64748b';
     
-    seats+=`<g style="cursor:pointer" onclick="toggleSeat(${t.id},${s.id})">
+    seats += `<g style="cursor:pointer" onclick="toggleSeat(${t.id},${s.id})">
       <circle cx="${sx}" cy="${sy}" r="${sR}" fill="${fill}" stroke="${stroke}" stroke-width="1.5"/>
       <text x="${sx}" y="${sy}" text-anchor="middle" dominant-baseline="central" font-size="10" fill="${tc}" font-weight="900">${s.id}</text>
     </g>`;
   });
   
-  const c=getCount(t);
+  const c = getCount(t);
   return `<svg width="100%" height="100%" viewBox="0 0 ${W} ${H}" style="filter:drop-shadow(0 6px 15px rgba(0,0,0,.4))">
     <defs><radialGradient id="fg${t.id}" cx="50%" cy="50%" r="50%">
       <stop offset="0%" stop-color="var(--poker-green-start)"/><stop offset="100%" stop-color="var(--poker-green-end)"/>
@@ -664,26 +668,26 @@ function feltSVG(t) {
 }
 
 function showDetail(tid){
-  selectedTable=tid;
-  const t=tables.find(x=>x.id===tid);
+  selectedTable = tid;
+  const t = tables.find(x => x.id === tid);
   if(!t || !t.active) return;
-  const c=getCount(t), st=status(t);
+  const c = getCount(t), st = status(t);
   
-  const stLabel=c===0?`<span style="color:var(--text-muted)">Vacant Ring</span>`:
-    st==='ok'?`<span style="color:var(--status-ok-text)">Optimal (TDA Compliant)</span>`:
-    st==='warn'?`<span style="color:var(--status-warn-text)">Asymmetric Imbalance</span>`:
-    `<span style="color:var(--status-low-text)">Shorthanded Field</span>`;
+  const stLabel = c === 0 ? `<span style="color:var(--text-muted)">Vacant Field</span>` :
+    st === 'ok' ? `<span style="color:var(--status-ok-text)">Optimal Distribution</span>` :
+    st === 'warn' ? `<span style="color:var(--status-warn-text)">Asymmetric Field Load</span>` :
+    `<span style="color:var(--status-low-text)">Shorthanded State</span>`;
     
-  const seatBtns=t.seats.filter(s => s.id <= globalMaxPlayers).map(s=>{
+  const seatBtns = t.seats.filter(s => s.id <= globalMaxPlayers).map(s => {
     let cls = s.occ ? 'sb-occ' : 'sb-empty';
-    return`<div class="seat-btn ${cls}" onclick="toggleSeat(${t.id},${s.id})">
+    return `<div class="seat-btn ${cls}" onclick="toggleSeat(${t.id},${s.id})">
       <span>SEAT ${s.id}</span>
     </div>`;
   }).join('');
   
-  const breakBtnHtml = (c>0 && c<=3) ? `<div class="alert-box"><span>⚠️ Shorthanded Field Alert.</span><button class="break-btn" onclick="breakTable(${tid})">Break Ring</button></div>` : '';
+  const breakBtnHtml = (c > 0 && c <= 3) ? `<div class="alert-box"><span>⚠️ Critical shorthanded alert detected.</span><button class="break-btn" onclick="breakTable(${tid})">Collapse Table</button></div>` : '';
   
-  document.getElementById('detail-body').innerHTML=`
+  document.getElementById('detail-body').innerHTML = `
     <div class="detail-wrap">
       <div class="felt-container">
         ${feltSVG(t)}
@@ -692,45 +696,45 @@ function showDetail(tid){
         <div style="font-size: 18px; font-weight: 800; margin-bottom: 4px; color: var(--color-active);">Table ${t.tableName}</div>
         <div class="rename-section">
           <input type="text" id="rename-input-${t.id}" class="rename-input" value="${t.tableName}">
-          <button class="rename-confirm" onclick="submitRename(${t.id})">Rename</button>
+          <button class="rename-confirm" onclick="submitRename(${t.id})">Update Label</button>
         </div>
-        <div style="font-size:10px;font-weight:600;margin-bottom:0.4rem">TDA Profiler: ${stLabel}</div>
+        <div style="font-size:10px;font-weight:600;margin-bottom:0.4rem">Diagnostics: ${stLabel}</div>
         <div class="seat-grid">${seatBtns}</div>
         ${breakBtnHtml}
       </div>
     </div>`;
-  document.getElementById('detail-sel').value=tid;
+  document.getElementById('detail-sel').value = tid;
 }
 
-function toggleSeat(tid,sid){
-  const t = tables.find(x=>x.id===tid);
-  const seat = t.seats.find(s=>s.id===sid);
+function toggleSeat(tid, sid){
+  const t = tables.find(x => x.id === tid);
+  const seat = t.seats.find(s => s.id === sid);
   seat.occ = !seat.occ;
   saveStateToLocalStorage();
   renderGrid();
-  if(selectedTable===tid) showDetail(tid);
+  if(selectedTable === tid) showDetail(tid);
   if (document.getElementById('panel-balance').classList.contains('active')) renderBalance();
 }
 
 function breakTable(tid){
-  const t=tables.find(x=>x.id===tid);
-  const name=t.tableName;
-  const players=getCount(t);
+  const t = tables.find(x => x.id === tid);
+  const name = t.tableName;
+  const players = getCount(t);
   
-  t.seats.forEach(s=>s.occ=false);
+  t.seats.forEach(s => s.occ = false);
   
-  for(let i=0; i<players; i++){
+  for(let i = 0; i < players; i++){
     const validTargets = getActive().filter(x => x.id !== tid && getCount(x) > 0 && getCount(x) < globalMaxPlayers);
     if(validTargets.length === 0) break; 
     
     validTargets.sort((a,b) => getCount(a) - getCount(b));
-    const empty=getEmpty(validTargets[0]);
-    if(empty.length) empty[0].occ=true;
+    const empty = getEmpty(validTargets[0]);
+    if(empty.length) empty[0].occ = true;
   }
   
   saveStateToLocalStorage();
   renderGrid();
-  showToast(`🚨 Broken Table ${name}`);
+  showToast(`Collapsed Table ${name}`);
   if(selectedTable) showDetail(selectedTable);
 }
 
@@ -739,7 +743,7 @@ function executeMove(fromId, toId){
   const to = tables.find(t => t.id === toId);
   
   if (getCount(to) >= globalMaxPlayers) {
-    alert("❌ TDA Error: Target table is already full!");
+    alert("Operation Aborted: Target table is filled to capacity.");
     return;
   }
 
@@ -750,7 +754,7 @@ function executeMove(fromId, toId){
     occupiedSeats[occupiedSeats.length - 1].occ = false;
     emptySeats[0].occ = true;
     saveStateToLocalStorage();
-    showToast(`🔄 T-${from.tableName} → T-${to.tableName}`);
+    showToast(`Shifted: T-${from.tableName} → T-${to.tableName}`);
   }
   renderGrid();
   renderBalance();
@@ -758,11 +762,11 @@ function executeMove(fromId, toId){
 }
 
 function renderBalance(){
-  const at=getActive();
+  const at = getActive();
   if (at.length === 0) return;
   
-  document.getElementById('bar-chart').innerHTML=at.map(t=>{
-    const c=getCount(t), st=status(t);
+  document.getElementById('bar-chart').innerHTML = at.map(t => {
+    const c = getCount(t), st = status(t);
     const hPct = Math.round((c / globalMaxPlayers) * 100); 
     return `
       <div class="bar-col ${c === 0 ? 'vacant-mode' : ''}">
@@ -800,30 +804,30 @@ function renderBalance(){
     }
   }
 
-  document.getElementById('suggestions').innerHTML=sugg.length
-    ? sugg.map(s=>`<div class="move-row"><span>⚠️ TDA Balance: Move 1 player from <b>Table ${s.fromName}</b> → <b>Table ${s.toName}</b></span><button class="exec-btn" onclick="executeMove(${s.fromId},${s.toId})">Execute</button></div>`).join('')
-    : (getTotal() === 0 ? '<div class="info-box" style="color:var(--text-muted)">Floor empty.</div>' : '<div class="info-box">✓ Variance optimal. Floor in perfect equilibrium.</div>');
+  document.getElementById('suggestions').innerHTML = sugg.length
+    ? sugg.map(s => `<div class="move-row"><span>Balance Warning: Shift 1 player from <b>Table ${s.fromName}</b> → <b>Table ${s.toName}</b></span><button class="exec-btn" onclick="executeMove(${s.fromId},${s.toId})">Execute Shift</button></div>`).join('')
+    : (getTotal() === 0 ? '<div class="info-box" style="color:var(--text-muted)">Floor is currently unassigned.</div>' : '<div class="info-box">✓ Floor variance optimal. Equilibrium maintained.</div>');
     
   const brk = at.filter(t => getCount(t) > 0 && getCount(t) <= 3);
   const bw = document.getElementById('break-wrap');
   if(brk.length){
-    bw.style.display='block';
-    document.getElementById('break-list').innerHTML=brk.map(t=>`<div class="move-row"><span>🚨 <b>Table ${t.tableName}</b> Shorthanded (${getCount(t)} players)</span><button class="break-btn" onclick="breakTable(${t.id});renderBalance()">Collapse Ring</button></div>`).join('');
-  } else { bw.style.display='none'; }
+    bw.style.display = 'block';
+    document.getElementById('break-list').innerHTML = brk.map(t => `<div class="move-row"><span>Critical: <b>Table ${t.tableName}</b> is running shorthanded (${getCount(t)} players).</span><button class="break-btn" onclick="breakTable(${t.id});renderBalance()">Collapse Table</button></div>`).join('');
+  } else { bw.style.display = 'none'; }
 }
 
 function populateSelect(){
-  const sel=document.getElementById('detail-sel');
+  const sel = document.getElementById('detail-sel');
   const activeTables = getActive();
-  sel.innerHTML=activeTables.map(t=>`<option value="${t.id}">Table ${t.tableName} (${getCount(t)} Players)</option>`).join('');
-  if(selectedTable && activeTables.find(t => t.id === selectedTable)) sel.value=selectedTable;
+  sel.innerHTML = activeTables.map(t => `<option value="${t.id}">Table ${t.tableName} (${getCount(t)} Players)</option>`).join('');
+  if(selectedTable && activeTables.find(t => t.id === selectedTable)) sel.value = selectedTable;
 }
 
 function showTab(name){
-  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['overview','detail','balance'][i]===name));
-  ['overview','detail','balance'].forEach(n=>document.getElementById('panel-'+n).classList.toggle('active',n===name));
-  if(name==='balance') renderBalance();
-  if(name==='detail'){populateSelect(); if(selectedTable) showDetail(selectedTable);}
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active',['overview','detail','balance'][i] === name));
+  ['overview','detail','balance'].forEach(n => document.getElementById('panel-'+n).classList.toggle('active',n === name));
+  if(name === 'balance') renderBalance();
+  if(name === 'detail'){populateSelect(); if(selectedTable) showDetail(selectedTable);}
 }
 
 function bootstrap(){
