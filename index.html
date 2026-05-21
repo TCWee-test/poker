@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Live Floor Matrix [v2.4.7]</title>
+<title>Live Floor Matrix [v2.4.8]</title>
 <style>
 :root {
   --bg-main: #0a0e17;          
@@ -227,6 +227,7 @@ body {
 .bar.ok   { background: var(--status-ok-text); opacity: .85; }
 .bar.warn { background: var(--status-warn-text); opacity: .95; }
 .bar-lbl { font-size: 8px; color: #fff; font-weight: 800; margin-bottom: 2px; }
+.bar-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; align-items: end; height: 160px; margin-bottom: 10px; background: #080c14; padding: 12px 6px; border-radius: 12px; border: 1px solid var(--border-color); width: 100%; position: relative; }
 .bar-val { font-size: 9px; color: var(--color-active); font-weight: 900; margin-top: 2px; }
 .bar-val.crit-text { color: var(--status-low-text); }
 
@@ -269,7 +270,7 @@ body {
   <div class="top-header">
     <div class="title-area">
       <h1>🃏 FLOOR MATRIX</h1>
-      <div class="version-tag">v2.4.7</div>
+      <div class="version-tag">v2.4.8</div>
     </div>
     <button class="danger-zone-trigger" onclick="clearAllPlayers()">Reset Floor</button>
   </div>
@@ -342,7 +343,7 @@ body {
 
 <script>
 let globalMaxPlayers = 9; 
-const IDEAL_MIN = 6, IDEAL_MAX = 8;
+const IDEAL_MIN = 4; // Lowered baseline to smooth the optimal range curve
 let tables = [], selectedTable = 1, activeFloorSize = 10;
 
 function saveStateToLocalStorage() {
@@ -506,12 +507,13 @@ const getCount  = t  => t.seats.filter(s => s.id <= globalMaxPlayers && s.occ).l
 const getEmpty  = t  => t.seats.filter(s => s.id <= globalMaxPlayers && !s.occ);
 const getTotal  = () => tables.reduce((a,t) => a+getCount(t), 0);
 
+// Fixed Threshold: 9 players is now officially recognized as 'ok' (Optimal Load)
 function status(t) { 
   const c = getCount(t); 
   if (c === 0) return 'ok'; 
   if (c <= 3) return 'low'; 
-  if (c < IDEAL_MIN || c > IDEAL_MAX) return 'warn'; 
-  return 'ok'; 
+  if (c >= IDEAL_MIN && c <= globalMaxPlayers) return 'ok'; 
+  return 'warn'; 
 }
 
 function updateStats() {
