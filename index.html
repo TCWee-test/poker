@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Tournament Matrix v2.6.7</title>
+<title>Tournament Matrix v2.6.8</title>
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -191,11 +191,11 @@ body {
 .main-viewport { flex: 3; width: 100%; }
 .side-audit-logs {
   flex: 1.2; background: var(--bg-panel); border: 1px solid var(--border-color);
-  border-radius: 14px; padding: 12px; display: flex; flex-direction: column; min-height: 200px; max-height: 380px;
+  border-radius: 14px; padding: 12px; display: flex; flex-direction: column; min-height: 240px; max-height: 420px;
 }
-.log-stream { flex: 1; overflow-y: auto; font-family: monospace; font-size: 11px; color: #94a3b8; margin-top: 8px; display: flex; flex-direction: column; gap: 4px; padding-right: 4px; }
-.log-line { border-bottom: 1px solid rgba(255,255,255,0.02); padding-bottom: 2px; line-height: 1.4; word-break: break-all; }
-.log-line b { color: var(--color-active); }
+.log-stream { flex: 1; overflow-y: auto; font-family: monospace; font-size: 11px; color: #94a3b8; margin-top: 8px; display: flex; flex-direction: column; gap: 6px; padding-right: 4px; }
+.log-line { border-bottom: 1px solid rgba(255,255,255,0.02); padding-bottom: 4px; line-height: 1.5; word-break: break-all; }
+.log-line b { color: var(--text-main); font-weight: 700; }
 
 .panel { display: none; width: 100%; animation: fadeIn 0.15s cubic-bezier(0.4, 0, 0.2, 1); }
 .panel.active { display: block; }
@@ -320,7 +320,7 @@ body {
   <div class="top-header">
     <div class="title-area">
       <h1>🏆 TOURNAMENT MATRIX</h1>
-      <div class="version-tag">v2.6.7</div>
+      <div class="version-tag">v2.6.8</div>
     </div>
     <button class="danger-zone-trigger" onclick="clearAllPlayers()">Reset Field</button>
   </div>
@@ -406,6 +406,7 @@ let supervisorIdentity = "FLOOR-1";
 let peer = null, conn = null;
 const PEER_PREFIX = "poker-tournament-matrix-v3-";
 
+// 🔒 稳妥型系统双端防退拦截（拉出底层系统拦截弹窗，不强行劫持路由历史记录，避免系统卡死）
 window.addEventListener('beforeunload', function (e) {
   if (conn && conn.open) {
     e.preventDefault();
@@ -413,13 +414,30 @@ window.addEventListener('beforeunload', function (e) {
   }
 });
 
+// ⚡ 核心黑科技：根据输入的名字字符串，动态实时计算出独一无二、且在暗黑色调下高对比度易读的柔和 HSL 色彩标签
+function generateUserTag(name) {
+  if (!name) name = "UNKNOWN";
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const hue = Math.abs(hash) % 360;
+  
+  // 锁定饱和度 65%，亮度 75%，确保色彩高级柔和，在大盲区不刺眼
+  const baseColor = `hsl(${hue}, 65%, 75%)`;
+  const bgAlpha   = `hsla(${hue}, 65%, 75%, 0.12)`;
+  const borderAlpha = `hsla(${hue}, 65%, 75%, 0.25)`;
+  
+  return `<span style="color:${baseColor}; font-weight:800; background:${bgAlpha}; padding:2px 6px; border-radius:4px; border:1px solid ${borderAlpha}; font-size:11px;">👤 ${name}</span>`;
+}
+
 function changeIdentity() {
   const newId = prompt("Enter Custom Supervisor Label / Name:", supervisorIdentity);
   if(newId && newId.trim() !== "") {
     const oldId = supervisorIdentity;
     supervisorIdentity = newId.trim().toUpperCase().substring(0, 12);
     document.getElementById('identity-label').textContent = supervisorIdentity;
-    writeLog(`Identity changed from ${oldId} → <b>${supervisorIdentity}</b>`);
+    writeLog(`System: Node telemetry recalibrated to ${generateUserTag(supervisorIdentity)}`);
     broadcastData({ type: "IDENTITY_UPDATE", name: supervisorIdentity });
   }
 }
@@ -428,10 +446,12 @@ function writeLog(htmlText) {
   const stream = document.getElementById('log-stream');
   if (!stream) return;
   const timestamp = new Date().toTimeString().split(' ')[0];
-  const logEntry = `[${timestamp}] ${htmlText}`;
+  
+  const logEntry = `<span style="color:var(--text-muted);font-size:10px;">[${timestamp}]</span> ${htmlText}`;
   
   const line = document.createElement('div');
   line.className = 'log-line';
+  line.style.padding = '4px 0'; 
   line.innerHTML = logEntry;
   stream.insertBefore(line, stream.firstChild);
 
@@ -447,11 +467,12 @@ function loadCachedLogs() {
   stream.innerHTML = '';
   let localLogs = JSON.parse(localStorage.getItem('poker_floor_logs') || '[]');
   if(localLogs.length === 0) {
-    localLogs.push(`[${new Date().toTimeString().split(' ')[0]}] > System ready. Channels isolated.`);
+    localLogs.push(`<span style="color:var(--text-muted);font-size:10px;">[${new Date().toTimeString().split(' ')[0]}]</span> <span style="color:var(--text-muted);">System ready. Channels isolated. Monitoring fields.</span>`);
   }
   localLogs.reverse().forEach(log => {
     const line = document.createElement('div');
     line.className = 'log-line';
+    line.style.padding = '4px 0';
     line.innerHTML = log;
     stream.insertBefore(line, stream.firstChild);
   });
@@ -460,7 +481,7 @@ function loadCachedLogs() {
 function clearCachedLogs() {
   localStorage.removeItem('poker_floor_logs');
   document.getElementById('log-stream').innerHTML = '';
-  writeLog('> Logs flushed. Monitoring field.');
+  writeLog('<span style="color:var(--text-muted);">Logs flushed. Monitoring field.</span>');
 }
 
 function broadcastData(payload) {
@@ -554,7 +575,7 @@ function initializeWebRTCJoin() {
 
 function disconnectSync() {
   if (conn && conn.open) { 
-    conn.send({ type: "REMOTE_DISCONNECT", by: supervisorIdentity }); // ⚡ 优雅下线告知
+    conn.send({ type: "REMOTE_DISCONNECT", by: supervisorIdentity }); 
     conn.close(); 
   }
   conn = null;
@@ -584,16 +605,15 @@ function setupConnectionListeners(isHost) {
   
   conn.on('close', () => {
     updateVisualStates("standalone");
-    writeLog(`<span style="color:var(--status-low-text)">Sync dropped. Independent operations mode.</span>`);
+    writeLog(`<span style="color:var(--status-low-text);font-weight:700;">⚠️ Link Detached</span>: Remote cluster disconnected.`);
   });
 }
 
 function handleIncomingNetworkPackets(packet) {
   if (!packet || !packet.type) return;
 
-  // ⚡ 优雅退出包拦截
   if (packet.type === "REMOTE_DISCONNECT") {
-    writeLog(`<span style="color:var(--status-low-text)">Remote node exited channel. Link detached.</span>`);
+    writeLog(`<span style="color:#f87171;background:rgba(239,68,68,0.1);padding:2px 6px;border-radius:4px;font-weight:700;">⚠️ Link Detached</span>: Node ${generateUserTag(packet.by)} exited channel.`);
     if (conn) { conn.close(); conn = null; }
     updateVisualStates("standalone");
     return;
@@ -606,16 +626,16 @@ function handleIncomingNetworkPackets(packet) {
       renderGrid(); 
       if(selectedTable) showDetail(selectedTable);
       if(document.getElementById('panel-balance').classList.contains('active')) renderBalance();
-      writeLog(`Received channel sync snap from <b>${packet.senderIdentity}</b>.`);
       
-      // ⚡ 纯存储，切断传播链路，杜绝死循环
+      writeLog(`${generateUserTag(packet.senderIdentity)} <span style="color:#10b981;font-weight:700;">[FULL SYNC]</span> ➔ Overwrote local sandbox with master cluster.`);
+      
       localStorage.setItem(`poker_matrix_state_ch_${document.getElementById('tourny-id').value.trim()}`, JSON.stringify({
         globalMaxPlayers, activeFloorSize, selectedTable, tables
       }));
       break;
 
     case "SEAT_TOGGLE":
-      if (packet.sid > globalMaxPlayers) return; // ⚡ 核心安全锁：拦截非法越界座位操作
+      if (packet.sid > globalMaxPlayers) return; 
       const t = tables.find(x => x.id === packet.tid); 
       if (!t) return;
       const s = t.seats.find(x => x.id === packet.sid);
@@ -624,7 +644,11 @@ function handleIncomingNetworkPackets(packet) {
       renderGrid();
       if(selectedTable === packet.tid) showDetail(packet.tid);
       if(document.getElementById('panel-balance').classList.contains('active')) renderBalance();
-      writeLog(`[${packet.by}] <b>${packet.occ ? 'SEAT OCCUPIED' : 'BUST-OUT'}</b>: Table ${t.tableName}, Seat ${packet.sid}`);
+      
+      const actionTag = packet.occ 
+        ? `<span style="color:#10b981;font-weight:700;">[SEAT ACTIVE]</span>` 
+        : `<span style="color:#f87171;font-weight:700;">[BUST-OUT]</span>`;
+      writeLog(`${generateUserTag(packet.by)} ${actionTag} ➔ Table <b>${t.tableName}</b>, Seat <b>${packet.sid}</b>`);
       
       localStorage.setItem(`poker_matrix_state_ch_${document.getElementById('tourny-id').value.trim()}`, JSON.stringify({
         globalMaxPlayers, activeFloorSize, selectedTable, tables
@@ -644,7 +668,8 @@ function handleIncomingNetworkPackets(packet) {
       renderGrid(); 
       if(selectedTable) showDetail(selectedTable);
       if(document.getElementById('panel-balance').classList.contains('active')) renderBalance();
-      writeLog(`[${packet.by}] <b>BROKE / MERGED</b>: Table ${bt ? bt.tableName : packet.tid}`);
+      
+      writeLog(`${generateUserTag(packet.by)} <span style="color:#fb7185;font-weight:700;background:rgba(251,113,133,0.1);padding:2px 6px;border-radius:4px;">[⚠️ BROKE TABLE]</span> ➔ Collapsed Table <b>${bt ? bt.tableName : packet.tid}</b>`);
       
       localStorage.setItem(`poker_matrix_state_ch_${document.getElementById('tourny-id').value.trim()}`, JSON.stringify({
         globalMaxPlayers, activeFloorSize, selectedTable, tables
@@ -662,7 +687,8 @@ function handleIncomingNetworkPackets(packet) {
       renderGrid(); 
       if(document.getElementById('panel-balance').classList.contains('active')) renderBalance();
       if(selectedTable === packet.fromId || selectedTable === packet.toId) showDetail(selectedTable);
-      writeLog(`[${packet.by}] <b>BALANCED</b>: 1 Player shifted T-${fT?fT.tableName:packet.fromId} → T-${tT?tT.tableName:packet.toId}`);
+      
+      writeLog(`${generateUserTag(packet.by)} <span style="color:#38bdf8;font-weight:700;">[BALANCED]</span> ➔ Shifted 1 Player: Table <b>${fT?fT.tableName:packet.fromId}</b> ➔ Table <b>${tT?tT.tableName:packet.toId}</b>`);
       
       localStorage.setItem(`poker_matrix_state_ch_${document.getElementById('tourny-id').value.trim()}`, JSON.stringify({
         globalMaxPlayers, activeFloorSize, selectedTable, tables
@@ -670,7 +696,7 @@ function handleIncomingNetworkPackets(packet) {
       break;
 
     case "IDENTITY_UPDATE":
-      writeLog(`Remote node changed identity to <b>${packet.name}</b>`);
+      writeLog(`<span style="color:var(--text-muted);">System: Node telemetry recalibrated to</span> ${generateUserTag(packet.name)}`);
       break;
   }
 }
@@ -719,8 +745,10 @@ function clearAllPlayers() {
   if (confirm("Reset current Tournament Field? All configurations inside this channel will be wiped.")) {
     tables.forEach(t => t.seats.forEach(s => s.occ = false));
     saveStateToLocalStorage(); renderGrid();
-    if(document.getElementById('panel-detail').classList.contains('active')) populateSelect(); // 联动刷新菜单文字
-    writeLog(`[${supervisorIdentity}] <b>FIELD WIPED</b>.`);
+    if(document.getElementById('panel-detail').classList.contains('active')) populateSelect(); 
+    
+    writeLog(`${generateUserTag(supervisorIdentity)} <span style="color:#f87171;font-weight:750;background:rgba(239,68,68,0.15);padding:2px 6px;border-radius:4px;">[💥 FIELD WIPED]</span> ➔ Reset entire tournament channel.`);
+    
     broadcastData({ type: "FULL_SYNC", globalMaxPlayers, activeFloorSize, tables, senderIdentity: supervisorIdentity });
     showToast("Field Flushed");
   }
@@ -740,7 +768,7 @@ function applyFloorSizeChange(targetCount) {
   const currentActiveTables = getActive();
   if (currentActiveTables.length > 0) { if (!currentActiveTables.find(t => t.id === selectedTable)) selectedTable = currentActiveTables[0].id; } else { selectedTable = null; }
   saveStateToLocalStorage(); renderGrid();
-  if(document.getElementById('panel-detail').classList.contains('active')) populateSelect(); // 联动刷新菜单文字
+  if(document.getElementById('panel-detail').classList.contains('active')) populateSelect(); 
   broadcastData({ type: "FULL_SYNC", globalMaxPlayers, activeFloorSize, tables, senderIdentity: supervisorIdentity });
 }
 
@@ -757,7 +785,7 @@ function applyMaxSeatsChange(targetSeats) {
   if (violationTable) { alert(`Error: Table ${violationTable.tableName} already has ${getCount(violationTable)} players.`); return; }
   globalMaxPlayers = targetSeats; document.getElementById('seats-input').value = globalMaxPlayers;
   syncTableSeatsCapacity(); saveStateToLocalStorage(); renderGrid();
-  if(document.getElementById('panel-detail').classList.contains('active')) populateSelect(); // 联动刷新菜单文字
+  if(document.getElementById('panel-detail').classList.contains('active')) populateSelect(); 
   broadcastData({ type: "FULL_SYNC", globalMaxPlayers, activeFloorSize, tables, senderIdentity: supervisorIdentity });
 }
 
@@ -835,9 +863,12 @@ function toggleSeat(tid, sid){
   const t = tables.find(x => x.id === tid); const seat = t.seats.find(s => s.id === sid); seat.occ = !seat.occ;
   saveStateToLocalStorage(); renderGrid();
   if(selectedTable === tid) showDetail(tid);
-  if (document.getElementById('panel-detail').classList.contains('active')) populateSelect(); // ⚡ 优化：SVG调配实时联动下拉菜单文字描述
+  if (document.getElementById('panel-detail').classList.contains('active')) populateSelect(); 
   if (document.getElementById('panel-balance').classList.contains('active')) renderBalance();
-  writeLog(`[${supervisorIdentity}] <b>${seat.occ?'SEAT ACTIVE':'BUST-OUT'}</b>: Table ${t.tableName}, Seat ${sid}`);
+  
+  const localAction = seat.occ ? `<span style="color:#10b981;font-weight:700;">[SEAT ACTIVE]</span>` : `<span style="color:#f87171;font-weight:700;">[BUST-OUT]</span>`;
+  writeLog(`${generateUserTag(supervisorIdentity)} ${localAction} ➔ Table <b>${t.tableName}</b>, Seat <b>${sid}</b>`);
+  
   broadcastData({ type: "SEAT_TOGGLE", tid, sid, occ: seat.occ, by: supervisorIdentity });
 }
 
@@ -852,8 +883,10 @@ function breakTable(tid){
   }
   saveStateToLocalStorage(); renderGrid(); showToast(`Broke Table ${t.tableName}`);
   if(selectedTable) showDetail(selectedTable);
-  if(document.getElementById('panel-detail').classList.contains('active')) populateSelect(); // 联动刷新
-  writeLog(`[${supervisorIdentity}] <b>BROKE TABLE</b>: Dispersed T-${t.tableName}`);
+  if(document.getElementById('panel-detail').classList.contains('active')) populateSelect(); 
+  
+  writeLog(`${generateUserTag(supervisorIdentity)} <span style="color:#fb7185;font-weight:700;background:rgba(251,113,133,0.1);padding:2px 6px;border-radius:4px;">[⚠️ BROKE TABLE]</span> ➔ Collapsed Table <b>${t.tableName}</b>`);
+  
   broadcastData({ type: "BREAK_TABLE", tid, distributionArray: distributions, by: supervisorIdentity });
 }
 
@@ -863,7 +896,9 @@ function executeMove(fromId, toId){
   if(occupiedSeats.length > 0 && emptySeats.length > 0) {
     occupiedSeats[occupiedSeats.length - 1].occ = false; emptySeats[0].occ = true;
     saveStateToLocalStorage(); showToast(`Balanced: T-${from.tableName} → T-${to.tableName}`);
-    writeLog(`[${supervisorIdentity}] <b>BALANCED</b>: 1 player moved T-${from.tableName} → T-${to.tableName}`);
+    
+    writeLog(`${generateUserTag(supervisorIdentity)} <span style="color:#38bdf8;font-weight:700;">[BALANCED]</span> ➔ Shifted 1 Player: Table <b>${from.tableName}</b> ➔ Table <b>${to.tableName}</b>`);
+    
     broadcastData({ type: "SHIFT_PLAYER", fromId, toId, by: supervisorIdentity });
   }
   renderGrid(); renderBalance();
@@ -895,7 +930,7 @@ function runVirtualBalancingEngine(activeTables) {
   while (virtualFloor.length > 1 && loopSafety < 50) {
     loopSafety++; virtualFloor.sort((a,b) => b.count - a.count);
     let maxT = virtualFloor[0], minT = virtualFloor[virtualFloor.length - 1];
-    if ((maxT.count - minT.count) >= 2 && minT.count <= globalMaxPlayers - 1) { // ⚡ 符合TDA的Deadzone缓冲差额机制
+    if ((maxT.count - minT.count) >= 2 && minT.count <= globalMaxPlayers - 1) { 
       sugg.push({ fromId: maxT.id, toId: minT.id, fromName: maxT.tableName, toName: minT.tableName });
       maxT.count--; minT.count++;
     } else { break; }
@@ -910,7 +945,7 @@ function populateSelect(){
 }
 
 document.getElementById('tourny-id').addEventListener('change', function() {
-  disconnectSync(); // ⚡ 触发优雅退出旧频道包，避免僵尸死链接挂载
+  disconnectSync(); 
   const success = loadStateFromLocalStorage();
   if(!success) {
     tables = Array.from({length: 20}, (_, i) => {
