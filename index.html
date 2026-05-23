@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Tournament Floor Matrix [v2.6.2]</title>
+<title>Production Tournament Matrix [v2.6.5]</title>
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <style>
 :root {
@@ -54,12 +54,19 @@ body {
   flex-wrap: wrap;
   gap: 10px;
 }
-.sync-cluster { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; }
+.sync-cluster { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; flex-wrap: wrap; }
 .sync-btn {
   background: #1e293b; border: 1px solid var(--border-color); color: #fff;
   padding: 4px 10px; font-size: 11px; font-weight: 700; border-radius: 5px; cursor: pointer;
 }
 .sync-btn:hover { background: #2d3d54; }
+.sync-btn.btn-disconnect { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); color: #f87171; }
+.sync-btn.btn-disconnect:hover { background: rgba(239, 68, 68, 0.3); }
+
+.tourny-id-input {
+  background: #070a12; border: 1px solid var(--border-color); color: #fff;
+  padding: 2px 6px; font-size: 11px; font-weight: 700; width: 70px; border-radius: 4px; outline: none; text-align: center;
+}
 .identity-tag {
   background: rgba(234, 179, 8, 0.1); border: 1px solid var(--color-active); color: var(--color-active);
   padding: 2px 8px; border-radius: 4px; cursor: pointer; font-weight: 800;
@@ -67,6 +74,7 @@ body {
 .status-indicator { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-muted); }
 .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #64748b; }
 .status-dot.online { background: var(--status-ok-text); box-shadow: 0 0 6px var(--status-ok-text); }
+.status-dot.hosting { background: #38bdf8; box-shadow: 0 0 6px #38bdf8; }
 
 /* Header Layout */
 .top-header {
@@ -121,7 +129,6 @@ body {
   font-size: 16px; font-weight: 800; width: 65px; height: 42px; text-align: center !important; 
   padding: 0 !important; margin: 0 auto; border-radius: 6px; outline: none; -moz-appearance: textfield;
 }
-.floor-input-box::-webkit-outer-spin-button, .floor-input-box::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
 /* Status Dashboard Cards */
 .stats-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 0.8rem; width: 100%; }
@@ -172,7 +179,6 @@ body {
 
 .t-header-row { display: flex; align-items: center; justify-content: center; gap: 4px; }
 .t-num { font-size: 12px; color: #fff; font-weight: 700; }
-.edit-btn { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 10px; opacity: 0.4; padding: 2px; }
 
 .t-cnt { font-size: 28px; font-weight: 900; color: var(--color-active); line-height: 1.1; margin: 1px 0; }
 .t-sub { font-size: 9px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
@@ -184,16 +190,11 @@ body {
 
 .badge { position: absolute; top: 4px; right: 4px; font-size: 7px; padding: 1px 4px; border-radius: 4px; font-weight: 800; }
 .bg-ok   { background: var(--status-ok-bg); color: var(--status-ok-text); }
-.bg-warn { background: var(--status-warn-bg); color: var(--status-warn-text); }
 .bg-low  { background: var(--status-low-bg); color: var(--status-low-text); }
 
 .detail-wrap { display: flex; flex-direction: column; gap: 1rem; align-items: center; justify-content: center; margin-top: 0.4rem; width: 100%; }
 .felt-container { width: 100%; max-width: 360px; aspect-ratio: 360 / 240; display: flex; justify-content: center; align-items: center; }
 .seat-panel { width: 100%; background: var(--bg-panel); padding: 1rem; border-radius: 14px; border: 1px solid var(--border-color); }
-
-.rename-section { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; }
-.rename-input { background: #070a12; border: 1px solid var(--border-color); border-radius: 6px; color: #fff; padding: 8px 10px; font-size: 14px; font-weight: 700; width: 120px; outline: none; }
-.rename-confirm { background: linear-gradient(180deg, #222f4d 0%, #161f33 100%); border: 1px solid #2e3f66; color: white; padding: 8px 14px; font-size: 12px; font-weight: 700; border-radius: 6px; cursor: pointer; }
 
 .seat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 1rem; }
 .seat-btn { border-radius: 10px; height: 48px; font-size: 13px; text-align: center; cursor: pointer; border: 1px solid var(--border-color); font-weight: 900; display: flex; flex-direction: column; justify-content: center; align-items: center; }
@@ -223,7 +224,6 @@ body {
 .bar { border-radius: 3px 3px 0 0; min-height: 2px; width: 70%; transition: height .2s ease; }
 .bar.low { background: var(--status-low-text); }
 .bar.ok   { background: var(--status-ok-text); opacity: .85; }
-.bar.warn { background: var(--status-warn-text); opacity: .95; }
 .bar-lbl { font-size: 8px; color: #fff; font-weight: 800; margin-bottom: 2px; }
 .bar-val { font-size: 9px; color: var(--color-active); font-weight: 900; margin-top: 2px; }
 .bar-val.crit-text { color: var(--status-low-text); }
@@ -267,10 +267,12 @@ body {
 
   <div class="sync-bar">
     <div class="sync-cluster">
-      <span>📡 TOURNAMENT SYNC:</span>
+      <span>📡 TOURNAMENT CH:</span>
+      <input type="text" id="tourny-id" class="tourny-id-input" value="1001" placeholder="CH ID">
       <button class="sync-btn" onclick="initializeWebRTCHost()">Host Room</button>
       <button class="sync-btn" onclick="initializeWebRTCJoin()">Join Room</button>
-      <span style="margin-left:6px">Identity:</span>
+      <button class="sync-btn btn-disconnect" onclick="disconnectSync()">Disconnect</button>
+      <span style="margin-left:4px">Node:</span>
       <span class="identity-tag" id="identity-label" onclick="changeIdentity()">FLOOR-1</span>
     </div>
     <div class="status-indicator">
@@ -282,7 +284,7 @@ body {
   <div class="top-header">
     <div class="title-area">
       <h1>🏆 TOURNAMENT MATRIX</h1>
-      <div class="version-tag">v2.6.2-TOURNAMENT</div>
+      <div class="version-tag">v2.6.5-PRODUCTION</div>
     </div>
     <button class="danger-zone-trigger" onclick="clearAllPlayers()">Reset Field</button>
   </div>
@@ -366,13 +368,12 @@ let supervisorIdentity = "FLOOR-1";
 
 // WebRTC Engine State Handles
 let peer = null, conn = null;
-const PEER_PREFIX = "poker-tournament-matrix-";
+const PEER_PREFIX = "poker-tournament-matrix-v3-";
 
-// Core Guard Rail Against Double-Unload Hooks
 window.addEventListener('beforeunload', function (e) {
   if (conn && conn.open) {
     e.preventDefault();
-    e.returnValue = 'Warning: Refreshing will sever the multi-floor sync connection. Are you sure?';
+    e.returnValue = 'Warning: Synchronized link will break. Proceed?';
   }
 });
 
@@ -387,7 +388,6 @@ function changeIdentity() {
   }
 }
 
-// Persistent Log Storage Engineering
 function writeLog(htmlText) {
   const stream = document.getElementById('log-stream');
   const timestamp = new Date().toTimeString().split(' ')[0];
@@ -409,7 +409,7 @@ function loadCachedLogs() {
   stream.innerHTML = '';
   let localLogs = JSON.parse(localStorage.getItem('poker_floor_logs') || '[]');
   if(localLogs.length === 0) {
-    localLogs.push(`[${new Date().toTimeString().split(' ')[0]}] > Tournament system loaded. Monitoring field.`);
+    localLogs.push(`[${new Date().toTimeString().split(' ')[0]}] > System ready. Channels isolated.`);
   }
   localLogs.reverse().forEach(log => {
     const line = document.createElement('div');
@@ -422,7 +422,7 @@ function loadCachedLogs() {
 function clearCachedLogs() {
   localStorage.removeItem('poker_floor_logs');
   document.getElementById('log-stream').innerHTML = '';
-  writeLog('> Logs flushed. Tracking brand new tournament blind level.');
+  writeLog('> Logs flushed. Monitoring field.');
 }
 
 function broadcastData(payload) {
@@ -432,53 +432,72 @@ function broadcastData(payload) {
 }
 
 function initializeWebRTCHost() {
-  if (peer) peer.destroy();
-  const roomId = Math.floor(1000 + Math.random() * 9000).toString();
-  peer = new Peer(PEER_PREFIX + roomId);
+  disconnectSync();
+  const channelId = document.getElementById('tourny-id').value.trim();
+  if(!channelId) { alert("Please input a valid Tournament Channel ID."); return; }
   
-  writeLog(`Initializing master tournament link...`);
+  peer = new Peer(PEER_PREFIX + channelId);
+  writeLog(`Initializing isolated link for Tournament CH: ${channelId}...`);
   
   peer.on('open', (id) => {
-    alert(`TOURNAMENT ROOM CREATED!\n\nProvide this 4-Digit Pairing Code to the other supervisor:\n▶ ${roomId} ◀`);
-    document.getElementById('sync-status-text').textContent = `Hosting: ${roomId}`;
-    document.getElementById('sync-dot').className = "status-dot online";
-    writeLog(`Hosting tournament synchronization code: <b>${roomId}</b>`);
+    alert(`TOURNAMENT ROOM ONLINE!\n\nOther iPads must target CH: ${channelId}\nThen tap 'Join Room'.`);
+    document.getElementById('sync-status-text').textContent = `Hosting: ${channelId}`;
+    document.getElementById('sync-dot').className = "status-dot hosting";
+    writeLog(`Hosting tournament channel: <b>${channelId}</b>`);
   });
   
   peer.on('connection', (connection) => {
     conn = connection;
-    setupConnectionListeners();
+    setupConnectionListeners(true);
+  });
+
+  peer.on('error', (err) => {
+    if(err.type === 'unavailable-id') {
+      alert(`Error: Channel '${channelId}' is already hosted on this network!\nChoose a different ID for this tournament.`);
+      disconnectSync();
+    }
   });
 }
 
 function initializeWebRTCJoin() {
-  if (peer) peer.destroy();
-  const targetRoom = prompt("Enter the 4-Digit Pairing Code provided by the Host:");
-  if (!targetRoom) return;
+  disconnectSync();
+  const channelId = document.getElementById('tourny-id').value.trim();
+  if(!channelId) { alert("Please input the Target Tournament Channel ID."); return; }
   
   supervisorIdentity = "FLOOR-2";
   document.getElementById('identity-label').textContent = supervisorIdentity;
   
   peer = new Peer();
   peer.on('open', (id) => {
-    conn = peer.connect(PEER_PREFIX + targetRoom.trim(), { serialization: 'json' });
-    setupConnectionListeners();
+    conn = peer.connect(PEER_PREFIX + channelId, { serialization: 'json' });
+    setupConnectionListeners(false);
   });
 }
 
-function setupConnectionListeners() {
+function disconnectSync() {
+  if (conn) { conn.close(); conn = null; }
+  if (peer) { peer.destroy(); peer = null; }
+  document.getElementById('sync-status-text').textContent = "Standalone Mode";
+  document.getElementById('sync-dot').className = "status-dot";
+}
+
+function setupConnectionListeners(isHost) {
   conn.on('open', () => {
-    document.getElementById('sync-status-text').textContent = "Connected";
+    document.getElementById('sync-status-text').textContent = isHost ? "Connected (Host)" : "Connected (Client)";
     document.getElementById('sync-dot').className = "status-dot online";
-    writeLog(`Secure WebRTC data pipe established with remote supervisor node.`);
+    writeLog(`Data synchronization lock activated.`);
     
-    broadcastData({
-      type: "FULL_SYNC",
-      globalMaxPlayers: globalMaxPlayers,
-      activeFloorSize: activeFloorSize,
-      tables: tables,
-      senderIdentity: supervisorIdentity
-    });
+    // Safety Fallback Rule: If I am the Host, I broadcast my data to override the newcomer.
+    // If I am the Joiner, I request data or wait for Host to push.
+    if(isHost) {
+      broadcastData({
+        type: "FULL_SYNC",
+        globalMaxPlayers: globalMaxPlayers,
+        activeFloorSize: activeFloorSize,
+        tables: tables,
+        senderIdentity: supervisorIdentity
+      });
+    }
   });
   
   conn.on('data', (data) => {
@@ -486,107 +505,83 @@ function setupConnectionListeners() {
   });
   
   conn.on('close', () => {
-    document.getElementById('sync-status-text').textContent = "Disconnected";
+    document.getElementById('sync-status-text').textContent = "Standalone Mode";
     document.getElementById('sync-dot').className = "status-dot";
-    writeLog(`<span style="color:var(--status-low-text)">Warning: Sync peer disconnected from field topology.</span>`);
+    writeLog(`<span style="color:var(--status-low-text)">Sync dropped. Independent operations mode.</span>`);
   });
 }
 
 function handleIncomingNetworkPackets(packet) {
   if (!packet || !packet.type) return;
-  
   switch(packet.type) {
     case "FULL_SYNC":
-      globalMaxPlayers = packet.globalMaxPlayers;
-      activeFloorSize = packet.activeFloorSize;
-      tables = packet.tables;
-      document.getElementById('seats-input').value = globalMaxPlayers;
-      document.getElementById('floor-input').value = activeFloorSize;
-      renderGrid();
-      writeLog(`Received complete tournament snapshot from <b>${packet.senderIdentity}</b>.`);
+      globalMaxPlayers = packet.globalMaxPlayers; activeFloorSize = packet.activeFloorSize; tables = packet.tables;
+      document.getElementById('seats-input').value = globalMaxPlayers; document.getElementById('floor-input').value = activeFloorSize;
+      renderGrid(); if(selectedTable) showDetail(selectedTable);
+      writeLog(`Received channel sync snap from <b>${packet.senderIdentity}</b>.`);
+      saveStateToLocalStorage();
       break;
-      
     case "SEAT_TOGGLE":
-      const t = tables.find(x => x.id === packet.tid);
-      const s = t.seats.find(x => x.id === packet.sid);
-      s.occ = packet.occ;
-      renderGrid();
+      const t = tables.find(x => x.id === packet.tid); const s = t.seats.find(x => x.id === packet.sid);
+      s.occ = packet.occ; renderGrid();
       if(selectedTable === packet.tid) showDetail(packet.tid);
       if(document.getElementById('panel-balance').classList.contains('active')) renderBalance();
-      writeLog(`[${packet.by}] <b>${packet.occ ? 'BUST-OUT / IN' : 'SEAT VACATED'}</b>: Table ${t.tableName}, Seat ${packet.sid}`);
+      writeLog(`[${packet.by}] <b>${packet.occ ? 'SEAT OCCUPIED' : 'BUST-OUT'}</b>: Table ${t.tableName}, Seat ${packet.sid}`);
+      saveStateToLocalStorage();
       break;
-      
     case "BREAK_TABLE":
-      const bt = tables.find(x => x.id === packet.tid);
-      bt.seats.forEach(x => x.occ = false);
+      const bt = tables.find(x => x.id === packet.tid); bt.seats.forEach(x => x.occ = false);
       packet.distributionArray.forEach(d => {
-        const targetT = tables.find(x => x.id === d.targetTableId);
-        const emptyS = targetT.seats.find(x => x.id === d.seatId);
+        const targetT = tables.find(x => x.id === d.targetTableId); const emptyS = targetT.seats.find(x => x.id === d.seatId);
         if(emptyS) emptyS.occ = true;
       });
-      renderGrid();
-      if(selectedTable) showDetail(selectedTable);
+      renderGrid(); if(selectedTable) showDetail(selectedTable);
       if(document.getElementById('panel-balance').classList.contains('active')) renderBalance();
-      writeLog(`[${packet.by}] <b>BROKE / COLLAPSED</b>: Table ${bt.tableName}`);
+      writeLog(`[${packet.by}] <b>BROKE / MERGED</b>: Table ${bt.tableName}`);
+      saveStateToLocalStorage();
       break;
-
     case "SHIFT_PLAYER":
-      const fT = tables.find(x => x.id === packet.fromId);
-      const tT = tables.find(x => x.id === packet.toId);
-      const occS = fT.seats.filter(x => x.id <= globalMaxPlayers && x.occ);
-      const empS = tT.seats.filter(x => x.id <= globalMaxPlayers && !x.occ);
-      if(occS.length && empS.length) {
-        occS[occS.length - 1].occ = false;
-        empS[0].occ = true;
-      }
-      renderGrid();
-      if(document.getElementById('panel-balance').classList.contains('active')) renderBalance();
+      const fT = tables.find(x => x.id === packet.fromId); const tT = tables.find(x => x.id === packet.toId);
+      const occS = fT.seats.filter(x => x.id <= globalMaxPlayers && x.occ); const empS = tT.seats.filter(x => x.id <= globalMaxPlayers && !x.occ);
+      if(occS.length && empS.length) { occS[occS.length - 1].occ = false; empS[0].occ = true; }
+      renderGrid(); if(document.getElementById('panel-balance').classList.contains('active')) renderBalance();
       if(selectedTable === packet.fromId || selectedTable === packet.toId) showDetail(selectedTable);
-      writeLog(`[${packet.by}] <b>BALANCED</b>: 1 Player moved from Table ${fT.tableName} → Table ${tT.tableName}`);
+      writeLog(`[${packet.by}] <b>BALANCED</b>: 1 Player shifted T-${fT.tableName} → T-${tT.tableName}`);
+      saveStateToLocalStorage();
       break;
-      
     case "IDENTITY_UPDATE":
-      writeLog(`Remote supervisor identified as <b>${packet.name}</b>`);
+      writeLog(`Remote node changed identity to <b>${packet.name}</b>`);
       break;
   }
 }
 
 function saveStateToLocalStorage() {
+  const channelId = document.getElementById('tourny-id').value.trim() || '1001';
   const stateData = {
-    globalMaxPlayers: globalMaxPlayers,
-    activeFloorSize: activeFloorSize,
-    selectedTable: selectedTable,
-    tables: tables.map(t => ({
-      id: t.id, tableName: t.tableName, active: t.active,
-      seats: t.seats.map(s => ({ id: s.id, occ: s.occ }))
-    }))
+    globalMaxPlayers, activeFloorSize, selectedTable,
+    tables: tables.map(t => ({ id: t.id, tableName: t.tableName, active: t.active, seats: t.seats.map(s => ({ id: s.id, occ: s.occ })) }))
   };
-  localStorage.setItem('poker_floor_matrix_state_v2', JSON.stringify(stateData));
+  localStorage.setItem(`poker_matrix_state_ch_${channelId}`, JSON.stringify(stateData));
 }
 
 function loadStateFromLocalStorage() {
-  const saved = localStorage.getItem('poker_floor_matrix_state_v2');
+  const channelId = document.getElementById('tourny-id').value.trim() || '1001';
+  const saved = localStorage.getItem(`poker_matrix_state_ch_${channelId}`);
   if (!saved) return false;
   try {
     const parsed = JSON.parse(saved);
-    globalMaxPlayers = parsed.globalMaxPlayers || 9;
-    activeFloorSize = parsed.activeFloorSize || 10;
-    selectedTable = parsed.selectedTable || 1;
-    tables = parsed.tables;
+    globalMaxPlayers = parsed.globalMaxPlayers || 9; activeFloorSize = parsed.activeFloorSize || 10;
+    selectedTable = parsed.selectedTable || 1; tables = parsed.tables;
     return true;
   } catch (e) { return false; }
 }
 
 function initTables() {
-  const isLoaded = loadStateFromLocalStorage();
-  if (isLoaded) return;
-
+  if (loadStateFromLocalStorage()) return;
+  // Fallback default init if cache empty for this channel
   tables = Array.from({length: 20}, (_, i) => {
-    let seatsArray = [];
-    for(let s = 0; s < 10; s++) { seatsArray.push({ id: s + 1, occ: false }); }
-    return {
-      id: i + 1, tableName: `${i + 1}`, active: i < activeFloorSize, seats: seatsArray
-    };
+    let seatsArray = []; for(let s = 0; s < 10; s++) { seatsArray.push({ id: s + 1, occ: false }); }
+    return { id: i + 1, tableName: `${i + 1}`, active: i < activeFloorSize, seats: seatsArray };
   });
 }
 
@@ -601,67 +596,45 @@ function showToast(message) {
 }
 
 function clearAllPlayers() {
-  if (confirm("Reset Tournament Field? All current seats and tables will be wiped.")) {
+  if (confirm("Reset current Tournament Field? All configurations inside this channel will be wiped.")) {
     tables.forEach(t => t.seats.forEach(s => s.occ = false));
-    saveStateToLocalStorage();
-    renderGrid();
-    writeLog(`[${supervisorIdentity}] <b>RESET FIELD</b>: Purged all tournament players.`);
+    saveStateToLocalStorage(); renderGrid();
+    writeLog(`[${supervisorIdentity}] <b>FIELD WIPED</b>.`);
     broadcastData({ type: "FULL_SYNC", globalMaxPlayers, activeFloorSize, tables, senderIdentity: supervisorIdentity });
-    showToast("Field Purged");
+    showToast("Field Flushed");
   }
 }
 
 function stepActiveFloor(delta) {
-  let target = activeFloorSize + delta;
-  if(target < 1) target = 1; if(target > 20) target = 20;
+  let target = activeFloorSize + delta; if(target < 1) target = 1; if(target > 20) target = 20;
   applyFloorSizeChange(target);
 }
 function directTypeFloorCount(val) {
-  let target = parseInt(val, 10);
-  if(isNaN(target) || target < 1) target = 1; if(target > 20) target = 20;
+  let target = parseInt(val, 10); if(isNaN(target) || target < 1) target = 1; if(target > 20) target = 20;
   applyFloorSizeChange(target);
 }
 function applyFloorSizeChange(targetCount) {
-  activeFloorSize = targetCount;
-  document.getElementById('floor-input').value = activeFloorSize;
-  tables.forEach((t, i) => {
-    t.active = (i < activeFloorSize);
-    if (!t.active) t.seats.forEach(s => s.occ = false);
-  });
+  activeFloorSize = targetCount; document.getElementById('floor-input').value = activeFloorSize;
+  tables.forEach((t, i) => { t.active = (i < activeFloorSize); if (!t.active) t.seats.forEach(s => s.occ = false); });
   const currentActiveTables = getActive();
-  if (currentActiveTables.length > 0) {
-    if (!currentActiveTables.find(t => t.id === selectedTable)) selectedTable = currentActiveTables[0].id;
-  } else { selectedTable = null; }
-
-  saveStateToLocalStorage();
-  renderGrid();
-  writeLog(`[${supervisorIdentity}] Configured Active Tables in Play to <b>${activeFloorSize}</b>.`);
+  if (currentActiveTables.length > 0) { if (!currentActiveTables.find(t => t.id === selectedTable)) selectedTable = currentActiveTables[0].id; } else { selectedTable = null; }
+  saveStateToLocalStorage(); renderGrid();
   broadcastData({ type: "FULL_SYNC", globalMaxPlayers, activeFloorSize, tables, senderIdentity: supervisorIdentity });
 }
 
 function stepMaxSeats(delta) {
-  let target = globalMaxPlayers + delta;
-  if(target < 2) target = 2; if(target > 9) target = 9;
+  let target = globalMaxPlayers + delta; if(target < 2) target = 2; if(target > 9) target = 9;
   applyMaxSeatsChange(target);
 }
 function directTypeSeatsCount(val) {
-  let target = parseInt(val, 10);
-  if(isNaN(target) || target < 2) target = 2; if(target > 9) target = 9;
+  let target = parseInt(val, 10); if(isNaN(target) || target < 2) target = 2; if(target > 9) target = 9;
   applyMaxSeatsChange(target);
 }
 function applyMaxSeatsChange(targetSeats) {
   const violationTable = getActive().find(t => getCount(t) > targetSeats);
-  if (violationTable) {
-    alert(`Configuration Error: Table ${violationTable.tableName} has ${getCount(violationTable)} active players.`);
-    document.getElementById('seats-input').value = globalMaxPlayers;
-    return;
-  }
-  globalMaxPlayers = targetSeats;
-  document.getElementById('seats-input').value = globalMaxPlayers;
-  syncTableSeatsCapacity();
-  saveStateToLocalStorage();
-  renderGrid();
-  writeLog(`[${supervisorIdentity}] Modified Max Table Capacity to <b>${globalMaxPlayers}</b>-Max.`);
+  if (violationTable) { alert(`Error: Table ${violationTable.tableName} already has ${getCount(violationTable)} players.`); return; }
+  globalMaxPlayers = targetSeats; document.getElementById('seats-input').value = globalMaxPlayers;
+  syncTableSeatsCapacity(); saveStateToLocalStorage(); renderGrid();
   broadcastData({ type: "FULL_SYNC", globalMaxPlayers, activeFloorSize, tables, senderIdentity: supervisorIdentity });
 }
 
@@ -670,17 +643,11 @@ const getCount  = t  => t.seats.filter(s => s.id <= globalMaxPlayers && s.occ).l
 const getEmpty  = t  => t.seats.filter(s => s.id <= globalMaxPlayers && !s.occ);
 const getTotal  = () => tables.reduce((a,t) => a+getCount(t), 0);
 
-function status(t) { 
-  const c = getCount(t); 
-  if (c === 0) return 'ok'; 
-  if (c <= 3) return 'low'; 
-  return 'ok'; 
-}
+function status(t) { const c = getCount(t); if (c === 0) return 'ok'; if (c <= 3) return 'low'; return 'ok'; }
 
 function updateStats() {
   const at = getActive(), total = getTotal();
   const alertCount = at.filter(t => status(t) === 'low' && getCount(t) > 0).length;
-  
   document.getElementById('s-total').textContent = total;
   document.getElementById('s-tables').textContent = at.length;
   document.getElementById('s-needs').textContent = alertCount;
@@ -689,29 +656,19 @@ function updateStats() {
   if (alertCount > 0) alertsCard.classList.add('pulse-alert'); else alertsCard.classList.remove('pulse-alert');
 
   const scoringCounts = at.filter(t => getCount(t) > 0).map(t => getCount(t));
-  const spreadEl = document.getElementById('s-spread');
-  const spreadCard = document.getElementById('card-spread');
-  
-  if(scoringCounts.length <= 1) {
-    spreadEl.textContent = "0"; spreadCard.classList.remove('pulse-alert');
-  } else {
-    const spread = Math.max(...scoringCounts) - Math.min(...scoringCounts);
-    spreadEl.textContent = spread;
+  const spreadEl = document.getElementById('s-spread'), spreadCard = document.getElementById('card-spread');
+  if(scoringCounts.length <= 1) { spreadEl.textContent = "0"; spreadCard.classList.remove('pulse-alert'); } 
+  else {
+    const spread = Math.max(...scoringCounts) - Math.min(...scoringCounts); spreadEl.textContent = spread;
     if(spread >= 2) spreadCard.classList.add('pulse-alert'); else spreadCard.classList.remove('pulse-alert');
   }
 }
 
-function dropdownTableSelect(tid) {
-  selectedTable = tid; saveStateToLocalStorage(); showDetail(tid); renderGrid();
-}
+function dropdownTableSelect(tid) { selectedTable = tid; saveStateToLocalStorage(); showDetail(tid); renderGrid(); }
 
 function renderGrid(){
-  const g = document.getElementById('tables-grid'); g.innerHTML = '';
-  const activeTables = getActive();
-  if (activeTables.length === 0) {
-    g.innerHTML = `<div class="info-box" style="color:var(--text-muted); text-align:center;">No Active Tournament Configurations.</div>`;
-    updateStats(); return;
-  }
+  const g = document.getElementById('tables-grid'); g.innerHTML = ''; const activeTables = getActive();
+  if (activeTables.length === 0) { g.innerHTML = `<div class="info-box" style="color:var(--text-muted); text-align:center;">No Active Tables.</div>`; updateStats(); return; }
   activeTables.forEach(t => {
     const c = getCount(t), st = status(t), hasPlayers = c > 0;
     let stateClass = hasPlayers ? (st === 'low' ? ' st-low' : ' st-ok-filled') : '';
@@ -723,15 +680,14 @@ function renderGrid(){
     const bTxt = !hasPlayers ? 'VACANT' : (st === 'ok' ? '✓ BALANCED' : '! SHORT');
     const pDots = t.seats.filter(s => s.id <= globalMaxPlayers).map(s => `<div class="md ${s.occ ? 'md-occ' : 'md-empty'}"></div>`).join('');
     
-    d.innerHTML = `<span class="badge ${bCls}">${bTxt}</span><div class="t-header-row"><div class="t-num">Table ${t.tableName}</div></div>
-      <div class="t-cnt">${c}</div><div class="t-sub">/ ${globalMaxPlayers} Max</div><div class="mini-seats">${pDots}</div>`;
+    d.innerHTML = `<span class="badge ${bCls}">${bTxt}</span><div class="t-header-row"><div class="t-num">Table ${t.tableName}</div></div><div class="t-cnt">${c}</div><div class="t-sub">/ ${globalMaxPlayers} Max</div><div class="mini-seats">${pDots}</div>`;
     g.appendChild(d);
   });
   updateStats();
 }
 
 function feltSVG(t) {
-  const cx = 180, cy = 125, rx = 110, ry = 65; 
+  const cx = 180, cy = 125, rx = 110, ry = 65;
   let seats = `<g><rect x="${cx-26}" y="${cy-ry-4}" width="52" height="20" rx="5" fill="#0e1320" stroke="#10b981" stroke-width="1.5"/><text x="${cx}" y="${cy-ry+6}" text-anchor="middle" dominant-baseline="central" font-size="9" fill="#10b981" font-weight="900">DEALER</text></g>`;
   const activeSeats = t.seats.filter(s => s.id <= globalMaxPlayers);
   activeSeats.forEach((s, i) => {
@@ -746,60 +702,43 @@ function showDetail(tid){
   selectedTable = tid; const t = tables.find(x => x.id === tid); if(!t || !t.active) return;
   const c = getCount(t), st = status(t);
   const seatBtns = t.seats.filter(s => s.id <= globalMaxPlayers).map(s => `<div class="seat-btn ${s.occ ? 'sb-occ' : 'sb-empty'}" onclick="toggleSeat(${t.id},${s.id})"><span>SEAT ${s.id}</span></div>`).join('');
-  const breakBtnHtml = (c > 0 && c <= 3) ? `<div class="alert-box"><span>⚠️ Critical shorthanded table detected.</span><button class="break-btn" onclick="breakTable(${tid})">Break Table</button></div>` : '';
+  const breakBtnHtml = (c > 0 && c <= 3) ? `<div class="alert-box"><span>⚠️ Critical shorthanded table.</span><button class="break-btn" onclick="breakTable(${tid})">Break Table</button></div>` : '';
   
-  document.getElementById('detail-body').innerHTML = `<div class="detail-wrap"><div class="felt-container">${feltSVG(t)}</div><div class="seat-panel"><div style="font-size: 18px; font-weight: 800; margin-bottom: 4px; color: var(--color-active);">Table ${t.tableName}</div><div style="font-size:10px;font-weight:600;margin-bottom:0.4rem">Diagnostics: ${c===0?'Vacant':st==='low'?'Shorthanded (Break Alert)':'Balanced'}</div><div class="seat-grid">${seatBtns}</div>${breakBtnHtml}</div></div>`;
+  document.getElementById('detail-body').innerHTML = `<div class="detail-wrap"><div class="felt-container">${feltSVG(t)}</div><div class="seat-panel"><div style="font-size: 18px; font-weight: 800; margin-bottom: 4px; color: var(--color-active);">Table ${t.tableName}</div><div class="seat-grid">${seatBtns}</div>${breakBtnHtml}</div></div>`;
   document.getElementById('detail-sel').value = tid;
 }
 
 function toggleSeat(tid, sid){
-  const t = tables.find(x => x.id === tid); const seat = t.seats.find(s => s.id === sid);
-  seat.occ = !seat.occ;
+  const t = tables.find(x => x.id === tid); const seat = t.seats.find(s => s.id === sid); seat.occ = !seat.occ;
   saveStateToLocalStorage(); renderGrid();
   if(selectedTable === tid) showDetail(tid);
   if (document.getElementById('panel-balance').classList.contains('active')) renderBalance();
-  
-  writeLog(`[${supervisorIdentity}] <b>${seat.occ?'PLAYER PLACED':'BUST-OUT'}</b>: Table ${t.tableName}, Seat ${sid}`);
-  broadcastData({
-    type: "SEAT_TOGGLE", tid: tid, sid: sid, occ: seat.occ, by: supervisorIdentity
-  });
+  writeLog(`[${supervisorIdentity}] <b>${seat.occ?'SEAT ACTIVE':'BUST-OUT'}</b>: Table ${t.tableName}, Seat ${sid}`);
+  broadcastData({ type: "SEAT_TOGGLE", tid, sid, occ: seat.occ, by: supervisorIdentity });
 }
 
 function breakTable(tid){
-  const t = tables.find(x => x.id === tid); const players = getCount(t);
-  t.seats.forEach(s => s.occ = false);
-  
+  const t = tables.find(x => x.id === tid); const players = getCount(t); t.seats.forEach(s => s.occ = false);
   let distributions = [];
   for(let i = 0; i < players; i++){
     const validTargets = getActive().filter(x => x.id !== tid && getCount(x) > 0 && getCount(x) < globalMaxPlayers);
-    if(validTargets.length === 0) break; 
-    validTargets.sort((a,b) => getCount(a) - getCount(b));
+    if(validTargets.length === 0) break; validTargets.sort((a,b) => getCount(a) - getCount(b));
     const empty = getEmpty(validTargets[0]);
-    if(empty.length) {
-      empty[0].occ = true;
-      distributions.push({ targetTableId: validTargets[0].id, seatId: empty[0].id });
-    }
+    if(empty.length) { empty[0].occ = true; distributions.push({ targetTableId: validTargets[0].id, seatId: empty[0].id }); }
   }
   saveStateToLocalStorage(); renderGrid(); showToast(`Broke Table ${t.tableName}`);
   if(selectedTable) showDetail(selectedTable);
-  
-  writeLog(`[${supervisorIdentity}] <b>BROKE TABLE</b>: Dispersed players from Table ${t.tableName}`);
-  broadcastData({
-    type: "BREAK_TABLE", tid: tid, distributionArray: distributions, by: supervisorIdentity
-  });
+  writeLog(`[${supervisorIdentity}] <b>BROKE TABLE</b>: Dispersed T-${t.tableName}`);
+  broadcastData({ type: "BREAK_TABLE", tid, distributionArray: distributions, by: supervisorIdentity });
 }
 
 function executeMove(fromId, toId){
-  const from = tables.find(t => t.id === fromId), to = tables.find(t => t.id === toId);
-  if (getCount(to) >= globalMaxPlayers) return;
-  const occupiedSeats = from.seats.filter(s => s.id <= globalMaxPlayers && s.occ);
-  const emptySeats = getEmpty(to);
+  const from = tables.find(t => t.id === fromId), to = tables.find(t => t.id === toId); if (getCount(to) >= globalMaxPlayers) return;
+  const occupiedSeats = from.seats.filter(s => s.id <= globalMaxPlayers && s.occ); const emptySeats = getEmpty(to);
   if(occupiedSeats.length > 0 && emptySeats.length > 0) {
-    occupiedSeats[occupiedSeats.length - 1].occ = false;
-    emptySeats[0].occ = true;
+    occupiedSeats[occupiedSeats.length - 1].occ = false; emptySeats[0].occ = true;
     saveStateToLocalStorage(); showToast(`Balanced: T-${from.tableName} → T-${to.tableName}`);
-    
-    writeLog(`[${supervisorIdentity}] <b>BALANCED FIELD</b>: Moved 1 player from Table ${from.tableName} → Table ${to.tableName}`);
+    writeLog(`[${supervisorIdentity}] <b>BALANCED</b>: 1 player moved T-${from.tableName} → T-${to.tableName}`);
     broadcastData({ type: "SHIFT_PLAYER", fromId, toId, by: supervisorIdentity });
   }
   renderGrid(); renderBalance();
@@ -815,13 +754,13 @@ function renderBalance(){
 
   let { sugg } = runVirtualBalancingEngine(at);
   document.getElementById('suggestions').innerHTML = sugg.length
-    ? sugg.map(s => `<div class="move-row"><span>TDA Balance Alert: Shift 1 player from <b>Table ${s.fromName}</b> → <b>Table ${s.toName}</b></span><button class="exec-btn" onclick="executeMove(${s.fromId},${s.toId})">Execute Balancing</button></div>`).join('')
-    : '<div class="info-box">✓ Tournament field variance optimal. Table balance maintained.</div>';
+    ? sugg.map(s => `<div class="move-row"><span>TDA Balance: Move from <b>Table ${s.fromName}</b> → <b>Table ${s.toName}</b></span><button class="exec-btn" onclick="executeMove(${s.fromId},${s.toId})">Execute Balancing</button></div>`).join('')
+    : '<div class="info-box">✓ Field variance optimal. Tables are balanced.</div>';
     
   const brk = at.filter(t => getCount(t) > 0 && getCount(t) <= 3);
   if(brk.length){
     document.getElementById('break-wrap').style.display = 'block';
-    document.getElementById('break-list').innerHTML = brk.map(t => `<div class="move-row"><span>Critical: <b>Table ${t.tableName}</b> runs shorthanded.</span><button class="break-btn" style="height:42px;" onclick="breakTable(${t.id});renderBalance()">Break Table</button></div>`).join('');
+    document.getElementById('break-list').innerHTML = brk.map(t => `<div class="move-row"><span>Shorthanded: <b>Table ${t.tableName}</b></span><button class="break-btn" style="height:42px;" onclick="breakTable(${t.id});renderBalance()">Break Table</button></div>`).join('');
   } else { document.getElementById('break-wrap').style.display = 'none'; }
 }
 
@@ -831,7 +770,6 @@ function runVirtualBalancingEngine(activeTables) {
   while (virtualFloor.length > 1 && loopSafety < 50) {
     loopSafety++; virtualFloor.sort((a,b) => b.count - a.count);
     let maxT = virtualFloor[0], minT = virtualFloor[virtualFloor.length - 1];
-    // Tournament TDA balance rules flag variance >= 2
     if ((maxT.count - minT.count) >= 2 && minT.count <= globalMaxPlayers - 1) {
       sugg.push({ fromId: maxT.id, toId: minT.id, fromName: maxT.tableName, toName: minT.tableName });
       maxT.count--; minT.count++;
@@ -845,6 +783,27 @@ function populateSelect(){
   sel.innerHTML = activeTables.map(t => `<option value="${t.id}">Table ${t.tableName} (${getCount(t)} Active)</option>`).join('');
   if(selectedTable && activeTables.find(t => t.id === selectedTable)) sel.value = selectedTable;
 }
+
+document.getElementById('tourny-id').addEventListener('change', function() {
+  disconnectSync();
+  // Read state or auto-generate clean state for newly entered Channel
+  const success = loadStateFromLocalStorage();
+  if(!success) {
+    // If no cache exists for this tournament id, build a fresh blank field
+    tables = Array.from({length: 20}, (_, i) => {
+      let seatsArray = []; for(let s = 0; s < 10; s++) { seatsArray.push({ id: s + 1, occ: false }); }
+      return { id: i + 1, tableName: `${i + 1}`, active: i < 10, seats: seatsArray };
+    });
+    activeFloorSize = 10; globalMaxPlayers = 9;
+    document.getElementById('seats-input').value = globalMaxPlayers;
+    document.getElementById('floor-input').value = activeFloorSize;
+  } else {
+    document.getElementById('seats-input').value = globalMaxPlayers;
+    document.getElementById('floor-input').value = activeFloorSize;
+  }
+  renderGrid(); if(selectedTable) showDetail(selectedTable);
+  showToast(`Switched Channel Context`);
+});
 
 function showTab(name){
   document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active',['overview','detail','balance'][i] === name));
