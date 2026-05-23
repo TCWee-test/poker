@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Production Tournament Matrix [v2.6.5]</title>
+<title>Production Tournament Matrix [v2.6.6]</title>
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <style>
 :root {
@@ -58,10 +58,16 @@ body {
 .sync-btn {
   background: #1e293b; border: 1px solid var(--border-color); color: #fff;
   padding: 4px 10px; font-size: 11px; font-weight: 700; border-radius: 5px; cursor: pointer;
+  transition: all 0.2s ease;
 }
 .sync-btn:hover { background: #2d3d54; }
-.sync-btn.btn-disconnect { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); color: #f87171; }
-.sync-btn.btn-disconnect:hover { background: rgba(239, 68, 68, 0.3); }
+
+/* 优化：断开按钮未连接时置灰不可点 */
+.sync-btn.btn-disconnect { background: rgba(239, 68, 68, 0.25); border-color: #ef4444; color: #f87171; }
+.sync-btn.btn-disconnect:hover { background: rgba(239, 68, 68, 0.4); }
+.sync-btn.btn-disconnect:disabled {
+  background: #0f172a; border-color: #1e293b; color: #334155; opacity: 0.4; cursor: not-allowed;
+}
 
 .tourny-id-input {
   background: #070a12; border: 1px solid var(--border-color); color: #fff;
@@ -71,10 +77,36 @@ body {
   background: rgba(234, 179, 8, 0.1); border: 1px solid var(--color-active); color: var(--color-active);
   padding: 2px 8px; border-radius: 4px; cursor: pointer; font-weight: 800;
 }
-.status-indicator { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-muted); }
-.status-dot { width: 7px; height: 7px; border-radius: 50%; background: #64748b; }
-.status-dot.online { background: var(--status-ok-text); box-shadow: 0 0 6px var(--status-ok-text); }
-.status-dot.hosting { background: #38bdf8; box-shadow: 0 0 6px #38bdf8; }
+
+/* 优化：状态栏和显眼指示灯 */
+.status-indicator { 
+  display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800;
+  padding: 4px 10px; border-radius: 6px; background: rgba(255,255,255,0.02);
+  transition: all 0.3s ease;
+}
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: #64748b; }
+
+/* 强效绿灯（Client 状态）带有无限扩散的呼吸霓虹灯特效 */
+.status-dot.online { 
+  background: #10b981; 
+  box-shadow: 0 0 10px #10b981, 0 0 20px #10b981; 
+  animation: neonGlowGreen 1.5s infinite alternate;
+}
+/* 强效蓝灯（Host 状态） */
+.status-dot.hosting { 
+  background: #38bdf8; 
+  box-shadow: 0 0 10px #38bdf8, 0 0 20px #38bdf8; 
+  animation: neonGlowBlue 1.5s infinite alternate;
+}
+
+@keyframes neonGlowGreen {
+  from { transform: scale(0.9); box-shadow: 0 0 6px #10b981, 0 0 12px #10b981; }
+  to { transform: scale(1.15); box-shadow: 0 0 14px #10b981, 0 0 25px #10b981; }
+}
+@keyframes neonGlowBlue {
+  from { transform: scale(0.9); box-shadow: 0 0 6px #38bdf8, 0 0 12px #38bdf8; }
+  to { transform: scale(1.15); box-shadow: 0 0 14px #38bdf8, 0 0 25px #38bdf8; }
+}
 
 /* Header Layout */
 .top-header {
@@ -269,13 +301,13 @@ body {
     <div class="sync-cluster">
       <span>📡 TOURNAMENT CH:</span>
       <input type="text" id="tourny-id" class="tourny-id-input" value="1001" placeholder="CH ID">
-      <button class="sync-btn" onclick="initializeWebRTCHost()">Host Room</button>
-      <button class="sync-btn" onclick="initializeWebRTCJoin()">Join Room</button>
-      <button class="sync-btn btn-disconnect" onclick="disconnectSync()">Disconnect</button>
+      <button class="sync-btn" id="btn-host" onclick="initializeWebRTCHost()">Host Room</button>
+      <button class="sync-btn" id="btn-join" onclick="initializeWebRTCJoin()">Join Room</button>
+      <button class="sync-btn btn-disconnect" id="btn-disconn" onclick="disconnectSync()" disabled>Disconnect</button>
       <span style="margin-left:4px">Node:</span>
       <span class="identity-tag" id="identity-label" onclick="changeIdentity()">FLOOR-1</span>
     </div>
-    <div class="status-indicator">
+    <div class="status-indicator" id="status-container">
       <div class="status-dot" id="sync-dot"></div>
       <span id="sync-status-text">Standalone Mode</span>
     </div>
@@ -284,7 +316,7 @@ body {
   <div class="top-header">
     <div class="title-area">
       <h1>🏆 TOURNAMENT MATRIX</h1>
-      <div class="version-tag">v2.6.5-PRODUCTION</div>
+      <div class="version-tag">v2.6.6-PRODUCTION</div>
     </div>
     <button class="danger-zone-trigger" onclick="clearAllPlayers()">Reset Field</button>
   </div>
@@ -431,6 +463,39 @@ function broadcastData(payload) {
   }
 }
 
+function updateVisualStates(mode, channelId) {
+  const dot = document.getElementById('sync-dot');
+  const text = document.getElementById('sync-status-text');
+  const disBtn = document.getElementById('btn-disconn');
+  const container = document.getElementById('status-container');
+
+  if(mode === "standalone") {
+    dot.className = "status-dot";
+    text.textContent = "Standalone Mode";
+    disBtn.disabled = true; // 变灰不可点击
+    container.style.background = "rgba(255,255,255,0.02)";
+    container.style.color = "var(--text-muted)";
+  } else if (mode === "hosting") {
+    dot.className = "status-dot hosting";
+    text.textContent = `Hosting: ${channelId}`;
+    disBtn.disabled = false; // 激活按钮
+    container.style.background = "rgba(56, 189, 248, 0.1)";
+    container.style.color = "#38bdf8";
+  } else if (mode === "connected_host") {
+    dot.className = "status-dot hosting";
+    text.textContent = "Connected (Host)";
+    disBtn.disabled = false;
+    container.style.background = "rgba(56, 189, 248, 0.15)";
+    container.style.color = "#38bdf8";
+  } else if (mode === "connected_client") {
+    dot.className = "status-dot online";
+    text.textContent = "Connected (Client)";
+    disBtn.disabled = false;
+    container.style.background = "rgba(16, 185, 129, 0.15)";
+    container.style.color = "#10b981";
+  }
+}
+
 function initializeWebRTCHost() {
   disconnectSync();
   const channelId = document.getElementById('tourny-id').value.trim();
@@ -441,8 +506,7 @@ function initializeWebRTCHost() {
   
   peer.on('open', (id) => {
     alert(`TOURNAMENT ROOM ONLINE!\n\nOther iPads must target CH: ${channelId}\nThen tap 'Join Room'.`);
-    document.getElementById('sync-status-text').textContent = `Hosting: ${channelId}`;
-    document.getElementById('sync-dot').className = "status-dot hosting";
+    updateVisualStates("hosting", channelId);
     writeLog(`Hosting tournament channel: <b>${channelId}</b>`);
   });
   
@@ -477,18 +541,14 @@ function initializeWebRTCJoin() {
 function disconnectSync() {
   if (conn) { conn.close(); conn = null; }
   if (peer) { peer.destroy(); peer = null; }
-  document.getElementById('sync-status-text').textContent = "Standalone Mode";
-  document.getElementById('sync-dot').className = "status-dot";
+  updateVisualStates("standalone");
 }
 
 function setupConnectionListeners(isHost) {
   conn.on('open', () => {
-    document.getElementById('sync-status-text').textContent = isHost ? "Connected (Host)" : "Connected (Client)";
-    document.getElementById('sync-dot').className = "status-dot online";
+    updateVisualStates(isHost ? "connected_host" : "connected_client");
     writeLog(`Data synchronization lock activated.`);
     
-    // Safety Fallback Rule: If I am the Host, I broadcast my data to override the newcomer.
-    // If I am the Joiner, I request data or wait for Host to push.
     if(isHost) {
       broadcastData({
         type: "FULL_SYNC",
@@ -505,8 +565,7 @@ function setupConnectionListeners(isHost) {
   });
   
   conn.on('close', () => {
-    document.getElementById('sync-status-text').textContent = "Standalone Mode";
-    document.getElementById('sync-dot').className = "status-dot";
+    updateVisualStates("standalone");
     writeLog(`<span style="color:var(--status-low-text)">Sync dropped. Independent operations mode.</span>`);
   });
 }
@@ -578,7 +637,6 @@ function loadStateFromLocalStorage() {
 
 function initTables() {
   if (loadStateFromLocalStorage()) return;
-  // Fallback default init if cache empty for this channel
   tables = Array.from({length: 20}, (_, i) => {
     let seatsArray = []; for(let s = 0; s < 10; s++) { seatsArray.push({ id: s + 1, occ: false }); }
     return { id: i + 1, tableName: `${i + 1}`, active: i < activeFloorSize, seats: seatsArray };
@@ -786,10 +844,8 @@ function populateSelect(){
 
 document.getElementById('tourny-id').addEventListener('change', function() {
   disconnectSync();
-  // Read state or auto-generate clean state for newly entered Channel
   const success = loadStateFromLocalStorage();
   if(!success) {
-    // If no cache exists for this tournament id, build a fresh blank field
     tables = Array.from({length: 20}, (_, i) => {
       let seatsArray = []; for(let s = 0; s < 10; s++) { seatsArray.push({ id: s + 1, occ: false }); }
       return { id: i + 1, tableName: `${i + 1}`, active: i < 10, seats: seatsArray };
