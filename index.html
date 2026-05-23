@@ -3,8 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Production Tournament Matrix [v2.6.6]</title>
-<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+<title>Tournament Matrix v2.6.7</title>
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Matrix">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a0e17"> <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <style>
 :root {
   --bg-main: #0a0e17;          
@@ -37,6 +42,7 @@ body {
   letter-spacing: 0.02em;
   overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior-y: contain; /* ⚡ 关键优化：禁用 iOS/Android 全屏模式下的橡皮筋下拉刷新冲突 */
 }
 
 .container { max-width: 1200px; margin: 0 auto; width: 100%; }
@@ -62,7 +68,6 @@ body {
 }
 .sync-btn:hover { background: #2d3d54; }
 
-/* 优化：断开按钮未连接时置灰不可点 */
 .sync-btn.btn-disconnect { background: rgba(239, 68, 68, 0.25); border-color: #ef4444; color: #f87171; }
 .sync-btn.btn-disconnect:hover { background: rgba(239, 68, 68, 0.4); }
 .sync-btn.btn-disconnect:disabled {
@@ -78,7 +83,6 @@ body {
   padding: 2px 8px; border-radius: 4px; cursor: pointer; font-weight: 800;
 }
 
-/* 优化：状态栏和显眼指示灯 */
 .status-indicator { 
   display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800;
   padding: 4px 10px; border-radius: 6px; background: rgba(255,255,255,0.02);
@@ -86,13 +90,11 @@ body {
 }
 .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #64748b; }
 
-/* 强效绿灯（Client 状态）带有无限扩散的呼吸霓虹灯特效 */
 .status-dot.online { 
   background: #10b981; 
   box-shadow: 0 0 10px #10b981, 0 0 20px #10b981; 
   animation: neonGlowGreen 1.5s infinite alternate;
 }
-/* 强效蓝灯（Host 状态） */
 .status-dot.hosting { 
   background: #38bdf8; 
   box-shadow: 0 0 10px #38bdf8, 0 0 20px #38bdf8; 
@@ -257,6 +259,8 @@ body {
 .bar.low { background: var(--status-low-text); }
 .bar.ok   { background: var(--status-ok-text); opacity: .85; }
 .bar-lbl { font-size: 8px; color: #fff; font-weight: 800; margin-bottom: 2px; }
+.bar-col.vacant-mode .bar-lbl { color: var(--text-muted); }
+.bar-track { width: 100%; flex: 1; display: flex; align-items: flex-end; justify-content: center; }
 .bar-val { font-size: 9px; color: var(--color-active); font-weight: 900; margin-top: 2px; }
 .bar-val.crit-text { color: var(--status-low-text); }
 
@@ -316,7 +320,7 @@ body {
   <div class="top-header">
     <div class="title-area">
       <h1>🏆 TOURNAMENT MATRIX</h1>
-      <div class="version-tag">v2.6.6</div>
+      <div class="version-tag">v2.6.7</div>
     </div>
     <button class="danger-zone-trigger" onclick="clearAllPlayers()">Reset Field</button>
   </div>
@@ -422,6 +426,7 @@ function changeIdentity() {
 
 function writeLog(htmlText) {
   const stream = document.getElementById('log-stream');
+  if (!stream) return;
   const timestamp = new Date().toTimeString().split(' ')[0];
   const logEntry = `[${timestamp}] ${htmlText}`;
   
@@ -438,6 +443,7 @@ function writeLog(htmlText) {
 
 function loadCachedLogs() {
   const stream = document.getElementById('log-stream');
+  if (!stream) return;
   stream.innerHTML = '';
   let localLogs = JSON.parse(localStorage.getItem('poker_floor_logs') || '[]');
   if(localLogs.length === 0) {
@@ -470,29 +476,37 @@ function updateVisualStates(mode, channelId) {
   const container = document.getElementById('status-container');
 
   if(mode === "standalone") {
-    dot.className = "status-dot";
-    text.textContent = "Standalone Mode";
-    disBtn.disabled = true; // 变灰不可点击
-    container.style.background = "rgba(255,255,255,0.02)";
-    container.style.color = "var(--text-muted)";
+    if (dot) dot.className = "status-dot";
+    if (text) text.textContent = "Standalone Mode";
+    if (disBtn) disBtn.disabled = true;
+    if (container) {
+      container.style.background = "rgba(255,255,255,0.02)";
+      container.style.color = "var(--text-muted)";
+    }
   } else if (mode === "hosting") {
-    dot.className = "status-dot hosting";
-    text.textContent = `Hosting: ${channelId}`;
-    disBtn.disabled = false; // 激活按钮
-    container.style.background = "rgba(56, 189, 248, 0.1)";
-    container.style.color = "#38bdf8";
+    if (text) text.textContent = `Hosting: ${channelId}`;
+    if (dot) dot.className = "status-dot hosting";
+    if (disBtn) disBtn.disabled = false;
+    if (container) {
+      container.style.background = "rgba(56, 189, 248, 0.1)";
+      container.style.color = "#38bdf8";
+    }
   } else if (mode === "connected_host") {
-    dot.className = "status-dot hosting";
-    text.textContent = "Connected (Host)";
-    disBtn.disabled = false;
-    container.style.background = "rgba(56, 189, 248, 0.15)";
-    container.style.color = "#38bdf8";
+    if (dot) dot.className = "status-dot hosting";
+    if (text) text.textContent = "Connected (Host)";
+    if (disBtn) disBtn.disabled = false;
+    if (container) {
+      container.style.background = "rgba(56, 189, 248, 0.15)";
+      container.style.color = "#38bdf8";
+    }
   } else if (mode === "connected_client") {
-    dot.className = "status-dot online";
-    text.textContent = "Connected (Client)";
-    disBtn.disabled = false;
-    container.style.background = "rgba(16, 185, 129, 0.15)";
-    container.style.color = "#10b981";
+    if (dot) dot.className = "status-dot online";
+    if (text) text.textContent = "Connected (Client)";
+    if (disBtn) disBtn.disabled = false;
+    if (container) {
+      container.style.background = "rgba(16, 185, 129, 0.15)";
+      container.style.color = "#10b981";
+    }
   }
 }
 
@@ -539,7 +553,11 @@ function initializeWebRTCJoin() {
 }
 
 function disconnectSync() {
-  if (conn) { conn.close(); conn = null; }
+  if (conn && conn.open) { 
+    conn.send({ type: "REMOTE_DISCONNECT", by: supervisorIdentity }); // ⚡ 优雅下线告知
+    conn.close(); 
+  }
+  conn = null;
   if (peer) { peer.destroy(); peer = null; }
   updateVisualStates("standalone");
 }
@@ -572,42 +590,85 @@ function setupConnectionListeners(isHost) {
 
 function handleIncomingNetworkPackets(packet) {
   if (!packet || !packet.type) return;
+
+  // ⚡ 优雅退出包拦截
+  if (packet.type === "REMOTE_DISCONNECT") {
+    writeLog(`<span style="color:var(--status-low-text)">Remote node exited channel. Link detached.</span>`);
+    if (conn) { conn.close(); conn = null; }
+    updateVisualStates("standalone");
+    return;
+  }
+
   switch(packet.type) {
     case "FULL_SYNC":
       globalMaxPlayers = packet.globalMaxPlayers; activeFloorSize = packet.activeFloorSize; tables = packet.tables;
       document.getElementById('seats-input').value = globalMaxPlayers; document.getElementById('floor-input').value = activeFloorSize;
-      renderGrid(); if(selectedTable) showDetail(selectedTable);
+      renderGrid(); 
+      if(selectedTable) showDetail(selectedTable);
+      if(document.getElementById('panel-balance').classList.contains('active')) renderBalance();
       writeLog(`Received channel sync snap from <b>${packet.senderIdentity}</b>.`);
-      saveStateToLocalStorage();
+      
+      // ⚡ 纯存储，切断传播链路，杜绝死循环
+      localStorage.setItem(`poker_matrix_state_ch_${document.getElementById('tourny-id').value.trim()}`, JSON.stringify({
+        globalMaxPlayers, activeFloorSize, selectedTable, tables
+      }));
       break;
+
     case "SEAT_TOGGLE":
-      const t = tables.find(x => x.id === packet.tid); const s = t.seats.find(x => x.id === packet.sid);
-      s.occ = packet.occ; renderGrid();
+      if (packet.sid > globalMaxPlayers) return; // ⚡ 核心安全锁：拦截非法越界座位操作
+      const t = tables.find(x => x.id === packet.tid); 
+      if (!t) return;
+      const s = t.seats.find(x => x.id === packet.sid);
+      if (s) s.occ = packet.occ; 
+      
+      renderGrid();
       if(selectedTable === packet.tid) showDetail(packet.tid);
       if(document.getElementById('panel-balance').classList.contains('active')) renderBalance();
       writeLog(`[${packet.by}] <b>${packet.occ ? 'SEAT OCCUPIED' : 'BUST-OUT'}</b>: Table ${t.tableName}, Seat ${packet.sid}`);
-      saveStateToLocalStorage();
+      
+      localStorage.setItem(`poker_matrix_state_ch_${document.getElementById('tourny-id').value.trim()}`, JSON.stringify({
+        globalMaxPlayers, activeFloorSize, selectedTable, tables
+      }));
       break;
+
     case "BREAK_TABLE":
-      const bt = tables.find(x => x.id === packet.tid); bt.seats.forEach(x => x.occ = false);
+      const bt = tables.find(x => x.id === packet.tid); 
+      if (bt) bt.seats.forEach(x => x.occ = false);
       packet.distributionArray.forEach(d => {
-        const targetT = tables.find(x => x.id === d.targetTableId); const emptyS = targetT.seats.find(x => x.id === d.seatId);
-        if(emptyS) emptyS.occ = true;
+        const targetT = tables.find(x => x.id === d.targetTableId); 
+        if (targetT) {
+          const emptyS = targetT.seats.find(x => x.id === d.seatId);
+          if(emptyS) emptyS.occ = true;
+        }
       });
-      renderGrid(); if(selectedTable) showDetail(selectedTable);
+      renderGrid(); 
+      if(selectedTable) showDetail(selectedTable);
       if(document.getElementById('panel-balance').classList.contains('active')) renderBalance();
-      writeLog(`[${packet.by}] <b>BROKE / MERGED</b>: Table ${bt.tableName}`);
-      saveStateToLocalStorage();
+      writeLog(`[${packet.by}] <b>BROKE / MERGED</b>: Table ${bt ? bt.tableName : packet.tid}`);
+      
+      localStorage.setItem(`poker_matrix_state_ch_${document.getElementById('tourny-id').value.trim()}`, JSON.stringify({
+        globalMaxPlayers, activeFloorSize, selectedTable, tables
+      }));
       break;
+
     case "SHIFT_PLAYER":
-      const fT = tables.find(x => x.id === packet.fromId); const tT = tables.find(x => x.id === packet.toId);
-      const occS = fT.seats.filter(x => x.id <= globalMaxPlayers && x.occ); const empS = tT.seats.filter(x => x.id <= globalMaxPlayers && !x.occ);
-      if(occS.length && empS.length) { occS[occS.length - 1].occ = false; empS[0].occ = true; }
-      renderGrid(); if(document.getElementById('panel-balance').classList.contains('active')) renderBalance();
+      const fT = tables.find(x => x.id === packet.fromId); 
+      const tT = tables.find(x => x.id === packet.toId);
+      if (fT && tT) {
+        const occS = fT.seats.filter(x => x.id <= globalMaxPlayers && x.occ); 
+        const empS = tT.seats.filter(x => x.id <= globalMaxPlayers && !x.occ);
+        if(occS.length && empS.length) { occS[occS.length - 1].occ = false; empS[0].occ = true; }
+      }
+      renderGrid(); 
+      if(document.getElementById('panel-balance').classList.contains('active')) renderBalance();
       if(selectedTable === packet.fromId || selectedTable === packet.toId) showDetail(selectedTable);
-      writeLog(`[${packet.by}] <b>BALANCED</b>: 1 Player shifted T-${fT.tableName} → T-${tT.tableName}`);
-      saveStateToLocalStorage();
+      writeLog(`[${packet.by}] <b>BALANCED</b>: 1 Player shifted T-${fT?fT.tableName:packet.fromId} → T-${tT?tT.tableName:packet.toId}`);
+      
+      localStorage.setItem(`poker_matrix_state_ch_${document.getElementById('tourny-id').value.trim()}`, JSON.stringify({
+        globalMaxPlayers, activeFloorSize, selectedTable, tables
+      }));
       break;
+
     case "IDENTITY_UPDATE":
       writeLog(`Remote node changed identity to <b>${packet.name}</b>`);
       break;
@@ -649,6 +710,7 @@ function syncTableSeatsCapacity() {
 
 function showToast(message) {
   const toast = document.getElementById('toast-notification');
+  if(!toast) return;
   toast.textContent = message; toast.classList.add('show');
   setTimeout(() => { toast.classList.remove('show'); }, 1500);
 }
@@ -657,6 +719,7 @@ function clearAllPlayers() {
   if (confirm("Reset current Tournament Field? All configurations inside this channel will be wiped.")) {
     tables.forEach(t => t.seats.forEach(s => s.occ = false));
     saveStateToLocalStorage(); renderGrid();
+    if(document.getElementById('panel-detail').classList.contains('active')) populateSelect(); // 联动刷新菜单文字
     writeLog(`[${supervisorIdentity}] <b>FIELD WIPED</b>.`);
     broadcastData({ type: "FULL_SYNC", globalMaxPlayers, activeFloorSize, tables, senderIdentity: supervisorIdentity });
     showToast("Field Flushed");
@@ -677,6 +740,7 @@ function applyFloorSizeChange(targetCount) {
   const currentActiveTables = getActive();
   if (currentActiveTables.length > 0) { if (!currentActiveTables.find(t => t.id === selectedTable)) selectedTable = currentActiveTables[0].id; } else { selectedTable = null; }
   saveStateToLocalStorage(); renderGrid();
+  if(document.getElementById('panel-detail').classList.contains('active')) populateSelect(); // 联动刷新菜单文字
   broadcastData({ type: "FULL_SYNC", globalMaxPlayers, activeFloorSize, tables, senderIdentity: supervisorIdentity });
 }
 
@@ -693,6 +757,7 @@ function applyMaxSeatsChange(targetSeats) {
   if (violationTable) { alert(`Error: Table ${violationTable.tableName} already has ${getCount(violationTable)} players.`); return; }
   globalMaxPlayers = targetSeats; document.getElementById('seats-input').value = globalMaxPlayers;
   syncTableSeatsCapacity(); saveStateToLocalStorage(); renderGrid();
+  if(document.getElementById('panel-detail').classList.contains('active')) populateSelect(); // 联动刷新菜单文字
   broadcastData({ type: "FULL_SYNC", globalMaxPlayers, activeFloorSize, tables, senderIdentity: supervisorIdentity });
 }
 
@@ -770,6 +835,7 @@ function toggleSeat(tid, sid){
   const t = tables.find(x => x.id === tid); const seat = t.seats.find(s => s.id === sid); seat.occ = !seat.occ;
   saveStateToLocalStorage(); renderGrid();
   if(selectedTable === tid) showDetail(tid);
+  if (document.getElementById('panel-detail').classList.contains('active')) populateSelect(); // ⚡ 优化：SVG调配实时联动下拉菜单文字描述
   if (document.getElementById('panel-balance').classList.contains('active')) renderBalance();
   writeLog(`[${supervisorIdentity}] <b>${seat.occ?'SEAT ACTIVE':'BUST-OUT'}</b>: Table ${t.tableName}, Seat ${sid}`);
   broadcastData({ type: "SEAT_TOGGLE", tid, sid, occ: seat.occ, by: supervisorIdentity });
@@ -786,6 +852,7 @@ function breakTable(tid){
   }
   saveStateToLocalStorage(); renderGrid(); showToast(`Broke Table ${t.tableName}`);
   if(selectedTable) showDetail(selectedTable);
+  if(document.getElementById('panel-detail').classList.contains('active')) populateSelect(); // 联动刷新
   writeLog(`[${supervisorIdentity}] <b>BROKE TABLE</b>: Dispersed T-${t.tableName}`);
   broadcastData({ type: "BREAK_TABLE", tid, distributionArray: distributions, by: supervisorIdentity });
 }
@@ -828,7 +895,7 @@ function runVirtualBalancingEngine(activeTables) {
   while (virtualFloor.length > 1 && loopSafety < 50) {
     loopSafety++; virtualFloor.sort((a,b) => b.count - a.count);
     let maxT = virtualFloor[0], minT = virtualFloor[virtualFloor.length - 1];
-    if ((maxT.count - minT.count) >= 2 && minT.count <= globalMaxPlayers - 1) {
+    if ((maxT.count - minT.count) >= 2 && minT.count <= globalMaxPlayers - 1) { // ⚡ 符合TDA的Deadzone缓冲差额机制
       sugg.push({ fromId: maxT.id, toId: minT.id, fromName: maxT.tableName, toName: minT.tableName });
       maxT.count--; minT.count++;
     } else { break; }
@@ -843,7 +910,7 @@ function populateSelect(){
 }
 
 document.getElementById('tourny-id').addEventListener('change', function() {
-  disconnectSync();
+  disconnectSync(); // ⚡ 触发优雅退出旧频道包，避免僵尸死链接挂载
   const success = loadStateFromLocalStorage();
   if(!success) {
     tables = Array.from({length: 20}, (_, i) => {
@@ -858,7 +925,7 @@ document.getElementById('tourny-id').addEventListener('change', function() {
     document.getElementById('floor-input').value = activeFloorSize;
   }
   renderGrid(); if(selectedTable) showDetail(selectedTable);
-  showToast(`Switched Channel Context`);
+  showToast("Switched Channel Context");
 });
 
 function showTab(name){
