@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Live Floor Matrix [v2.6.0]</title>
+<title>Live Floor Matrix [v2.6.1-PROTOTYPE]</title>
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <style>
 :root {
@@ -282,13 +282,12 @@ body {
   <div class="top-header">
     <div class="title-area">
       <h1>🃏 FLOOR MATRIX</h1>
-      <div class="version-tag">v2.6.0</div>
+      <div class="version-tag">v2.6.1-PROTOTYPE</div>
     </div>
     <button class="danger-zone-trigger" onclick="clearAllPlayers()">Reset Floor</button>
   </div>
 
   <div class="core-layout">
-    
     <div class="main-viewport">
       
       <div class="floor-config-panel">
@@ -350,11 +349,9 @@ body {
     <div class="side-audit-logs">
       <div class="sec-title" style="margin:0; padding-bottom:6px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between;">
         <span>📜 ACTION LOGS</span>
-        <span style="font-size:9px; color:var(--text-muted)" onclick="document.getElementById('log-stream').innerHTML=''">Clear</span>
+        <span style="font-size:9px; color:var(--text-muted); cursor:pointer" onclick="clearCachedLogs()">Clear</span>
       </div>
-      <div class="log-stream" id="log-stream">
-        <div class="log-line">> System loaded. Ready for field monitoring.</div>
-      </div>
+      <div class="log-stream" id="log-stream"></div>
     </div>
 
   </div>
@@ -367,9 +364,17 @@ let globalMaxPlayers = 9;
 let tables = [], selectedTable = 1, activeFloorSize = 10;
 let supervisorIdentity = "HOST";
 
-// WebRTC Global Comm State Handles
+// WebRTC Engine State Handles
 let peer = null, conn = null;
 const PEER_PREFIX = "poker-floor-matrix-";
+
+// CRITICAL OPTIMIZATION: Core Guard Rail Against Double-Unload Hooks
+window.addEventListener('beforeunload', function (e) {
+  if (conn && conn.open) {
+    e.preventDefault();
+    e.returnValue = 'Warning: Refreshing will sever the multi-floor sync connection. Are you sure?';
+  }
+});
 
 function changeIdentity() {
   const newId = prompt("Enter Custom Supervisor Label / Name:", supervisorIdentity);
@@ -382,13 +387,42 @@ function changeIdentity() {
   }
 }
 
+// OPTIMIZATION: Persistent Log Storage Engineering
 function writeLog(htmlText) {
   const stream = document.getElementById('log-stream');
   const timestamp = new Date().toTimeString().split(' ')[0];
+  const logEntry = `[${timestamp}] ${htmlText}`;
+  
   const line = document.createElement('div');
   line.className = 'log-line';
-  line.innerHTML = `[${timestamp}] ${htmlText}`;
+  line.innerHTML = logEntry;
   stream.insertBefore(line, stream.firstChild);
+
+  let localLogs = JSON.parse(localStorage.getItem('poker_floor_logs') || '[]');
+  localLogs.unshift(logEntry);
+  if(localLogs.length > 100) localLogs.pop();
+  localStorage.setItem('poker_floor_logs', JSON.stringify(localLogs));
+}
+
+function loadCachedLogs() {
+  const stream = document.getElementById('log-stream');
+  stream.innerHTML = '';
+  let localLogs = JSON.parse(localStorage.getItem('poker_floor_logs') || '[]');
+  if(localLogs.length === 0) {
+    localLogs.push(`[${new Date().toTimeString().split(' ')[0]}] > System loaded. Ready for field monitoring.`);
+  }
+  localLogs.reverse().forEach(log => {
+    const line = document.createElement('div');
+    line.className = 'log-line';
+    line.innerHTML = log;
+    stream.insertBefore(line, stream.firstChild);
+  });
+}
+
+function clearCachedLogs() {
+  localStorage.removeItem('poker_floor_logs');
+  document.getElementById('log-stream').innerHTML = '';
+  writeLog('> Logs flushed. Tracking brand new shift cycle.');
 }
 
 function broadcastData(payload) {
@@ -399,15 +433,14 @@ function broadcastData(payload) {
 
 function initializeWebRTCHost() {
   if (peer) peer.destroy();
-  
   const roomId = Math.floor(1000 + Math.random() * 9000).toString();
   peer = new Peer(PEER_PREFIX + roomId);
   
-  writeLog(`Initializing master routing server infrastructure...`);
+  writeLog(`Initializing master routing link...`);
   
   peer.on('open', (id) => {
     alert(`ROOM CREATED!\n\nProvide this 4-Digit Pairing Code to the other supervisor:\n▶ ${roomId} ◀`);
-    document.getElementById('sync-status-text').textContent = `Hosting Room: ${roomId}`;
+    document.getElementById('sync-status-text').textContent = `Hosting: ${roomId}`;
     document.getElementById('sync-dot').className = "status-dot online";
     writeLog(`Hosting synchronization room code: <b>${roomId}</b>`);
   });
@@ -420,7 +453,6 @@ function initializeWebRTCHost() {
 
 function initializeWebRTCJoin() {
   if (peer) peer.destroy();
-  
   const targetRoom = prompt("Enter the 4-Digit Pairing Code provided by the host:");
   if (!targetRoom) return;
   
@@ -429,18 +461,18 @@ function initializeWebRTCJoin() {
   
   peer = new Peer();
   peer.on('open', (id) => {
-    conn = peer.connect(PEER_PREFIX + targetRoom.trim());
+    // OPTIMIZATION: Force standardized JSON serialization serialization across Apple/Android viewports
+    conn = peer.connect(PEER_PREFIX + targetRoom.trim(), { serialization: 'json' });
     setupConnectionListeners();
   });
 }
 
 function setupConnectionListeners() {
   conn.on('open', () => {
-    document.getElementById('sync-status-text').textContent = "Sync Connected";
+    document.getElementById('sync-status-text').textContent = "Connected";
     document.getElementById('sync-dot').className = "status-dot online";
     writeLog(`Secure WebRTC data pipe successfully established with remote node.`);
     
-    // Push master dataset state to peer immediately
     broadcastData({
       type: "FULL_SYNC",
       globalMaxPlayers: globalMaxPlayers,
@@ -455,7 +487,7 @@ function setupConnectionListeners() {
   });
   
   conn.on('close', () => {
-    document.getElementById('sync-status-text').textContent = "Connection Severed";
+    document.getElementById('sync-status-text').textContent = "Disconnected";
     document.getElementById('sync-dot').className = "status-dot";
     writeLog(`<span style="color:var(--status-low-text)">Warning: Sync peer lost connection topology.</span>`);
   });
@@ -472,7 +504,7 @@ function handleIncomingNetworkPackets(packet) {
       document.getElementById('seats-input').value = globalMaxPlayers;
       document.getElementById('floor-input').value = activeFloorSize;
       renderGrid();
-      writeLog(`Received complete floor snapshot synchronization from <b>${packet.senderIdentity}</b>.`);
+      writeLog(`Received complete floor snapshot from <b>${packet.senderIdentity}</b>.`);
       break;
       
     case "SEAT_TOGGLE":
@@ -482,9 +514,7 @@ function handleIncomingNetworkPackets(packet) {
       renderGrid();
       if(selectedTable === packet.tid) showDetail(packet.tid);
       if(document.getElementById('panel-balance').classList.contains('active')) renderBalance();
-      
-      const actionTxt = packet.occ ? "ADDED" : "REMOVED";
-      writeLog(`[${packet.by}] <b>${actionTxt}</b>: Table ${t.tableName}, Seat ${packet.sid}`);
+      writeLog(`[${packet.by}] <b>${packet.occ ? 'ADDED' : 'REMOVED'}</b>: Table ${t.tableName}, Seat ${packet.sid}`);
       break;
       
     case "BREAK_TABLE":
@@ -730,7 +760,6 @@ function toggleSeat(tid, sid){
   if(selectedTable === tid) showDetail(tid);
   if (document.getElementById('panel-balance').classList.contains('active')) renderBalance();
   
-  // Real-time peer networking broadcast packet dispatch
   writeLog(`[${supervisorIdentity}] <b>${seat.occ?'ADDED':'REMOVED'}</b>: Table ${t.tableName}, Seat ${sid}`);
   broadcastData({
     type: "SEAT_TOGGLE", tid: tid, sid: sid, occ: seat.occ, by: supervisorIdentity
@@ -824,7 +853,7 @@ function showTab(name){
   if(name === 'detail'){ populateSelect(); if(selectedTable) showDetail(selectedTable); }
 }
 
-function bootstrap(){ initTables(); renderGrid(); }
+function bootstrap(){ initTables(); loadCachedLogs(); renderGrid(); }
 bootstrap();
 </script>
 </body>
