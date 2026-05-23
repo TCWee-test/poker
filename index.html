@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Live Floor Matrix [v2.4.9]</title>
+<title>Live Floor Matrix [v2.6.0]</title>
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <style>
 :root {
   --bg-main: #0a0e17;          
@@ -40,14 +41,41 @@ body {
 
 .container { max-width: 1200px; margin: 0 auto; width: 100%; }
 
+/* Sync Controller Bar styling */
+.sync-bar {
+  background: linear-gradient(90deg, #111c30 0%, #0c1220 100%);
+  border: 1px solid rgba(234, 179, 8, 0.25);
+  border-radius: 10px;
+  padding: 8px 14px;
+  margin-bottom: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.sync-cluster { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; }
+.sync-btn {
+  background: #1e293b; border: 1px solid var(--border-color); color: #fff;
+  padding: 4px 10px; font-size: 11px; font-weight: 700; border-radius: 5px; cursor: pointer;
+}
+.sync-btn:hover { background: #2d3d54; }
+.identity-tag {
+  background: rgba(234, 179, 8, 0.1); border: 1px solid var(--color-active); color: var(--color-active);
+  padding: 2px 8px; border-radius: 4px; cursor: pointer; font-weight: 800;
+}
+.status-indicator { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-muted); }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; background: #64748b; }
+.status-dot.online { background: var(--status-ok-text); box-shadow: 0 0 6px var(--status-ok-text); }
+
 /* Header Layout */
 .top-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1rem;
+  margin-bottom: 0.8rem;
   border-bottom: 1px solid rgba(34, 47, 77, 0.4);
-  padding-bottom: 8px;
+  padding-bottom: 6px;
 }
 .title-area { display: flex; flex-direction: column; gap: 2px; }
 .top-header h1 { font-size: 18px; font-weight: 900; color: #fff; letter-spacing: -0.3px; }
@@ -63,95 +91,46 @@ body {
 }
 
 .danger-zone-trigger {
-  background: rgba(239, 68, 68, 0.05);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  color: #f87171;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 6px 10px;
-  border-radius: 8px;
-  cursor: pointer;
+  background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #f87171; font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 8px; cursor: pointer;
 }
-.danger-zone-trigger:hover { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); }
 
 /* Control Panel */
 .floor-config-panel { 
   background: linear-gradient(180deg, var(--bg-panel) 0%, #0a0e17 100%); 
-  border: 1px solid var(--border-color); 
-  border-radius: 14px; 
-  padding: 0.8rem 1rem; 
-  margin-bottom: 0.8rem; 
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
+  border: 1px solid var(--border-color); border-radius: 14px; 
+  padding: 0.8rem 1rem; margin-bottom: 0.8rem; 
+  display: grid; grid-template-columns: 1fr; gap: 12px;
 }
-
 .config-item { display: flex; flex-direction: column; gap: 6px; }
 .config-title { font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.03em; }
 
-/* Stepper Layout (Perfect Center Alignment Fix) */
 .stepper-container { 
-  display: flex; 
-  align-items: center; 
-  justify-content: space-between; 
-  background: #070a12; 
-  padding: 2px; 
-  border-radius: 8px; 
-  border: 1px solid #1e293b; 
-  width: 100%; 
+  display: flex; align-items: center; justify-content: space-between; 
+  background: #070a12; padding: 2px; border-radius: 8px; border: 1px solid #1e293b; width: 100%; 
 }
 .step-btn { 
-  background: linear-gradient(180deg, #222f4d 0%, #161f33 100%); 
-  border: 1px solid #2e3f66; 
-  color: #fff; 
-  font-size: 16px; 
-  font-weight: 800; 
-  flex: 1; 
-  height: 42px; 
-  border-radius: 6px; 
-  cursor: pointer; 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
+  background: linear-gradient(180deg, #222f4d 0%, #161f33 100%); border: 1px solid #2e3f66; 
+  color: #fff; font-size: 16px; font-weight: 800; flex: 1; height: 42px; border-radius: 6px; 
+  cursor: pointer; display: flex; align-items: center; justify-content: center; 
 }
 .step-btn:active { background: #121929; transform: scale(0.95); }
 
 .floor-input-box { 
-  background: #0d1321; 
-  border: 1px solid var(--border-color); 
-  color: var(--color-active); 
-  font-size: 16px; 
-  font-weight: 800; 
-  width: 65px; 
-  height: 42px; 
-  text-align: center !important; 
-  padding: 0 !important; 
-  margin: 0 auto;
-  border-radius: 6px; 
-  outline: none; 
-  -moz-appearance: textfield;
+  background: #0d1321; border: 1px solid var(--border-color); color: var(--color-active); 
+  font-size: 16px; font-weight: 800; width: 65px; height: 42px; text-align: center !important; 
+  padding: 0 !important; margin: 0 auto; border-radius: 6px; outline: none; -moz-appearance: textfield;
 }
-.floor-input-box::-webkit-outer-spin-button,
-.floor-input-box::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
+.floor-input-box::-webkit-outer-spin-button, .floor-input-box::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
 /* Status Dashboard Cards */
 .stats-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 0.8rem; width: 100%; }
 .stat { 
-  background: linear-gradient(145deg, #111827 0%, var(--bg-card) 100%); 
-  border: 1px solid var(--border-color); 
-  border-radius: 10px; 
-  padding: 8px; 
-  font-size: 9px; 
-  font-weight: 700; 
-  text-transform: uppercase; 
-  color: var(--text-muted); 
-  text-align: center;
+  background: linear-gradient(145deg, #111827 0%, var(--bg-card) 100%); border: 1px solid var(--border-color); 
+  border-radius: 10px; padding: 8px; font-size: 9px; font-weight: 700; text-transform: uppercase; 
+  color: var(--text-muted); text-align: center;
 }
 .stat b { color: var(--color-active); font-weight: 900; font-size: 18px; display: block; margin-top: 1px; }
-
 .stat.pulse-alert { border-color: rgba(239, 68, 68, 0.4); animation: card-alert-glow 2s infinite ease-in-out; }
 .stat.pulse-alert b { color: var(--status-low-text); text-shadow: 0 0 6px rgba(239, 68, 68, 0.4); }
 
@@ -166,7 +145,17 @@ body {
 .tab { flex: 1; text-align: center; padding: 10px 0; font-size: 11px; font-weight: 700; text-transform: uppercase; cursor: pointer; color: var(--text-muted); background: none; border: none; border-radius: 7px; }
 .tab.active { color: #fff; background: linear-gradient(135deg, #1e293b 0%, #111827 100%); border: 1px solid var(--color-active); }
 
-/* Interface Dynamic Switching Panels */
+/* Double Column Core Structure */
+.core-layout { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+.main-viewport { flex: 3; width: 100%; }
+.side-audit-logs {
+  flex: 1.2; background: var(--bg-panel); border: 1px solid var(--border-color);
+  border-radius: 14px; padding: 12px; display: flex; flex-direction: column; min-height: 200px; max-height: 380px;
+}
+.log-stream { flex: 1; overflow-y: auto; font-family: monospace; font-size: 11px; color: #94a3b8; margin-top: 8px; display: flex; flex-direction: column; gap: 4px; padding-right: 4px; }
+.log-line { border-bottom: 1px solid rgba(255,255,255,0.02); padding-bottom: 2px; line-height: 1.4; word-break: break-all; }
+.log-line b { color: var(--color-active); }
+
 .panel { display: none; width: 100%; animation: fadeIn 0.15s cubic-bezier(0.4, 0, 0.2, 1); }
 .panel.active { display: block; }
 
@@ -184,7 +173,6 @@ body {
 .t-header-row { display: flex; align-items: center; justify-content: center; gap: 4px; }
 .t-num { font-size: 12px; color: #fff; font-weight: 700; }
 .edit-btn { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 10px; opacity: 0.4; padding: 2px; }
-.edit-btn:hover { opacity: 1; }
 
 .t-cnt { font-size: 28px; font-weight: 900; color: var(--color-active); line-height: 1.1; margin: 1px 0; }
 .t-sub { font-size: 9px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
@@ -199,7 +187,6 @@ body {
 .bg-warn { background: var(--status-warn-bg); color: var(--status-warn-text); }
 .bg-low  { background: var(--status-low-bg); color: var(--status-low-text); }
 
-/* Configurator Multi-Device Scaling Layout */
 .detail-wrap { display: flex; flex-direction: column; gap: 1rem; align-items: center; justify-content: center; margin-top: 0.4rem; width: 100%; }
 .felt-container { width: 100%; max-width: 360px; aspect-ratio: 360 / 240; display: flex; justify-content: center; align-items: center; }
 .seat-panel { width: 100%; background: var(--bg-panel); padding: 1rem; border-radius: 14px; border: 1px solid var(--border-color); }
@@ -214,10 +201,21 @@ body {
 .sb-empty { background: #070a12; color: var(--text-muted); }
 
 .break-btn { font-size: 12px; padding: 8px 14px; cursor: pointer; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 6px; color: #f87171; font-weight: 700; }
-.move-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px 14px; font-size: 11px; width: 100%; margin-bottom: 6px; }
-.exec-btn { font-size: 12px; padding: 6px 14px; cursor: pointer; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); border: 1px solid #eab308; border-radius: 6px; color: var(--color-active); font-weight: 700; }
 
-/* Seating Curves Chart */
+.move-row { 
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; 
+  background: linear-gradient(145deg, #161f33 0%, var(--bg-card) 100%); border: 1px solid rgba(234, 179, 8, 0.3); 
+  border-radius: 12px; padding: 14px 18px; width: 100%; margin-bottom: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.move-row span { font-size: 13px; font-weight: 700; color: var(--text-main); letter-spacing: 0.01em; flex: 1; min-width: 240px; }
+.move-row b { color: var(--color-active); font-weight: 900; text-shadow: 0 0 4px rgba(234, 179, 8, 0.2); }
+
+.exec-btn { 
+  font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.03em; padding: 10px 20px; height: 42px;
+  cursor: pointer; background: linear-gradient(180deg, #eab308 0%, #ca8a04 100%); border: 1px solid #facc15; 
+  border-radius: 8px; color: #05070c; box-shadow: 0 2px 6px rgba(234, 179, 8, 0.3); display: inline-flex; align-items: center; justify-content: center;
+}
+
 .bar-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; align-items: end; height: 160px; margin-bottom: 10px; background: #080c14; padding: 12px 6px; border-radius: 12px; border: 1px solid var(--border-color); width: 100%; position: relative; }
 .bar-col { display: flex; flex-direction: column; align-items: center; justify-content: space-between; height: 100%; }
 .bar-col.vacant-mode { opacity: 0.15; }
@@ -242,9 +240,7 @@ body {
   transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s linear;
 }
 #toast-notification.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }
 
-/* Media Query Breakthrough Breakpoints */
 @media (min-width: 640px) {
   .floor-config-panel { grid-template-columns: 1fr 1fr; }
   .stats-row { grid-template-columns: repeat(4, 1fr); gap: 6px; }
@@ -256,6 +252,9 @@ body {
 }
 
 @media (min-width: 900px) {
+  .core-layout { flex-direction: row; align-items: flex-start; }
+  .main-viewport { flex: 3.2; }
+  .side-audit-logs { flex: 1.1; max-height: 520px; position: sticky; top: 10px; }
   .detail-wrap { flex-direction: row; flex-wrap: nowrap; align-items: stretch; }
   .felt-container { flex: 1; max-width: 45%; }
   .seat-panel { flex: 1.2; }
@@ -266,76 +265,99 @@ body {
 <body>
 <div class="container">
 
+  <div class="sync-bar">
+    <div class="sync-cluster">
+      <span>📡 MULTIFLOOR SYNC:</span>
+      <button class="sync-btn" onclick="initializeWebRTCHost()">Host Room</button>
+      <button class="sync-btn" onclick="initializeWebRTCJoin()">Join Room</button>
+      <span style="margin-left:6px">Identity:</span>
+      <span class="identity-tag" id="identity-label" onclick="changeIdentity()">HOST</span>
+    </div>
+    <div class="status-indicator">
+      <div class="status-dot" id="sync-dot"></div>
+      <span id="sync-status-text">Standalone Mode</span>
+    </div>
+  </div>
+
   <div class="top-header">
     <div class="title-area">
       <h1>🃏 FLOOR MATRIX</h1>
-      <div class="version-tag">v2.4.9</div>
+      <div class="version-tag">v2.6.0</div>
     </div>
     <button class="danger-zone-trigger" onclick="clearAllPlayers()">Reset Floor</button>
   </div>
 
-  <div class="floor-config-panel">
-    <div class="config-item">
-      <div class="config-title">Active Tables (1-20)</div>
-      <div class="stepper-container">
-        <button class="step-btn" onclick="stepActiveFloor(-1)">—</button>
-        <input type="number" id="floor-input" class="floor-input-box" min="1" max="20" value="10" onchange="directTypeFloorCount(this.value)">
-        <button class="step-btn" onclick="stepActiveFloor(1)">+</button>
+  <div class="core-layout">
+    
+    <div class="main-viewport">
+      
+      <div class="floor-config-panel">
+        <div class="config-item">
+          <div class="config-title">Active Tables (1-20)</div>
+          <div class="stepper-container">
+            <button class="step-btn" onclick="stepActiveFloor(-1)">—</button>
+            <input type="number" id="floor-input" class="floor-input-box" min="1" max="20" value="10" onchange="directTypeFloorCount(this.value)">
+            <button class="step-btn" onclick="stepActiveFloor(1)">+</button>
+          </div>
+        </div>
+        <div class="config-item">
+          <div class="config-title">Table Capacity (2-9)</div>
+          <div class="stepper-container">
+            <button class="step-btn" onclick="stepMaxSeats(-1)">—</button>
+            <input type="number" id="seats-input" class="floor-input-box" min="2" max="9" value="9" onchange="directTypeSeatsCount(this.value)">
+            <button class="step-btn" onclick="stepMaxSeats(1)">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat" id="card-total">Total Players <b id="s-total">0</b></div>
+        <div class="stat" id="card-tables">Active Tables <b id="s-tables">0</b></div>
+        <div class="stat" id="card-spread">Player Spread <b id="s-spread">0</b></div>
+        <div class="stat" id="card-alerts">Imbalances <b id="s-needs">0</b></div>
+      </div>
+
+      <div class="nav-bar">
+        <div class="tabs">
+          <button class="tab active" id="btn-overview" onclick="showTab('overview')">Grid View</button>
+          <button class="tab" id="btn-detail" onclick="showTab('detail')">Configurator</button>
+          <button class="tab" id="btn-balance" onclick="showTab('balance')">Balance Engine</button>
+        </div>
+      </div>
+
+      <div id="panel-overview" class="panel active">
+        <div class="tables-grid" id="tables-grid"></div>
+      </div>
+
+      <div id="panel-detail" class="panel">
+        <select class="detail-select" id="detail-sel" onchange="dropdownTableSelect(+this.value)"></select>
+        <div id="detail-body"></div>
+      </div>
+
+      <div id="panel-balance" class="panel">
+        <div class="sec-title" style="margin-top:0">Seating Capacity Index</div>
+        <div class="bar-row" id="bar-chart"></div>
+        <div class="sec-title">Balancing Directives</div>
+        <div id="suggestions"></div>
+        <div id="break-wrap" style="display:none">
+          <div class="sec-title" style="color:#f87171">High Variance Collapse Actions</div>
+          <div id="break-list"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="side-audit-logs">
+      <div class="sec-title" style="margin:0; padding-bottom:6px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between;">
+        <span>📜 ACTION LOGS</span>
+        <span style="font-size:9px; color:var(--text-muted)" onclick="document.getElementById('log-stream').innerHTML=''">Clear</span>
+      </div>
+      <div class="log-stream" id="log-stream">
+        <div class="log-line">> System loaded. Ready for field monitoring.</div>
       </div>
     </div>
-    <div class="config-item">
-      <div class="config-title">Table Capacity (2-9)</div>
-      <div class="stepper-container">
-        <button class="step-btn" onclick="stepMaxSeats(-1)">—</button>
-        <input type="number" id="seats-input" class="floor-input-box" min="2" max="9" value="9" onchange="directTypeSeatsCount(this.value)">
-        <button class="step-btn" onclick="stepMaxSeats(1)">+</button>
-      </div>
-    </div>
-  </div>
 
-  <div class="stats-row">
-    <div class="stat" id="card-total">Total Players <b id="s-total">0</b></div>
-    <div class="stat" id="card-tables">Active Tables <b id="s-tables">0</b></div>
-    <div class="stat" id="card-spread">Player Spread <b id="s-spread">0</b></div>
-    <div class="stat" id="card-alerts">Imbalances <b id="s-needs">0</b></div>
   </div>
-
-  <div class="nav-bar">
-    <div class="tabs">
-      <button class="tab active" id="btn-overview" onclick="showTab('overview')">Grid View</button>
-      <button class="tab" id="btn-detail" onclick="showTab('detail')">Configurator</button>
-      <button class="tab" id="btn-balance" onclick="showTab('balance')">Balance Engine</button>
-    </div>
-  </div>
-
-  <div id="panel-overview" class="panel active">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;font-size:9px;color:var(--text-muted);font-weight:600;">
-      <span>MONITOR EXTENSION ACTIVE</span>
-      <div style="display:flex;gap:4px">
-        <span class="badge bg-ok" style="position:static">✓ OPTIMAL</span>
-        <span class="badge bg-warn" style="position:static">⚠️ UNEVEN</span>
-        <span class="badge bg-low" style="position:static">! SHORT</span>
-      </div>
-    </div>
-    <div class="tables-grid" id="tables-grid"></div>
-  </div>
-
-  <div id="panel-detail" class="panel">
-    <select class="detail-select" id="detail-sel" onchange="dropdownTableSelect(+this.value)"></select>
-    <div id="detail-body"></div>
-  </div>
-
-  <div id="panel-balance" class="panel">
-    <div class="sec-title" style="margin-top:0">Seating Capacity Index</div>
-    <div class="bar-row" id="bar-chart"></div>
-    <div class="sec-title">Balancing Directives</div>
-    <div id="suggestions"></div>
-    <div id="break-wrap" style="display:none">
-      <div class="sec-title" style="color:#f87171">High Variance Collapse Actions</div>
-      <div id="break-list"></div>
-    </div>
-  </div>
-
 </div>
 
 <div id="toast-notification">State Saved</div>
@@ -343,6 +365,162 @@ body {
 <script>
 let globalMaxPlayers = 9; 
 let tables = [], selectedTable = 1, activeFloorSize = 10;
+let supervisorIdentity = "HOST";
+
+// WebRTC Global Comm State Handles
+let peer = null, conn = null;
+const PEER_PREFIX = "poker-floor-matrix-";
+
+function changeIdentity() {
+  const newId = prompt("Enter Custom Supervisor Label / Name:", supervisorIdentity);
+  if(newId && newId.trim() !== "") {
+    const oldId = supervisorIdentity;
+    supervisorIdentity = newId.trim().toUpperCase().substring(0, 12);
+    document.getElementById('identity-label').textContent = supervisorIdentity;
+    writeLog(`Identity changed from ${oldId} → <b>${supervisorIdentity}</b>`);
+    broadcastData({ type: "IDENTITY_UPDATE", name: supervisorIdentity });
+  }
+}
+
+function writeLog(htmlText) {
+  const stream = document.getElementById('log-stream');
+  const timestamp = new Date().toTimeString().split(' ')[0];
+  const line = document.createElement('div');
+  line.className = 'log-line';
+  line.innerHTML = `[${timestamp}] ${htmlText}`;
+  stream.insertBefore(line, stream.firstChild);
+}
+
+function broadcastData(payload) {
+  if (conn && conn.open) {
+    conn.send(payload);
+  }
+}
+
+function initializeWebRTCHost() {
+  if (peer) peer.destroy();
+  
+  const roomId = Math.floor(1000 + Math.random() * 9000).toString();
+  peer = new Peer(PEER_PREFIX + roomId);
+  
+  writeLog(`Initializing master routing server infrastructure...`);
+  
+  peer.on('open', (id) => {
+    alert(`ROOM CREATED!\n\nProvide this 4-Digit Pairing Code to the other supervisor:\n▶ ${roomId} ◀`);
+    document.getElementById('sync-status-text').textContent = `Hosting Room: ${roomId}`;
+    document.getElementById('sync-dot').className = "status-dot online";
+    writeLog(`Hosting synchronization room code: <b>${roomId}</b>`);
+  });
+  
+  peer.on('connection', (connection) => {
+    conn = connection;
+    setupConnectionListeners();
+  });
+}
+
+function initializeWebRTCJoin() {
+  if (peer) peer.destroy();
+  
+  const targetRoom = prompt("Enter the 4-Digit Pairing Code provided by the host:");
+  if (!targetRoom) return;
+  
+  supervisorIdentity = "PEER";
+  document.getElementById('identity-label').textContent = supervisorIdentity;
+  
+  peer = new Peer();
+  peer.on('open', (id) => {
+    conn = peer.connect(PEER_PREFIX + targetRoom.trim());
+    setupConnectionListeners();
+  });
+}
+
+function setupConnectionListeners() {
+  conn.on('open', () => {
+    document.getElementById('sync-status-text').textContent = "Sync Connected";
+    document.getElementById('sync-dot').className = "status-dot online";
+    writeLog(`Secure WebRTC data pipe successfully established with remote node.`);
+    
+    // Push master dataset state to peer immediately
+    broadcastData({
+      type: "FULL_SYNC",
+      globalMaxPlayers: globalMaxPlayers,
+      activeFloorSize: activeFloorSize,
+      tables: tables,
+      senderIdentity: supervisorIdentity
+    });
+  });
+  
+  conn.on('data', (data) => {
+    handleIncomingNetworkPackets(data);
+  });
+  
+  conn.on('close', () => {
+    document.getElementById('sync-status-text').textContent = "Connection Severed";
+    document.getElementById('sync-dot').className = "status-dot";
+    writeLog(`<span style="color:var(--status-low-text)">Warning: Sync peer lost connection topology.</span>`);
+  });
+}
+
+function handleIncomingNetworkPackets(packet) {
+  if (!packet || !packet.type) return;
+  
+  switch(packet.type) {
+    case "FULL_SYNC":
+      globalMaxPlayers = packet.globalMaxPlayers;
+      activeFloorSize = packet.activeFloorSize;
+      tables = packet.tables;
+      document.getElementById('seats-input').value = globalMaxPlayers;
+      document.getElementById('floor-input').value = activeFloorSize;
+      renderGrid();
+      writeLog(`Received complete floor snapshot synchronization from <b>${packet.senderIdentity}</b>.`);
+      break;
+      
+    case "SEAT_TOGGLE":
+      const t = tables.find(x => x.id === packet.tid);
+      const s = t.seats.find(x => x.id === packet.sid);
+      s.occ = packet.occ;
+      renderGrid();
+      if(selectedTable === packet.tid) showDetail(packet.tid);
+      if(document.getElementById('panel-balance').classList.contains('active')) renderBalance();
+      
+      const actionTxt = packet.occ ? "ADDED" : "REMOVED";
+      writeLog(`[${packet.by}] <b>${actionTxt}</b>: Table ${t.tableName}, Seat ${packet.sid}`);
+      break;
+      
+    case "BREAK_TABLE":
+      const bt = tables.find(x => x.id === packet.tid);
+      bt.seats.forEach(x => x.occ = false);
+      packet.distributionArray.forEach(d => {
+        const targetT = tables.find(x => x.id === d.targetTableId);
+        const emptyS = targetT.seats.find(x => x.id === d.seatId);
+        if(emptyS) emptyS.occ = true;
+      });
+      renderGrid();
+      if(selectedTable) showDetail(selectedTable);
+      if(document.getElementById('panel-balance').classList.contains('active')) renderBalance();
+      writeLog(`[${packet.by}] <b>COLLAPSED</b>: Shorthanded Table ${bt.tableName}`);
+      break;
+
+    case "SHIFT_PLAYER":
+      const fT = tables.find(x => x.id === packet.fromId);
+      const tT = tables.find(x => x.id === packet.toId);
+      const occS = fT.seats.filter(x => x.id <= globalMaxPlayers && x.occ);
+      const empS = tT.seats.filter(x => x.id <= globalMaxPlayers && !x.occ);
+      if(occS.length && empS.length) {
+        occS[occS.length - 1].occ = false;
+        empS[0].occ = true;
+      }
+      renderGrid();
+      if(document.getElementById('panel-balance').classList.contains('active')) renderBalance();
+      if(selectedTable === packet.fromId || selectedTable === packet.toId) showDetail(selectedTable);
+      writeLog(`[${packet.by}] <b>SHIFTED</b>: 1 Player from Table ${fT.tableName} → Table ${tT.tableName}`);
+      break;
+      
+    case "IDENTITY_UPDATE":
+      writeLog(`Remote supervisor identified as <b>${packet.name}</b>`);
+      break;
+  }
+}
 
 function saveStateToLocalStorage() {
   const stateData = {
@@ -350,9 +528,7 @@ function saveStateToLocalStorage() {
     activeFloorSize: activeFloorSize,
     selectedTable: selectedTable,
     tables: tables.map(t => ({
-      id: t.id,
-      tableName: t.tableName,
-      active: t.active,
+      id: t.id, tableName: t.tableName, active: t.active,
       seats: t.seats.map(s => ({ id: s.id, occ: s.occ }))
     }))
   };
@@ -369,17 +545,8 @@ function loadStateFromLocalStorage() {
     selectedTable = parsed.selectedTable || 1;
     tables = parsed.tables;
     return true;
-  } catch (e) {
-    return false;
-  }
+  } catch (e) { return false; }
 }
-
-window.addEventListener('beforeunload', function (e) {
-  if (getTotal() > 0) {
-    e.preventDefault();
-    e.returnValue = 'Live fields are actively loaded.';
-  }
-});
 
 function initTables() {
   const isLoaded = loadStateFromLocalStorage();
@@ -387,30 +554,20 @@ function initTables() {
 
   tables = Array.from({length: 20}, (_, i) => {
     let seatsArray = [];
-    for(let s = 0; s < 10; s++) {
-      seatsArray.push({ id: s + 1, occ: false });
-    }
+    for(let s = 0; s < 10; s++) { seatsArray.push({ id: s + 1, occ: false }); }
     return {
-      id: i + 1, 
-      tableName: `${i + 1}`, 
-      active: i < activeFloorSize, 
-      seats: seatsArray
+      id: i + 1, tableName: `${i + 1}`, active: i < activeFloorSize, seats: seatsArray
     };
   });
 }
 
 function syncTableSeatsCapacity() {
-  tables.forEach(t => {
-    t.seats.forEach(s => {
-      if (s.id > globalMaxPlayers) s.occ = false;
-    });
-  });
+  tables.forEach(t => { t.seats.forEach(s => { if (s.id > globalMaxPlayers) s.occ = false; }); });
 }
 
 function showToast(message) {
   const toast = document.getElementById('toast-notification');
-  toast.textContent = message;
-  toast.classList.add('show');
+  toast.textContent = message; toast.classList.add('show');
   setTimeout(() => { toast.classList.remove('show'); }, 1500);
 }
 
@@ -419,85 +576,64 @@ function clearAllPlayers() {
     tables.forEach(t => t.seats.forEach(s => s.occ = false));
     saveStateToLocalStorage();
     renderGrid();
+    writeLog(`[${supervisorIdentity}] <b>RESET</b>: Purged all players from floor matrix.`);
+    broadcastData({ type: "FULL_SYNC", globalMaxPlayers, activeFloorSize, tables, senderIdentity: supervisorIdentity });
     showToast("Reset Complete");
-    if (document.getElementById('panel-detail').classList.contains('active')) {
-      populateSelect();
-      if(selectedTable) showDetail(selectedTable);
-    } else if (document.getElementById('panel-balance').classList.contains('active')) {
-      renderBalance();
-    }
   }
 }
 
 function stepActiveFloor(delta) {
   let target = activeFloorSize + delta;
-  if(target < 1) target = 1;
-  if(target > 20) target = 20;
+  if(target < 1) target = 1; if(target > 20) target = 20;
   applyFloorSizeChange(target);
 }
 function directTypeFloorCount(val) {
   let target = parseInt(val, 10);
-  if(isNaN(target) || target < 1) target = 1;
-  if(target > 20) target = 20;
+  if(isNaN(target) || target < 1) target = 1; if(target > 20) target = 20;
   applyFloorSizeChange(target);
 }
 function applyFloorSizeChange(targetCount) {
   activeFloorSize = targetCount;
   document.getElementById('floor-input').value = activeFloorSize;
-  
   tables.forEach((t, i) => {
     t.active = (i < activeFloorSize);
     if (!t.active) t.seats.forEach(s => s.occ = false);
   });
-
   const currentActiveTables = getActive();
   if (currentActiveTables.length > 0) {
-    const stillExists = currentActiveTables.find(t => t.id === selectedTable);
-    if (!stillExists) selectedTable = currentActiveTables[0].id;
+    if (!currentActiveTables.find(t => t.id === selectedTable)) selectedTable = currentActiveTables[0].id;
   } else { selectedTable = null; }
 
   saveStateToLocalStorage();
   renderGrid();
-  if (document.getElementById('panel-detail').classList.contains('active')) {
-    populateSelect();
-    if(selectedTable) showDetail(selectedTable);
-  }
+  writeLog(`[${supervisorIdentity}] Configured Active Floor size to <b>${activeFloorSize}</b> tables.`);
+  broadcastData({ type: "FULL_SYNC", globalMaxPlayers, activeFloorSize, tables, senderIdentity: supervisorIdentity });
 }
 
 function stepMaxSeats(delta) {
   let target = globalMaxPlayers + delta;
-  if(target < 2) target = 2;
-  if(target > 9) target = 9;
+  if(target < 2) target = 2; if(target > 9) target = 9;
   applyMaxSeatsChange(target);
 }
 function directTypeSeatsCount(val) {
   let target = parseInt(val, 10);
-  if(isNaN(target) || target < 2) target = 2;
-  if(target > 9) target = 9;
+  if(isNaN(target) || target < 2) target = 2; if(target > 9) target = 9;
   applyMaxSeatsChange(target);
 }
 function applyMaxSeatsChange(targetSeats) {
   const violationTable = getActive().find(t => getCount(t) > targetSeats);
   if (violationTable) {
-    alert(`Configuration Error: Table ${violationTable.tableName} has ${getCount(violationTable)} active players. Target threshold cannot be applied.`);
+    alert(`Configuration Error: Table ${violationTable.tableName} has ${getCount(violationTable)} active players.`);
     document.getElementById('seats-input').value = globalMaxPlayers;
     return;
   }
-
   globalMaxPlayers = targetSeats;
   document.getElementById('seats-input').value = globalMaxPlayers;
-  
   syncTableSeatsCapacity();
   saveStateToLocalStorage();
   renderGrid();
-  showToast(`Max Seats: ${globalMaxPlayers}`);
-  
-  if (document.getElementById('panel-detail').classList.contains('active')) {
-    populateSelect();
-    if(selectedTable) showDetail(selectedTable);
-  } else if (document.getElementById('panel-balance').classList.contains('active')) {
-    renderBalance();
-  }
+  writeLog(`[${supervisorIdentity}] Modified Max Table Capacity parameter to <b>${globalMaxPlayers}</b> seats.`);
+  broadcastData({ type: "FULL_SYNC", globalMaxPlayers, activeFloorSize, tables, senderIdentity: supervisorIdentity });
 }
 
 const getActive = () => tables.filter(t => t.active);
@@ -505,331 +641,178 @@ const getCount  = t  => t.seats.filter(s => s.id <= globalMaxPlayers && s.occ).l
 const getEmpty  = t  => t.seats.filter(s => s.id <= globalMaxPlayers && !s.occ);
 const getTotal  = () => tables.reduce((a,t) => a+getCount(t), 0);
 
-// Optimized Status Check: 4 to Max seats is always green. 1-3 is red. 
 function status(t) { 
   const c = getCount(t); 
   if (c === 0) return 'ok'; 
   if (c <= 3) return 'low'; 
-  if (c >= 4 && c <= globalMaxPlayers) return 'ok'; 
-  return 'warn'; 
+  return 'ok'; 
 }
 
 function updateStats() {
-  const at = getActive();
-  const total = getTotal();
-  
-  // Imbalances main purpose fix: Only alert for critical shorthanded tables (1-3 players) that need breaking
+  const at = getActive(), total = getTotal();
   const alertCount = at.filter(t => status(t) === 'low' && getCount(t) > 0).length;
   
   document.getElementById('s-total').textContent = total;
   document.getElementById('s-tables').textContent = at.length;
+  document.getElementById('s-needs').textContent = alertCount;
   
   const alertsCard = document.getElementById('card-alerts');
-  document.getElementById('s-needs').textContent = alertCount;
-  if (alertCount > 0) { alertsCard.classList.add('pulse-alert'); } else { alertsCard.classList.remove('pulse-alert'); }
+  if (alertCount > 0) alertsCard.classList.add('pulse-alert'); else alertsCard.classList.remove('pulse-alert');
 
   const scoringCounts = at.filter(t => getCount(t) > 0).map(t => getCount(t));
   const spreadEl = document.getElementById('s-spread');
   const spreadCard = document.getElementById('card-spread');
   
   if(scoringCounts.length <= 1) {
-    spreadEl.textContent = "0";
-    spreadCard.classList.remove('pulse-alert');
+    spreadEl.textContent = "0"; spreadCard.classList.remove('pulse-alert');
   } else {
-    const max = Math.max(...scoringCounts);
-    const min = Math.min(...scoringCounts);
-    const spread = max - min;
+    const spread = Math.max(...scoringCounts) - Math.min(...scoringCounts);
     spreadEl.textContent = spread;
-    
-    // Spread Warning: Alerts supervisor if the delta between biggest and smallest table is uncomfortably high (>= 3)
-    if(spread >= 3) { spreadCard.classList.add('pulse-alert'); } else { spreadCard.classList.remove('pulse-alert'); }
-  }
-}
-
-function renameTable(tid, event) {
-  if (event) event.stopPropagation();
-  const t = tables.find(x => x.id === tid);
-  if (!t) return;
-  const newName = prompt(`Label Table ${t.tableName}:`, t.tableName);
-  if (newName !== null && newName.trim() !== "") {
-    t.tableName = newName.trim();
-    saveStateToLocalStorage();
-    renderGrid();
-    if(selectedTable === tid) showDetail(tid);
-  }
-}
-
-function submitRename(tid) {
-  const input = document.getElementById(`rename-input-${tid}`);
-  const t = tables.find(x => x.id === tid);
-  if (t && input && input.value.trim() !== "") {
-    t.tableName = input.value.trim();
-    saveStateToLocalStorage();
-    renderGrid();
-    showDetail(tid);
+    if(spread >= 3) spreadCard.classList.add('pulse-alert'); else spreadCard.classList.remove('pulse-alert');
   }
 }
 
 function dropdownTableSelect(tid) {
-  selectedTable = tid;
-  saveStateToLocalStorage();
-  showDetail(tid);
-  renderGrid();
+  selectedTable = tid; saveStateToLocalStorage(); showDetail(tid); renderGrid();
 }
 
 function renderGrid(){
-  const g = document.getElementById('tables-grid');
-  g.innerHTML = '';
-  
+  const g = document.getElementById('tables-grid'); g.innerHTML = '';
   const activeTables = getActive();
   if (activeTables.length === 0) {
-    g.innerHTML = `<div class="info-box" style="color:var(--text-muted); text-align:center; padding: 2rem;">No Active Configurations.</div>`;
-    updateStats();
-    return;
+    g.innerHTML = `<div class="info-box" style="color:var(--text-muted); text-align:center;">No Active Configurations.</div>`;
+    updateStats(); return;
   }
-
   activeTables.forEach(t => {
-    const c = getCount(t), st = status(t);
+    const c = getCount(t), st = status(t), hasPlayers = c > 0;
+    let stateClass = hasPlayers ? (st === 'low' ? ' st-low' : ' st-ok-filled') : '';
     const d = document.createElement('div');
-    const hasPlayers = c > 0;
-    
-    let stateClass = '';
-    if (hasPlayers) {
-      if (st === 'warn') stateClass = ' st-warn';
-      else if (st === 'low') stateClass = ' st-low';
-      else stateClass = ' st-ok-filled';
-    }
-    
     d.className = 'table-card' + stateClass + (selectedTable === t.id ? ' selected' : '');
-    d.onclick = () => { 
-      selectedTable = t.id; 
-      saveStateToLocalStorage();
-      renderGrid(); 
-      showTab('detail'); 
-      showDetail(t.id); 
-    };
+    d.onclick = () => { selectedTable = t.id; saveStateToLocalStorage(); renderGrid(); showTab('detail'); showDetail(t.id); };
     
-    const bCls = (!hasPlayers || st === 'ok') ? 'bg-ok' : st === 'warn' ? 'bg-warn' : 'bg-low';
-    const bTxt = !hasPlayers ? 'VACANT' : (st === 'ok' ? '✓ OPTIMAL' : st === 'warn' ? '⚠️ UNEVEN' : '! SHORT');
+    const bCls = (!hasPlayers || st === 'ok') ? 'bg-ok' : 'bg-low';
+    const bTxt = !hasPlayers ? 'VACANT' : (st === 'ok' ? '✓ OPTIMAL' : '! SHORT');
     const pDots = t.seats.filter(s => s.id <= globalMaxPlayers).map(s => `<div class="md ${s.occ ? 'md-occ' : 'md-empty'}"></div>`).join('');
     
-    d.innerHTML = `<span class="badge ${bCls}">${bTxt}</span>
-      <div class="t-header-row">
-        <div class="t-num">Table ${t.tableName}</div>
-        <button class="edit-btn" onclick="renameTable(${t.id}, event)">✏️</button>
-      </div>
-      <div class="t-cnt">${c}</div>
-      <div class="t-sub">/ ${globalMaxPlayers} Max</div>
-      <div class="mini-seats">${pDots}</div>`;
+    d.innerHTML = `<span class="badge ${bCls}">${bTxt}</span><div class="t-header-row"><div class="t-num">Table ${t.tableName}</div></div>
+      <div class="t-cnt">${c}</div><div class="t-sub">/ ${globalMaxPlayers} Max</div><div class="mini-seats">${pDots}</div>`;
     g.appendChild(d);
   });
   updateStats();
 }
 
 function feltSVG(t) {
-  const W = 360, H = 240, cx = 180, cy = 125, rx = 110, ry = 65, sR = 14; 
-  let seats = '';
-  
-  seats += `<g>
-    <rect x="${cx - 26}" y="${cy - ry - 4}" width="52" height="20" rx="5" fill="#0e1320" stroke="#10b981" stroke-width="1.5"/>
-    <text x="${cx}" y="${cy - ry + 6}" text-anchor="middle" dominant-baseline="central" font-size="9" fill="#10b981" font-weight="900">DEALER</text>
-  </g>`;
-
+  const cx = 180, cy = 125, rx = 110, ry = 65; 
+  let seats = `<g><rect x="${cx-26}" y="${cy-ry-4}" width="52" height="20" rx="5" fill="#0e1320" stroke="#10b981" stroke-width="1.5"/><text x="${cx}" y="${cy-ry+6}" text-anchor="middle" dominant-baseline="central" font-size="9" fill="#10b981" font-weight="900">DEALER</text></g>`;
   const activeSeats = t.seats.filter(s => s.id <= globalMaxPlayers);
-  const totalSeats = activeSeats.length;
-  
   activeSeats.forEach((s, i) => {
-    let angleOffset;
-    if (totalSeats === 1) {
-      angleOffset = 115 * Math.PI / 180;
-    } else {
-      angleOffset = (-50 + (280 / (totalSeats - 1)) * i) * Math.PI / 180;
-    }
-    
-    const sx = (cx + (rx + 25) * Math.cos(angleOffset)).toFixed(1);
-    const sy = (cy + (ry + 24) * Math.sin(angleOffset)).toFixed(1);
-    
-    let fill = s.occ ? '#eab308' : '#121826';
-    let stroke = s.occ ? '#facc15' : '#222f4d';
-    let tc = s.occ ? '#000' : '#64748b';
-    
-    seats += `<g style="cursor:pointer" onclick="toggleSeat(${t.id},${s.id})">
-      <circle cx="${sx}" cy="${sy}" r="${sR}" fill="${fill}" stroke="${stroke}" stroke-width="1.5"/>
-      <text x="${sx}" y="${sy}" text-anchor="middle" dominant-baseline="central" font-size="10" fill="${tc}" font-weight="900">${s.id}</text>
-    </g>`;
+    let angleOffset = activeSeats.length === 1 ? 115 * Math.PI / 180 : (-50 + (280 / (activeSeats.length - 1)) * i) * Math.PI / 180;
+    const sx = (cx + (rx + 25) * Math.cos(angleOffset)).toFixed(1), sy = (cy + (ry + 24) * Math.sin(angleOffset)).toFixed(1);
+    seats += `<g style="cursor:pointer" onclick="toggleSeat(${t.id},${s.id})"><circle cx="${sx}" cy="${sy}" r="14" fill="${s.occ ? '#eab308' : '#121826'}" stroke="${s.occ ? '#facc15' : '#222f4d'}" stroke-width="1.5"/><text x="${sx}" y="${sy}" text-anchor="middle" dominant-baseline="central" font-size="10" fill="${s.occ ? '#000' : '#64748b'}" font-weight="900">${s.id}</text></g>`;
   });
-  
-  const c = getCount(t);
-  return `<svg width="100%" height="100%" viewBox="0 0 ${W} ${H}" style="filter:drop-shadow(0 6px 15px rgba(0,0,0,.4))">
-    <defs><radialGradient id="fg${t.id}" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="var(--poker-green-start)"/><stop offset="100%" stop-color="var(--poker-green-end)"/>
-    </radialGradient></defs>
-    <ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="url(#fg${t.id})" stroke="#022c22" stroke-width="5"/>
-    <text x="${cx}" y="${cy-6}" text-anchor="middle" font-size="15" fill="#fff" font-weight="800">TABLE ${t.tableName}</text>
-    <text x="${cx}" y="${cy+12}" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.4)" font-weight="700">${c} / ${globalMaxPlayers} SEATS</text>
-    ${seats}
-  </svg>`;
+  return `<svg width="100%" height="100%" viewBox="0 0 360 240"><defs><radialGradient id="fg${t.id}" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="var(--poker-green-start)"/><stop offset="100%" stop-color="var(--poker-green-end)"/></radialGradient></defs><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="url(#fg${t.id})" stroke="#022c22" stroke-width="5"/><text x="${cx}" y="${cy-6}" text-anchor="middle" font-size="15" fill="#fff" font-weight="800">TABLE ${t.tableName}</text><text x="${cx}" y="${cy+12}" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.4)" font-weight="700">${getCount(t)} / ${globalMaxPlayers} SEATS</text>${seats}</svg>`;
 }
 
 function showDetail(tid){
-  selectedTable = tid;
-  const t = tables.find(x => x.id === tid);
-  if(!t || !t.active) return;
+  selectedTable = tid; const t = tables.find(x => x.id === tid); if(!t || !t.active) return;
   const c = getCount(t), st = status(t);
+  const seatBtns = t.seats.filter(s => s.id <= globalMaxPlayers).map(s => `<div class="seat-btn ${s.occ ? 'sb-occ' : 'sb-empty'}" onclick="toggleSeat(${t.id},${s.id})"><span>SEAT ${s.id}</span></div>`).join('');
+  const breakBtnHtml = (c > 0 && c <= 3) ? `<div class="alert-box"><span>⚠️ Critical shorthanded alert.</span><button class="break-btn" onclick="breakTable(${tid})">Collapse Table</button></div>` : '';
   
-  const stLabel = c === 0 ? `<span style="color:var(--text-muted)">Vacant Field</span>` :
-    st === 'ok' ? `<span style="color:var(--status-ok-text)">Optimal Distribution</span>` :
-    st === 'warn' ? `<span style="color:var(--status-warn-text)">Asymmetric Field Load</span>` :
-    `<span style="color:var(--status-low-text)">Shorthanded State</span>`;
-    
-  const seatBtns = t.seats.filter(s => s.id <= globalMaxPlayers).map(s => {
-    let cls = s.occ ? 'sb-occ' : 'sb-empty';
-    return `<div class="seat-btn ${cls}" onclick="toggleSeat(${t.id},${s.id})">
-      <span>SEAT ${s.id}</span>
-    </div>`;
-  }).join('');
-  
-  const breakBtnHtml = (c > 0 && c <= 3) ? `<div class="alert-box"><span>⚠️ Critical shorthanded alert detected.</span><button class="break-btn" onclick="breakTable(${tid})">Collapse Table</button></div>` : '';
-  
-  document.getElementById('detail-body').innerHTML = `
-    <div class="detail-wrap">
-      <div class="felt-container">
-        ${feltSVG(t)}
-      </div>
-      <div class="seat-panel">
-        <div style="font-size: 18px; font-weight: 800; margin-bottom: 4px; color: var(--color-active);">Table ${t.tableName}</div>
-        <div class="rename-section">
-          <input type="text" id="rename-input-${t.id}" class="rename-input" value="${t.tableName}">
-          <button class="rename-confirm" onclick="submitRename(${t.id})">Update Label</button>
-        </div>
-        <div style="font-size:10px;font-weight:600;margin-bottom:0.4rem">Diagnostics: ${stLabel}</div>
-        <div class="seat-grid">${seatBtns}</div>
-        ${breakBtnHtml}
-      </div>
-    </div>`;
+  document.getElementById('detail-body').innerHTML = `<div class="detail-wrap"><div class="felt-container">${feltSVG(t)}</div><div class="seat-panel"><div style="font-size: 18px; font-weight: 800; margin-bottom: 4px; color: var(--color-active);">Table ${t.tableName}</div><div style="font-size:10px;font-weight:600;margin-bottom:0.4rem">Diagnostics: ${c===0?'Vacant':st==='low'?'Shorthanded':'Optimal'}</div><div class="seat-grid">${seatBtns}</div>${breakBtnHtml}</div></div>`;
   document.getElementById('detail-sel').value = tid;
 }
 
 function toggleSeat(tid, sid){
-  const t = tables.find(x => x.id === tid);
-  const seat = t.seats.find(s => s.id === sid);
+  const t = tables.find(x => x.id === tid); const seat = t.seats.find(s => s.id === sid);
   seat.occ = !seat.occ;
-  saveStateToLocalStorage();
-  renderGrid();
+  saveStateToLocalStorage(); renderGrid();
   if(selectedTable === tid) showDetail(tid);
   if (document.getElementById('panel-balance').classList.contains('active')) renderBalance();
+  
+  // Real-time peer networking broadcast packet dispatch
+  writeLog(`[${supervisorIdentity}] <b>${seat.occ?'ADDED':'REMOVED'}</b>: Table ${t.tableName}, Seat ${sid}`);
+  broadcastData({
+    type: "SEAT_TOGGLE", tid: tid, sid: sid, occ: seat.occ, by: supervisorIdentity
+  });
 }
 
 function breakTable(tid){
-  const t = tables.find(x => x.id === tid);
-  const name = t.tableName;
-  const players = getCount(t);
-  
+  const t = tables.find(x => x.id === tid); const players = getCount(t);
   t.seats.forEach(s => s.occ = false);
   
+  let distributions = [];
   for(let i = 0; i < players; i++){
     const validTargets = getActive().filter(x => x.id !== tid && getCount(x) > 0 && getCount(x) < globalMaxPlayers);
     if(validTargets.length === 0) break; 
-    
     validTargets.sort((a,b) => getCount(a) - getCount(b));
     const empty = getEmpty(validTargets[0]);
-    if(empty.length) empty[0].occ = true;
+    if(empty.length) {
+      empty[0].occ = true;
+      distributions.push({ targetTableId: validTargets[0].id, seatId: empty[0].id });
+    }
   }
-  
-  saveStateToLocalStorage();
-  renderGrid();
-  showToast(`Collapsed Table ${name}`);
+  saveStateToLocalStorage(); renderGrid(); showToast(`Collapsed Table ${t.tableName}`);
   if(selectedTable) showDetail(selectedTable);
+  
+  writeLog(`[${supervisorIdentity}] <b>COLLAPSED</b>: Shorthanded Table ${t.tableName}`);
+  broadcastData({
+    type: "BREAK_TABLE", tid: tid, distributionArray: distributions, by: supervisorIdentity
+  });
 }
 
 function executeMove(fromId, toId){
-  const from = tables.find(t => t.id === fromId);
-  const to = tables.find(t => t.id === toId);
-  
-  if (getCount(to) >= globalMaxPlayers) {
-    alert("Operation Aborted: Target table is filled to capacity.");
-    return;
-  }
-
+  const from = tables.find(t => t.id === fromId), to = tables.find(t => t.id === toId);
+  if (getCount(to) >= globalMaxPlayers) return;
   const occupiedSeats = from.seats.filter(s => s.id <= globalMaxPlayers && s.occ);
   const emptySeats = getEmpty(to);
-  
   if(occupiedSeats.length > 0 && emptySeats.length > 0) {
     occupiedSeats[occupiedSeats.length - 1].occ = false;
     emptySeats[0].occ = true;
-    saveStateToLocalStorage();
-    showToast(`Shifted: T-${from.tableName} → T-${to.tableName}`);
+    saveStateToLocalStorage(); showToast(`Shifted: T-${from.tableName} → T-${to.tableName}`);
+    
+    writeLog(`[${supervisorIdentity}] <b>SHIFTED</b>: 1 Player from Table ${from.tableName} → Table ${to.tableName}`);
+    broadcastData({ type: "SHIFT_PLAYER", fromId, toId, by: supervisorIdentity });
   }
-  renderGrid();
-  renderBalance();
+  renderGrid(); renderBalance();
   if(selectedTable === fromId || selectedTable === toId) showDetail(selectedTable);
 }
 
 function renderBalance(){
-  const at = getActive();
-  if (at.length === 0) return;
-  
+  const at = getActive(); if (at.length === 0) return;
   document.getElementById('bar-chart').innerHTML = at.map(t => {
-    const c = getCount(t), st = status(t);
-    const hPct = Math.round((c / globalMaxPlayers) * 100); 
-    return `
-      <div class="bar-col ${c === 0 ? 'vacant-mode' : ''}">
-        <div class="bar-lbl">${t.tableName}</div>
-        <div class="bar-track"><div class="bar ${st}" style="height: calc(${hPct}% + 2px);"></div></div>
-        <div class="bar-val ${c > 0 && c <= 3 ? 'crit-text' : ''}">${c}P</div>
-      </div>`;
+    const c = getCount(t), hPct = Math.round((c / globalMaxPlayers) * 100); 
+    return `<div class="bar-col ${c===0?'vacant-mode':''}"><div class="bar-lbl">${t.tableName}</div><div class="bar-track"><div class="bar ${status(t)}" style="height:calc(${hPct}% + 2px);"></div></div><div class="bar-val ${c>0&&c<=3?'crit-text':''}">${c}P</div></div>`;
   }).join('');
 
-  let { sugg, virtualFloor } = runVirtualBalancingEngine(at);
-
+  let { sugg } = runVirtualBalancingEngine(at);
   document.getElementById('suggestions').innerHTML = sugg.length
     ? sugg.map(s => `<div class="move-row"><span>Balance Warning: Shift 1 player from <b>Table ${s.fromName}</b> → <b>Table ${s.toName}</b></span><button class="exec-btn" onclick="executeMove(${s.fromId},${s.toId})">Execute Shift</button></div>`).join('')
-    : (getTotal() === 0 ? '<div class="info-box" style="color:var(--text-muted)">Floor is currently unassigned.</div>' : '<div class="info-box">✓ Floor variance optimal. Equilibrium maintained.</div>');
+    : '<div class="info-box">✓ Floor variance optimal. Equilibrium maintained.</div>';
     
   const brk = at.filter(t => getCount(t) > 0 && getCount(t) <= 3);
-  const bw = document.getElementById('break-wrap');
   if(brk.length){
-    bw.style.display = 'block';
-    document.getElementById('break-list').innerHTML = brk.map(t => `<div class="move-row"><span>Critical: <b>Table ${t.tableName}</b> is running shorthanded (${getCount(t)} players).</span><button class="break-btn" onclick="breakTable(${t.id});renderBalance()">Collapse Table</button></div>`).join('');
-  } else { bw.style.display = 'none'; }
+    document.getElementById('break-wrap').style.display = 'block';
+    document.getElementById('break-list').innerHTML = brk.map(t => `<div class="move-row"><span>Critical: <b>Table ${t.tableName}</b> runs shorthanded.</span><button class="break-btn" style="height:42px;" onclick="breakTable(${t.id});renderBalance()">Collapse Table</button></div>`).join('');
+  } else { document.getElementById('break-wrap').style.display = 'none'; }
 }
 
-// Balanced Variance Core Calculator (Prevents 9-player false loop traps)
 function runVirtualBalancingEngine(activeTables) {
-  let sugg = [];
-  let virtualFloor = activeTables.filter(t => getCount(t) > 0).map(t => ({
-    id: t.id,
-    tableName: t.tableName,
-    count: getCount(t)
-  }));
-
-  let loopSafety = 0;
+  let sugg = [], loopSafety = 0;
+  let virtualFloor = activeTables.filter(t => getCount(t) > 0).map(t => ({ id: t.id, tableName: t.tableName, count: getCount(t) }));
   while (virtualFloor.length > 1 && loopSafety < 50) {
-    loopSafety++;
-    virtualFloor.sort((a,b) => b.count - a.count);
-    let maxT = virtualFloor[0];
-    let minT = virtualFloor[virtualFloor.length - 1];
-    
-    // Balance criteria logic adjustment: only balance if spread gap is severe (>= 3) and min table is struggling
-    if ((maxT.count - minT.count) >= 3 && minT.count <= 4 && minT.count < globalMaxPlayers) {
-      sugg.push({
-        fromId: maxT.id,
-        toId: minT.id,
-        fromName: maxT.tableName,
-        toName: minT.tableName
-      });
-      maxT.count--;
-      minT.count++;
-    } else {
-      break; 
-    }
+    loopSafety++; virtualFloor.sort((a,b) => b.count - a.count);
+    let maxT = virtualFloor[0], minT = virtualFloor[virtualFloor.length - 1];
+    if ((maxT.count - minT.count) >= 3 && minT.count <= 4) {
+      sugg.push({ fromId: maxT.id, toId: minT.id, fromName: maxT.tableName, toName: minT.tableName });
+      maxT.count--; minT.count++;
+    } else { break; }
   }
-  return { sugg, virtualFloor };
+  return { sugg };
 }
 
 function populateSelect(){
-  const sel = document.getElementById('detail-sel');
-  const activeTables = getActive();
+  const sel = document.getElementById('detail-sel'); const activeTables = getActive();
   sel.innerHTML = activeTables.map(t => `<option value="${t.id}">Table ${t.tableName} (${getCount(t)} Players)</option>`).join('');
   if(selectedTable && activeTables.find(t => t.id === selectedTable)) sel.value = selectedTable;
 }
@@ -838,15 +821,10 @@ function showTab(name){
   document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active',['overview','detail','balance'][i] === name));
   ['overview','detail','balance'].forEach(n => document.getElementById('panel-'+n).classList.toggle('active',n === name));
   if(name === 'balance') renderBalance();
-  if(name === 'detail'){populateSelect(); if(selectedTable) showDetail(selectedTable);}
+  if(name === 'detail'){ populateSelect(); if(selectedTable) showDetail(selectedTable); }
 }
 
-function bootstrap(){
-  initTables(); 
-  document.getElementById('floor-input').value = activeFloorSize;
-  document.getElementById('seats-input').value = globalMaxPlayers;
-  renderGrid(); 
-}
+function bootstrap(){ initTables(); renderGrid(); }
 bootstrap();
 </script>
 </body>
