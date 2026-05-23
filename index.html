@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Live Floor Matrix [v2.6.1-PROTOTYPE]</title>
+<title>Tournament Floor Matrix [v2.6.2]</title>
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <style>
 :root {
@@ -267,11 +267,11 @@ body {
 
   <div class="sync-bar">
     <div class="sync-cluster">
-      <span>📡 MULTIFLOOR SYNC:</span>
+      <span>📡 TOURNAMENT SYNC:</span>
       <button class="sync-btn" onclick="initializeWebRTCHost()">Host Room</button>
       <button class="sync-btn" onclick="initializeWebRTCJoin()">Join Room</button>
       <span style="margin-left:6px">Identity:</span>
-      <span class="identity-tag" id="identity-label" onclick="changeIdentity()">HOST</span>
+      <span class="identity-tag" id="identity-label" onclick="changeIdentity()">FLOOR-1</span>
     </div>
     <div class="status-indicator">
       <div class="status-dot" id="sync-dot"></div>
@@ -281,10 +281,10 @@ body {
 
   <div class="top-header">
     <div class="title-area">
-      <h1>🃏 FLOOR MATRIX</h1>
-      <div class="version-tag">v2.6.1-PROTOTYPE</div>
+      <h1>🏆 TOURNAMENT MATRIX</h1>
+      <div class="version-tag">v2.6.2-TOURNAMENT</div>
     </div>
-    <button class="danger-zone-trigger" onclick="clearAllPlayers()">Reset Floor</button>
+    <button class="danger-zone-trigger" onclick="clearAllPlayers()">Reset Field</button>
   </div>
 
   <div class="core-layout">
@@ -292,7 +292,7 @@ body {
       
       <div class="floor-config-panel">
         <div class="config-item">
-          <div class="config-title">Active Tables (1-20)</div>
+          <div class="config-title">Tables in Play (1-20)</div>
           <div class="stepper-container">
             <button class="step-btn" onclick="stepActiveFloor(-1)">—</button>
             <input type="number" id="floor-input" class="floor-input-box" min="1" max="20" value="10" onchange="directTypeFloorCount(this.value)">
@@ -300,7 +300,7 @@ body {
           </div>
         </div>
         <div class="config-item">
-          <div class="config-title">Table Capacity (2-9)</div>
+          <div class="config-title">Max Table Capacity (2-9)</div>
           <div class="stepper-container">
             <button class="step-btn" onclick="stepMaxSeats(-1)">—</button>
             <input type="number" id="seats-input" class="floor-input-box" min="2" max="9" value="9" onchange="directTypeSeatsCount(this.value)">
@@ -310,10 +310,10 @@ body {
       </div>
 
       <div class="stats-row">
-        <div class="stat" id="card-total">Total Players <b id="s-total">0</b></div>
-        <div class="stat" id="card-tables">Active Tables <b id="s-tables">0</b></div>
-        <div class="stat" id="card-spread">Player Spread <b id="s-spread">0</b></div>
-        <div class="stat" id="card-alerts">Imbalances <b id="s-needs">0</b></div>
+        <div class="stat" id="card-total">Remaining Players <b id="s-total">0</b></div>
+        <div class="stat" id="card-tables">Tables in Play <b id="s-tables">0</b></div>
+        <div class="stat" id="card-spread">Table Variance <b id="s-spread">0</b></div>
+        <div class="stat" id="card-alerts">Unbalanced <b id="s-needs">0</b></div>
       </div>
 
       <div class="nav-bar">
@@ -334,12 +334,12 @@ body {
       </div>
 
       <div id="panel-balance" class="panel">
-        <div class="sec-title" style="margin-top:0">Seating Capacity Index</div>
+        <div class="sec-title" style="margin-top:0">Field Seating Capacity Index</div>
         <div class="bar-row" id="bar-chart"></div>
-        <div class="sec-title">Balancing Directives</div>
+        <div class="sec-title">TDA Balancing Directives</div>
         <div id="suggestions"></div>
         <div id="break-wrap" style="display:none">
-          <div class="sec-title" style="color:#f87171">High Variance Collapse Actions</div>
+          <div class="sec-title" style="color:#f87171">High Variance Break Actions</div>
           <div id="break-list"></div>
         </div>
       </div>
@@ -362,13 +362,13 @@ body {
 <script>
 let globalMaxPlayers = 9; 
 let tables = [], selectedTable = 1, activeFloorSize = 10;
-let supervisorIdentity = "HOST";
+let supervisorIdentity = "FLOOR-1";
 
 // WebRTC Engine State Handles
 let peer = null, conn = null;
-const PEER_PREFIX = "poker-floor-matrix-";
+const PEER_PREFIX = "poker-tournament-matrix-";
 
-// CRITICAL OPTIMIZATION: Core Guard Rail Against Double-Unload Hooks
+// Core Guard Rail Against Double-Unload Hooks
 window.addEventListener('beforeunload', function (e) {
   if (conn && conn.open) {
     e.preventDefault();
@@ -387,7 +387,7 @@ function changeIdentity() {
   }
 }
 
-// OPTIMIZATION: Persistent Log Storage Engineering
+// Persistent Log Storage Engineering
 function writeLog(htmlText) {
   const stream = document.getElementById('log-stream');
   const timestamp = new Date().toTimeString().split(' ')[0];
@@ -409,7 +409,7 @@ function loadCachedLogs() {
   stream.innerHTML = '';
   let localLogs = JSON.parse(localStorage.getItem('poker_floor_logs') || '[]');
   if(localLogs.length === 0) {
-    localLogs.push(`[${new Date().toTimeString().split(' ')[0]}] > System loaded. Ready for field monitoring.`);
+    localLogs.push(`[${new Date().toTimeString().split(' ')[0]}] > Tournament system loaded. Monitoring field.`);
   }
   localLogs.reverse().forEach(log => {
     const line = document.createElement('div');
@@ -422,7 +422,7 @@ function loadCachedLogs() {
 function clearCachedLogs() {
   localStorage.removeItem('poker_floor_logs');
   document.getElementById('log-stream').innerHTML = '';
-  writeLog('> Logs flushed. Tracking brand new shift cycle.');
+  writeLog('> Logs flushed. Tracking brand new tournament blind level.');
 }
 
 function broadcastData(payload) {
@@ -436,13 +436,13 @@ function initializeWebRTCHost() {
   const roomId = Math.floor(1000 + Math.random() * 9000).toString();
   peer = new Peer(PEER_PREFIX + roomId);
   
-  writeLog(`Initializing master routing link...`);
+  writeLog(`Initializing master tournament link...`);
   
   peer.on('open', (id) => {
-    alert(`ROOM CREATED!\n\nProvide this 4-Digit Pairing Code to the other supervisor:\n▶ ${roomId} ◀`);
+    alert(`TOURNAMENT ROOM CREATED!\n\nProvide this 4-Digit Pairing Code to the other supervisor:\n▶ ${roomId} ◀`);
     document.getElementById('sync-status-text').textContent = `Hosting: ${roomId}`;
     document.getElementById('sync-dot').className = "status-dot online";
-    writeLog(`Hosting synchronization room code: <b>${roomId}</b>`);
+    writeLog(`Hosting tournament synchronization code: <b>${roomId}</b>`);
   });
   
   peer.on('connection', (connection) => {
@@ -453,15 +453,14 @@ function initializeWebRTCHost() {
 
 function initializeWebRTCJoin() {
   if (peer) peer.destroy();
-  const targetRoom = prompt("Enter the 4-Digit Pairing Code provided by the host:");
+  const targetRoom = prompt("Enter the 4-Digit Pairing Code provided by the Host:");
   if (!targetRoom) return;
   
-  supervisorIdentity = "PEER";
+  supervisorIdentity = "FLOOR-2";
   document.getElementById('identity-label').textContent = supervisorIdentity;
   
   peer = new Peer();
   peer.on('open', (id) => {
-    // OPTIMIZATION: Force standardized JSON serialization serialization across Apple/Android viewports
     conn = peer.connect(PEER_PREFIX + targetRoom.trim(), { serialization: 'json' });
     setupConnectionListeners();
   });
@@ -471,7 +470,7 @@ function setupConnectionListeners() {
   conn.on('open', () => {
     document.getElementById('sync-status-text').textContent = "Connected";
     document.getElementById('sync-dot').className = "status-dot online";
-    writeLog(`Secure WebRTC data pipe successfully established with remote node.`);
+    writeLog(`Secure WebRTC data pipe established with remote supervisor node.`);
     
     broadcastData({
       type: "FULL_SYNC",
@@ -489,7 +488,7 @@ function setupConnectionListeners() {
   conn.on('close', () => {
     document.getElementById('sync-status-text').textContent = "Disconnected";
     document.getElementById('sync-dot').className = "status-dot";
-    writeLog(`<span style="color:var(--status-low-text)">Warning: Sync peer lost connection topology.</span>`);
+    writeLog(`<span style="color:var(--status-low-text)">Warning: Sync peer disconnected from field topology.</span>`);
   });
 }
 
@@ -504,7 +503,7 @@ function handleIncomingNetworkPackets(packet) {
       document.getElementById('seats-input').value = globalMaxPlayers;
       document.getElementById('floor-input').value = activeFloorSize;
       renderGrid();
-      writeLog(`Received complete floor snapshot from <b>${packet.senderIdentity}</b>.`);
+      writeLog(`Received complete tournament snapshot from <b>${packet.senderIdentity}</b>.`);
       break;
       
     case "SEAT_TOGGLE":
@@ -514,7 +513,7 @@ function handleIncomingNetworkPackets(packet) {
       renderGrid();
       if(selectedTable === packet.tid) showDetail(packet.tid);
       if(document.getElementById('panel-balance').classList.contains('active')) renderBalance();
-      writeLog(`[${packet.by}] <b>${packet.occ ? 'ADDED' : 'REMOVED'}</b>: Table ${t.tableName}, Seat ${packet.sid}`);
+      writeLog(`[${packet.by}] <b>${packet.occ ? 'BUST-OUT / IN' : 'SEAT VACATED'}</b>: Table ${t.tableName}, Seat ${packet.sid}`);
       break;
       
     case "BREAK_TABLE":
@@ -528,7 +527,7 @@ function handleIncomingNetworkPackets(packet) {
       renderGrid();
       if(selectedTable) showDetail(selectedTable);
       if(document.getElementById('panel-balance').classList.contains('active')) renderBalance();
-      writeLog(`[${packet.by}] <b>COLLAPSED</b>: Shorthanded Table ${bt.tableName}`);
+      writeLog(`[${packet.by}] <b>BROKE / COLLAPSED</b>: Table ${bt.tableName}`);
       break;
 
     case "SHIFT_PLAYER":
@@ -543,7 +542,7 @@ function handleIncomingNetworkPackets(packet) {
       renderGrid();
       if(document.getElementById('panel-balance').classList.contains('active')) renderBalance();
       if(selectedTable === packet.fromId || selectedTable === packet.toId) showDetail(selectedTable);
-      writeLog(`[${packet.by}] <b>SHIFTED</b>: 1 Player from Table ${fT.tableName} → Table ${tT.tableName}`);
+      writeLog(`[${packet.by}] <b>BALANCED</b>: 1 Player moved from Table ${fT.tableName} → Table ${tT.tableName}`);
       break;
       
     case "IDENTITY_UPDATE":
@@ -602,13 +601,13 @@ function showToast(message) {
 }
 
 function clearAllPlayers() {
-  if (confirm("Reset layout? All active configurations will be wiped.")) {
+  if (confirm("Reset Tournament Field? All current seats and tables will be wiped.")) {
     tables.forEach(t => t.seats.forEach(s => s.occ = false));
     saveStateToLocalStorage();
     renderGrid();
-    writeLog(`[${supervisorIdentity}] <b>RESET</b>: Purged all players from floor matrix.`);
+    writeLog(`[${supervisorIdentity}] <b>RESET FIELD</b>: Purged all tournament players.`);
     broadcastData({ type: "FULL_SYNC", globalMaxPlayers, activeFloorSize, tables, senderIdentity: supervisorIdentity });
-    showToast("Reset Complete");
+    showToast("Field Purged");
   }
 }
 
@@ -636,7 +635,7 @@ function applyFloorSizeChange(targetCount) {
 
   saveStateToLocalStorage();
   renderGrid();
-  writeLog(`[${supervisorIdentity}] Configured Active Floor size to <b>${activeFloorSize}</b> tables.`);
+  writeLog(`[${supervisorIdentity}] Configured Active Tables in Play to <b>${activeFloorSize}</b>.`);
   broadcastData({ type: "FULL_SYNC", globalMaxPlayers, activeFloorSize, tables, senderIdentity: supervisorIdentity });
 }
 
@@ -662,7 +661,7 @@ function applyMaxSeatsChange(targetSeats) {
   syncTableSeatsCapacity();
   saveStateToLocalStorage();
   renderGrid();
-  writeLog(`[${supervisorIdentity}] Modified Max Table Capacity parameter to <b>${globalMaxPlayers}</b> seats.`);
+  writeLog(`[${supervisorIdentity}] Modified Max Table Capacity to <b>${globalMaxPlayers}</b>-Max.`);
   broadcastData({ type: "FULL_SYNC", globalMaxPlayers, activeFloorSize, tables, senderIdentity: supervisorIdentity });
 }
 
@@ -698,7 +697,7 @@ function updateStats() {
   } else {
     const spread = Math.max(...scoringCounts) - Math.min(...scoringCounts);
     spreadEl.textContent = spread;
-    if(spread >= 3) spreadCard.classList.add('pulse-alert'); else spreadCard.classList.remove('pulse-alert');
+    if(spread >= 2) spreadCard.classList.add('pulse-alert'); else spreadCard.classList.remove('pulse-alert');
   }
 }
 
@@ -710,7 +709,7 @@ function renderGrid(){
   const g = document.getElementById('tables-grid'); g.innerHTML = '';
   const activeTables = getActive();
   if (activeTables.length === 0) {
-    g.innerHTML = `<div class="info-box" style="color:var(--text-muted); text-align:center;">No Active Configurations.</div>`;
+    g.innerHTML = `<div class="info-box" style="color:var(--text-muted); text-align:center;">No Active Tournament Configurations.</div>`;
     updateStats(); return;
   }
   activeTables.forEach(t => {
@@ -721,7 +720,7 @@ function renderGrid(){
     d.onclick = () => { selectedTable = t.id; saveStateToLocalStorage(); renderGrid(); showTab('detail'); showDetail(t.id); };
     
     const bCls = (!hasPlayers || st === 'ok') ? 'bg-ok' : 'bg-low';
-    const bTxt = !hasPlayers ? 'VACANT' : (st === 'ok' ? '✓ OPTIMAL' : '! SHORT');
+    const bTxt = !hasPlayers ? 'VACANT' : (st === 'ok' ? '✓ BALANCED' : '! SHORT');
     const pDots = t.seats.filter(s => s.id <= globalMaxPlayers).map(s => `<div class="md ${s.occ ? 'md-occ' : 'md-empty'}"></div>`).join('');
     
     d.innerHTML = `<span class="badge ${bCls}">${bTxt}</span><div class="t-header-row"><div class="t-num">Table ${t.tableName}</div></div>
@@ -740,16 +739,16 @@ function feltSVG(t) {
     const sx = (cx + (rx + 25) * Math.cos(angleOffset)).toFixed(1), sy = (cy + (ry + 24) * Math.sin(angleOffset)).toFixed(1);
     seats += `<g style="cursor:pointer" onclick="toggleSeat(${t.id},${s.id})"><circle cx="${sx}" cy="${sy}" r="14" fill="${s.occ ? '#eab308' : '#121826'}" stroke="${s.occ ? '#facc15' : '#222f4d'}" stroke-width="1.5"/><text x="${sx}" y="${sy}" text-anchor="middle" dominant-baseline="central" font-size="10" fill="${s.occ ? '#000' : '#64748b'}" font-weight="900">${s.id}</text></g>`;
   });
-  return `<svg width="100%" height="100%" viewBox="0 0 360 240"><defs><radialGradient id="fg${t.id}" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="var(--poker-green-start)"/><stop offset="100%" stop-color="var(--poker-green-end)"/></radialGradient></defs><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="url(#fg${t.id})" stroke="#022c22" stroke-width="5"/><text x="${cx}" y="${cy-6}" text-anchor="middle" font-size="15" fill="#fff" font-weight="800">TABLE ${t.tableName}</text><text x="${cx}" y="${cy+12}" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.4)" font-weight="700">${getCount(t)} / ${globalMaxPlayers} SEATS</text>${seats}</svg>`;
+  return `<svg width="100%" height="100%" viewBox="0 0 360 240"><defs><radialGradient id="fg${t.id}" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="var(--poker-green-start)"/><stop offset="100%" stop-color="var(--poker-green-end)"/></radialGradient></defs><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="url(#fg${t.id})" stroke="#022c22" stroke-width="5"/><text x="${cx}" y="${cy-6}" text-anchor="middle" font-size="15" fill="#fff" font-weight="800">TABLE ${t.tableName}</text><text x="${cx}" y="${cy+12}" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.4)" font-weight="700">${getCount(t)} / ${globalMaxPlayers} ACTIVE</text>${seats}</svg>`;
 }
 
 function showDetail(tid){
   selectedTable = tid; const t = tables.find(x => x.id === tid); if(!t || !t.active) return;
   const c = getCount(t), st = status(t);
   const seatBtns = t.seats.filter(s => s.id <= globalMaxPlayers).map(s => `<div class="seat-btn ${s.occ ? 'sb-occ' : 'sb-empty'}" onclick="toggleSeat(${t.id},${s.id})"><span>SEAT ${s.id}</span></div>`).join('');
-  const breakBtnHtml = (c > 0 && c <= 3) ? `<div class="alert-box"><span>⚠️ Critical shorthanded alert.</span><button class="break-btn" onclick="breakTable(${tid})">Collapse Table</button></div>` : '';
+  const breakBtnHtml = (c > 0 && c <= 3) ? `<div class="alert-box"><span>⚠️ Critical shorthanded table detected.</span><button class="break-btn" onclick="breakTable(${tid})">Break Table</button></div>` : '';
   
-  document.getElementById('detail-body').innerHTML = `<div class="detail-wrap"><div class="felt-container">${feltSVG(t)}</div><div class="seat-panel"><div style="font-size: 18px; font-weight: 800; margin-bottom: 4px; color: var(--color-active);">Table ${t.tableName}</div><div style="font-size:10px;font-weight:600;margin-bottom:0.4rem">Diagnostics: ${c===0?'Vacant':st==='low'?'Shorthanded':'Optimal'}</div><div class="seat-grid">${seatBtns}</div>${breakBtnHtml}</div></div>`;
+  document.getElementById('detail-body').innerHTML = `<div class="detail-wrap"><div class="felt-container">${feltSVG(t)}</div><div class="seat-panel"><div style="font-size: 18px; font-weight: 800; margin-bottom: 4px; color: var(--color-active);">Table ${t.tableName}</div><div style="font-size:10px;font-weight:600;margin-bottom:0.4rem">Diagnostics: ${c===0?'Vacant':st==='low'?'Shorthanded (Break Alert)':'Balanced'}</div><div class="seat-grid">${seatBtns}</div>${breakBtnHtml}</div></div>`;
   document.getElementById('detail-sel').value = tid;
 }
 
@@ -760,7 +759,7 @@ function toggleSeat(tid, sid){
   if(selectedTable === tid) showDetail(tid);
   if (document.getElementById('panel-balance').classList.contains('active')) renderBalance();
   
-  writeLog(`[${supervisorIdentity}] <b>${seat.occ?'ADDED':'REMOVED'}</b>: Table ${t.tableName}, Seat ${sid}`);
+  writeLog(`[${supervisorIdentity}] <b>${seat.occ?'PLAYER PLACED':'BUST-OUT'}</b>: Table ${t.tableName}, Seat ${sid}`);
   broadcastData({
     type: "SEAT_TOGGLE", tid: tid, sid: sid, occ: seat.occ, by: supervisorIdentity
   });
@@ -781,10 +780,10 @@ function breakTable(tid){
       distributions.push({ targetTableId: validTargets[0].id, seatId: empty[0].id });
     }
   }
-  saveStateToLocalStorage(); renderGrid(); showToast(`Collapsed Table ${t.tableName}`);
+  saveStateToLocalStorage(); renderGrid(); showToast(`Broke Table ${t.tableName}`);
   if(selectedTable) showDetail(selectedTable);
   
-  writeLog(`[${supervisorIdentity}] <b>COLLAPSED</b>: Shorthanded Table ${t.tableName}`);
+  writeLog(`[${supervisorIdentity}] <b>BROKE TABLE</b>: Dispersed players from Table ${t.tableName}`);
   broadcastData({
     type: "BREAK_TABLE", tid: tid, distributionArray: distributions, by: supervisorIdentity
   });
@@ -798,9 +797,9 @@ function executeMove(fromId, toId){
   if(occupiedSeats.length > 0 && emptySeats.length > 0) {
     occupiedSeats[occupiedSeats.length - 1].occ = false;
     emptySeats[0].occ = true;
-    saveStateToLocalStorage(); showToast(`Shifted: T-${from.tableName} → T-${to.tableName}`);
+    saveStateToLocalStorage(); showToast(`Balanced: T-${from.tableName} → T-${to.tableName}`);
     
-    writeLog(`[${supervisorIdentity}] <b>SHIFTED</b>: 1 Player from Table ${from.tableName} → Table ${to.tableName}`);
+    writeLog(`[${supervisorIdentity}] <b>BALANCED FIELD</b>: Moved 1 player from Table ${from.tableName} → Table ${to.tableName}`);
     broadcastData({ type: "SHIFT_PLAYER", fromId, toId, by: supervisorIdentity });
   }
   renderGrid(); renderBalance();
@@ -816,13 +815,13 @@ function renderBalance(){
 
   let { sugg } = runVirtualBalancingEngine(at);
   document.getElementById('suggestions').innerHTML = sugg.length
-    ? sugg.map(s => `<div class="move-row"><span>Balance Warning: Shift 1 player from <b>Table ${s.fromName}</b> → <b>Table ${s.toName}</b></span><button class="exec-btn" onclick="executeMove(${s.fromId},${s.toId})">Execute Shift</button></div>`).join('')
-    : '<div class="info-box">✓ Floor variance optimal. Equilibrium maintained.</div>';
+    ? sugg.map(s => `<div class="move-row"><span>TDA Balance Alert: Shift 1 player from <b>Table ${s.fromName}</b> → <b>Table ${s.toName}</b></span><button class="exec-btn" onclick="executeMove(${s.fromId},${s.toId})">Execute Balancing</button></div>`).join('')
+    : '<div class="info-box">✓ Tournament field variance optimal. Table balance maintained.</div>';
     
   const brk = at.filter(t => getCount(t) > 0 && getCount(t) <= 3);
   if(brk.length){
     document.getElementById('break-wrap').style.display = 'block';
-    document.getElementById('break-list').innerHTML = brk.map(t => `<div class="move-row"><span>Critical: <b>Table ${t.tableName}</b> runs shorthanded.</span><button class="break-btn" style="height:42px;" onclick="breakTable(${t.id});renderBalance()">Collapse Table</button></div>`).join('');
+    document.getElementById('break-list').innerHTML = brk.map(t => `<div class="move-row"><span>Critical: <b>Table ${t.tableName}</b> runs shorthanded.</span><button class="break-btn" style="height:42px;" onclick="breakTable(${t.id});renderBalance()">Break Table</button></div>`).join('');
   } else { document.getElementById('break-wrap').style.display = 'none'; }
 }
 
@@ -832,7 +831,8 @@ function runVirtualBalancingEngine(activeTables) {
   while (virtualFloor.length > 1 && loopSafety < 50) {
     loopSafety++; virtualFloor.sort((a,b) => b.count - a.count);
     let maxT = virtualFloor[0], minT = virtualFloor[virtualFloor.length - 1];
-    if ((maxT.count - minT.count) >= 3 && minT.count <= 4) {
+    // Tournament TDA balance rules flag variance >= 2
+    if ((maxT.count - minT.count) >= 2 && minT.count <= globalMaxPlayers - 1) {
       sugg.push({ fromId: maxT.id, toId: minT.id, fromName: maxT.tableName, toName: minT.tableName });
       maxT.count--; minT.count++;
     } else { break; }
@@ -842,7 +842,7 @@ function runVirtualBalancingEngine(activeTables) {
 
 function populateSelect(){
   const sel = document.getElementById('detail-sel'); const activeTables = getActive();
-  sel.innerHTML = activeTables.map(t => `<option value="${t.id}">Table ${t.tableName} (${getCount(t)} Players)</option>`).join('');
+  sel.innerHTML = activeTables.map(t => `<option value="${t.id}">Table ${t.tableName} (${getCount(t)} Active)</option>`).join('');
   if(selectedTable && activeTables.find(t => t.id === selectedTable)) sel.value = selectedTable;
 }
 
