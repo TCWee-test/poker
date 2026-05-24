@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Tournament Matrix v2.7.4</title>
+<title>Tournament Matrix v2.7.5</title>
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -38,7 +38,6 @@ body {
   background-color: var(--bg-main);
   color: var(--text-main); 
   min-height: 100vh;
-  /* ⚡ 核心改动 2：修复部分老旧内核对 calc(env()) 的解析崩溃问题 ➔ */
   padding: 15px;
   overflow-x: hidden;
   overflow-y: auto;
@@ -46,7 +45,6 @@ body {
 
 .container { max-width: 1200px; margin: 0 auto; width: 100%; }
 
-/* ⚡ 顶部状态胶囊群 */
 .dashboard-capsule-bar {
   background: linear-gradient(90deg, #111c30 0%, #0c1220 100%);
   border: 1px solid rgba(234, 179, 8, 0.25);
@@ -76,7 +74,6 @@ body {
 @keyframes lamp-glow-green { 0%, 100% { opacity: 0.4; box-shadow: 0 0 2px #10b981; } 50% { opacity: 1; box-shadow: 0 0 10px #10b981; } }
 @keyframes lamp-glow-yellow { 0%, 100% { opacity: 0.3; box-shadow: 0 0 2px #eab308; } 50% { opacity: 1; box-shadow: 0 0 8px #eab308; } }
 
-/* ⚡ 全功能配置舱弹窗系统 */
 .modal-overlay {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   background: rgba(4, 7, 13, 0.85); backdrop-filter: blur(8px);
@@ -232,7 +229,7 @@ body {
   <div class="top-header">
     <div style="display:flex; align-items:center; gap:8px;">
       <h1>🏆 TOURNAMENT MATRIX</h1>
-      <div class="version-tag">v2.7.4</div>
+      <div class="version-tag">v2.7.5</div>
     </div>
   </div>
 
@@ -633,7 +630,8 @@ function renderBalance(){
     loop++; vFloor.sort((a,b) => b.count - a.count); let maxT = vFloor[0], minT = vFloor[vFloor.length - 1];
     if ((maxT.count - minT.count) >= 2 && minT.count <= globalMaxPlayers - 1) { sugg.push({ fromId: maxT.id, toId: minT.id, fromName: maxT.tableName, toName: minT.tableName }); maxT.count--; minT.count++; } else { break; }
   }
-  document.getElementById('suggestions').innerHTML = sugg.length ? sugg.map(s => `<div class="move-row"><span>TDA: Table <b>${s.fromName}</b> ➔ Table <b>${s.toName}</b></span><button class="exec-btn" onclick="executeMove(${s.fromId},${s.toId})">Execute</button></div>`).join('') : '<div class="info-box">✓ Optimal balance verified.</div>';
+  // ⚡ v2.7.5 核心改动：完美整合方案 1+2，将冷冰冰的 TDA 改为行业质感极强的 FLOOR MOVE
+  document.getElementById('suggestions').innerHTML = sugg.length ? sugg.map(s => `<div class="move-row"><span>⚡ FLOOR MOVE: Table <b>${s.fromName}</b> ➔ Table <b>${s.toName}</b></span><button class="exec-btn" onclick="executeMove(${s.fromId},${s.toId})">Execute</button></div>`).join('') : '<div class="info-box">✓ Optimal balance verified.</div>';
   const brk = at.filter(t => getCount(t) > 0 && getCount(t) <= 3);
   if(brk.length){ document.getElementById('break-wrap').style.display = 'block'; document.getElementById('break-list').innerHTML = brk.map(t => `<div class="move-row"><span>Short Table <b>${t.tableName}</b></span><button class="break-btn" style="height:42px;" onclick="breakTable(${t.id});renderBalance()">Break Table</button></div>`).join(''); } else { document.getElementById('break-wrap').style.display = 'none'; }
 }
@@ -647,10 +645,8 @@ function showTab(name){
   if(name === 'balance') renderBalance(); if(name === 'detail'){ populateSelect(); if(selectedTable) showDetail(selectedTable); }
 }
 
-/* ⚡ v2.7.4 核心强制渲染引擎 */
 function bootstrap(){ 
   console.log("Bootstrap pipeline executed natively.");
-  // 1. 开局直接在内存创建 10 张桌子模型
   activeFloorSize = 10;
   globalMaxPlayers = 9;
   tables = Array.from({length: 20}, (_, i) => {
@@ -658,7 +654,6 @@ function bootstrap(){
     return { id: i + 1, tableName: `${i + 1}`, active: i < activeFloorSize, seats: seatsArray };
   });
 
-  // 2. 隔离并保护缓存读取
   try {
     const saved = localStorage.getItem(`poker_matrix_state_ch_1001`);
     if (saved) {
@@ -671,17 +666,13 @@ function bootstrap(){
     }
   } catch(e) { console.log("Cache sandbox protection activated."); }
 
-  // 3. 不管任何外部资源，现在、立刻、强行把 10 张桌子画上屏幕
   syncTopCapsuleLabels(); 
   renderGrid(); 
   
-  // 4. 加载日志
   try { loadCachedLogs(); } catch(e){}
 }
 
-// ⚡ 核心改动 3：彻底拔掉 DOMContentLoaded 事件监听，直接执行开机！防止被远程网络请求静默卡死
 bootstrap();
-
 </script>
 </body>
 </html>
