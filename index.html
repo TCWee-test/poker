@@ -620,7 +620,16 @@ document.getElementById('tourny-id').addEventListener('change', function() {
   renderGrid(); if(selectedTable) showDetail(selectedTable);
 });
 
-function bootstrap(){ initTables(); loadCachedLogs(); renderGrid(); }
+function bootstrap(){ 
+  initTables(); 
+  loadCachedLogs(); 
+  
+  // 核心修复：强制在首次启动时，把初始化后的开桌数和人数，回填给顶部的呼吸胶囊标签
+  document.getElementById('txt-tables').textContent = `Tables: ${activeFloorSize} Active`;
+  document.getElementById('txt-seats').textContent = `Cap: ${globalMaxPlayers} Max`;
+  
+  renderGrid(); 
+}
 bootstrap();
 </script>
 </body>
