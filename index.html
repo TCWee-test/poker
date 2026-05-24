@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Tournament Matrix v2.7.0</title>
+<title>Tournament Matrix v2.7.2</title>
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -44,7 +44,7 @@ body {
 
 .container { max-width: 1200px; margin: 0 auto; width: 100%; }
 
-/* ⚡ 极简顶部“三子星”呼吸状态胶囊群 */
+/* ⚡ 极简顶部“三子星”状态胶囊群 */
 .dashboard-capsule-bar {
   background: linear-gradient(90deg, #111c30 0%, #0c1220 100%);
   border: 1px solid rgba(234, 179, 8, 0.25);
@@ -75,7 +75,7 @@ body {
 @keyframes lamp-glow-green { 0%, 100% { opacity: 0.4; box-shadow: 0 0 2px #10b981; } 50% { opacity: 1; box-shadow: 0 0 10px #10b981; } }
 @keyframes lamp-glow-yellow { 0%, 100% { opacity: 0.3; box-shadow: 0 0 2px #eab308; } 50% { opacity: 1; box-shadow: 0 0 8px #eab308; } }
 
-/* ⚡ 全功能配置舱弹窗系统（防穿透设计） */
+/* ⚡ 全功能配置舱弹窗系统 */
 .modal-overlay {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   background: rgba(4, 7, 13, 0.85); backdrop-filter: blur(8px);
@@ -108,7 +108,7 @@ body {
 .action-btn.danger { background: rgba(239, 68, 68, 0.15); border-color: #ef4444; color: #f87171; }
 .action-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
 
-/* ⚡ 巨型防误触加减参数舱 (Fat-Finger Steppers) */
+/* ⚡ 巨型防误触加减参数舱 */
 .stepper-row { display: flex; align-items: center; justify-content: space-between; background: #060a12; border: 1px solid var(--border-color); border-radius: 10px; padding: 4px; }
 .fat-btn { width: 56px; height: 56px; background: linear-gradient(180deg, #1e293b 0%, #111827 100%); border: 1px solid #2d3d54; color: #fff; font-size: 24px; font-weight: 900; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .fat-btn:active { background: #2d3d54; }
@@ -135,7 +135,7 @@ body {
 .core-layout { display: flex; flex-direction: column; gap: 12px; }
 .main-viewport { flex: 3; }
 
-/* ⚡ 右侧卡片式日志面板核心 CSS */
+/* 右侧卡片式日志面板 */
 .side-audit-logs {
   flex: 1.2; background: var(--bg-panel); border: 1px solid var(--border-color);
   border-radius: 14px; padding: 12px; display: flex; flex-direction: column; min-height: 260px; max-height: 480px;
@@ -216,17 +216,17 @@ body {
   <div class="dashboard-capsule-bar" onclick="openConfigCenter()">
     <div class="capsule-item">
       <div class="pulse-lamp standalone" id="lamp-network"></div>
-      <span id="txt-network">CH: 1001 (OFFLINE)</span>
+      <span id="txt-network">CH: OFFLINE</span>
     </div>
     <div class="capsule-divider"></div>
     <div class="capsule-item">
       <div class="pulse-lamp yellow-glow"></div>
-      <span id="txt-tables">Tables: 10 Active</span>
+      <span id="txt-tables">Tables: -- Active</span>
     </div>
     <div class="capsule-divider"></div>
     <div class="capsule-item">
       <div class="pulse-lamp yellow-glow"></div>
-      <span id="txt-seats">Cap: 9 Max</span>
+      <span id="txt-seats">Cap: -- Max</span>
     </div>
     <div class="capsule-divider"></div>
     <span class="identity-tag" id="identity-lbl" style="color:var(--color-active); font-weight:900; font-size:10px;">FLOOR-1</span>
@@ -235,7 +235,7 @@ body {
   <div class="top-header">
     <div style="display:flex; align-items:center; gap:8px;">
       <h1>🏆 TOURNAMENT MATRIX</h1>
-      <div class="version-tag">v2.7.0</div>
+      <div class="version-tag">v2.7.2</div>
     </div>
   </div>
 
@@ -326,13 +326,11 @@ let globalMaxPlayers = 9, activeFloorSize = 10, selectedTable = 1, tables = [];
 let supervisorIdentity = "FLOOR-1", peer = null, conn = null, isClientMode = false;
 const PEER_PREFIX = "poker-tournament-matrix-v3-";
 
-// 锁死移动端背景滚动穿透
 function openConfigCenter() {
   document.getElementById('supervisor-id-input').value = supervisorIdentity;
   document.getElementById('modal-lbl-tables').textContent = activeFloorSize;
   document.getElementById('modal-lbl-seats').textContent = globalMaxPlayers;
   
-  // 核心锁死：如果是Client模式，剥夺加减参数的权利，防止脑裂
   const btns = ['btn-table-minus', 'btn-table-plus', 'btn-seat-minus', 'btn-seat-plus'];
   btns.forEach(id => document.getElementById(id).disabled = isClientMode);
   document.getElementById('lock-msg-tables').style.display = isClientMode ? 'block' : 'none';
@@ -393,7 +391,7 @@ function updateVisualStates(mode, channelId) {
   const lamp = document.getElementById('lamp-network'); const text = document.getElementById('txt-network');
   const disBtn = document.getElementById('btn-disconn'); const hostBtn = document.getElementById('btn-host'); const joinBtn = document.getElementById('btn-join');
   if(mode === "standalone") {
-    lamp.className = "pulse-lamp standalone"; text.textContent = "CH: OFFLINE (STANDALONE)";
+    lamp.className = "pulse-lamp standalone"; text.textContent = "CH: OFFLINE";
     disBtn.disabled = true; hostBtn.disabled = false; joinBtn.disabled = false; isClientMode = false;
   } else {
     disBtn.disabled = false; hostBtn.disabled = true; joinBtn.disabled = true;
@@ -402,16 +400,54 @@ function updateVisualStates(mode, channelId) {
   }
 }
 
+/* ⚡ 核心重构：切换房间上下文加载器，完全服从规则1 */
+function switchChannelContext(channelId) {
+  const saved = localStorage.getItem(`poker_matrix_state_ch_${channelId}`);
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      globalMaxPlayers = parsed.globalMaxPlayers || 9;
+      activeFloorSize = parsed.activeFloorSize || 10;
+      tables = parsed.tables;
+    } catch(e) { buildCleanContext(); }
+  } else {
+    buildCleanContext();
+  }
+  syncTopCapsuleLabels();
+  renderGrid();
+  if(selectedTable) showDetail(selectedTable);
+}
+
+function buildCleanContext() {
+  activeFloorSize = 10;
+  globalMaxPlayers = 9;
+  tables = Array.from({length: 20}, (_, i) => {
+    let seatsArray = []; for(let s = 0; s < 10; s++) { seatsArray.push({ id: s + 1, occ: false }); }
+    return { id: i + 1, tableName: `${i + 1}`, active: i < activeFloorSize, seats: seatsArray };
+  });
+  const channelId = document.getElementById('tourny-id').value.trim() || '1001';
+  localStorage.setItem(`poker_matrix_state_ch_${channelId}`, JSON.stringify({ globalMaxPlayers, activeFloorSize, selectedTable, tables }));
+}
+
+function syncTopCapsuleLabels() {
+  document.getElementById('txt-tables').textContent = `Tables: ${activeFloorSize} Active`;
+  document.getElementById('txt-seats').textContent = `Cap: ${globalMaxPlayers} Max`;
+  document.getElementById('modal-lbl-tables').textContent = activeFloorSize;
+  document.getElementById('modal-lbl-seats').textContent = globalMaxPlayers;
+}
+
 function initializeWebRTCHost() {
   disconnectSync(); const channelId = document.getElementById('tourny-id').value.trim(); if(!channelId) return;
+  switchChannelContext(channelId);
   peer = new Peer(PEER_PREFIX + channelId);
   peer.on('open', () => { updateVisualStates("hosting", channelId); writeLog(`Opened transmission channel: <b>${channelId}</b>`, 'GENERAL'); });
   peer.on('connection', (connection) => { conn = connection; setupConnectionListeners(true); });
-  peer.on('error', (err) => { alert("Host registration failed. Terminal channel code duplicate?"); disconnectSync(); });
+  peer.on('error', (err) => { alert("Host registration failed. Channel occupied?"); disconnectSync(); });
 }
 
 function initializeWebRTCJoin() {
   disconnectSync(); const channelId = document.getElementById('tourny-id').value.trim(); if(!channelId) return;
+  switchChannelContext(channelId);
   peer = new Peer();
   peer.on('open', () => { conn = peer.connect(PEER_PREFIX + channelId, { serialization: 'json' }); setupConnectionListeners(false); });
   peer.on('error', (err) => { alert("Connection node error."); disconnectSync(); });
@@ -433,8 +469,8 @@ function setupConnectionListeners(isHost) {
     switch(data.type) {
       case "FULL_SYNC":
         globalMaxPlayers = data.globalMaxPlayers; activeFloorSize = data.activeFloorSize; tables = data.tables;
-        document.getElementById('txt-tables').textContent = `Tables: ${activeFloorSize} Active`; document.getElementById('txt-seats').textContent = `Cap: ${globalMaxPlayers} Max`;
-        renderGrid(); if(selectedTable) showDetail(selectedTable); writeLog(`Master Alignment synchronized by ${generateUserTag(data.senderIdentity)}.`, 'GENERAL');
+        syncTopCapsuleLabels(); renderGrid(); if(selectedTable) showDetail(selectedTable); 
+        writeLog(`Master Alignment synchronized by ${generateUserTag(data.senderIdentity)}.`, 'GENERAL');
         break;
       case "SEAT_TOGGLE":
         const t = tables.find(x => x.id === data.tid); if (t) { const s = t.seats.find(x => x.id === data.sid); if (s) s.occ = data.occ; }
@@ -453,7 +489,7 @@ function setupConnectionListeners(isHost) {
         renderGrid(); if(selectedTable === data.fromId || selectedTable === data.toId) showDetail(selectedTable);
         writeLog(`${generateUserTag(data.by)} [⚖️ BALANCED] ➔ Table <b>${fT?fT.tableName:data.fromId}</b> ➔ Table <b>${tT?tT.tableName:data.toId}</b>`, 'BALANCE');
         break;
-      case "IDENTITY_UPDATE": writeLog(`System: Terminal signature updated to ${generateUserTag(data.name)}`, 'GENERAL'); break;
+      case "IDENTITY_UPDATE": writeLog(`System: Signature updated to ${generateUserTag(data.name)}`, 'GENERAL'); break;
     }
     saveStateToLocalStorage();
   });
@@ -463,28 +499,38 @@ function saveStateToLocalStorage() {
   const channelId = document.getElementById('tourny-id').value.trim() || '1001';
   localStorage.setItem(`poker_matrix_state_ch_${channelId}`, JSON.stringify({ globalMaxPlayers, activeFloorSize, selectedTable, tables }));
 }
-function loadStateFromLocalStorage() {
-  const channelId = document.getElementById('tourny-id').value.trim() || '1001';
-  const saved = localStorage.getItem(`poker_matrix_state_ch_${channelId}`); if (!saved) return false;
-  try { const parsed = JSON.parse(saved); globalMaxPlayers = parsed.globalMaxPlayers; activeFloorSize = parsed.activeFloorSize; selectedTable = parsed.selectedTable; tables = parsed.tables; return true; } catch (e) { return false; }
-}
 
 function initTables() {
-  if (loadStateFromLocalStorage()) {
-    document.getElementById('txt-tables').textContent = `Tables: ${activeFloorSize} Active`;
-    document.getElementById('txt-seats').textContent = `Cap: ${globalMaxPlayers} Max`;
-    return;
+  const channelId = document.getElementById('tourny-id').value.trim() || '1001';
+  const saved = localStorage.getItem(`poker_matrix_state_ch_${channelId}`);
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      globalMaxPlayers = parsed.globalMaxPlayers || 9;
+      activeFloorSize = parsed.activeFloorSize || 10;
+      tables = parsed.tables;
+      syncTopCapsuleLabels();
+      return;
+    } catch (e) { }
   }
-  tables = Array.from({length: 20}, (_, i) => {
-    let seatsArray = []; for(let s = 0; s < 10; s++) { seatsArray.push({ id: s + 1, occ: false }); }
-    return { id: i + 1, tableName: `${i + 1}`, active: i < activeFloorSize, seats: seatsArray };
-  });
+  buildCleanContext();
 }
 
+/* ⚡ 核心重构：一键彻底清洗，完全服从规则2 */
 function triggerFieldWipe() {
-  if (confirm("Reset current Active field? This clears all entries!")) {
-    tables.forEach(t => t.seats.forEach(s => s.occ = false)); saveStateToLocalStorage(); renderGrid();
-    writeLog(`${generateUserTag(supervisorIdentity)} [💥 FIELD PURGED] Field wiped clean.`, 'BUST');
+  if (confirm("Reset current active field? This wipes all seats and ALL logs!")) {
+    tables.forEach(t => t.seats.forEach(s => s.occ = false));
+    activeFloorSize = 10;
+    tables.forEach((t, i) => t.active = (i < 10));
+    saveStateToLocalStorage();
+    
+    // 强制执行规则2：物理擦除所有日志
+    localStorage.removeItem('poker_floor_logs');
+    document.getElementById('log-stream').innerHTML = '';
+    
+    syncTopCapsuleLabels();
+    renderGrid();
+    writeLog(`${generateUserTag(supervisorIdentity)} [💥 FIELD PURGED] Field & Logs fully initialized.`, 'BUST');
     broadcastData({ type: "FULL_SYNC", globalMaxPlayers, activeFloorSize, tables, senderIdentity: supervisorIdentity });
     closeConfigCenter();
   }
@@ -492,8 +538,8 @@ function triggerFieldWipe() {
 
 function stepActiveFloor(delta) {
   if(isClientMode) return; let target = activeFloorSize + delta; if(target < 1 || target > 20) return;
-  activeFloorSize = target; document.getElementById('modal-lbl-tables').textContent = activeFloorSize;
-  document.getElementById('txt-tables').textContent = `Tables: ${activeFloorSize} Active`;
+  activeFloorSize = target; 
+  syncTopCapsuleLabels();
   tables.forEach((t, i) => { t.active = (i < activeFloorSize); if (!t.active) t.seats.forEach(s => s.occ = false); });
   renderGrid(); if(document.getElementById('panel-detail').classList.contains('active')) populateSelect(); 
   broadcastData({ type: "FULL_SYNC", globalMaxPlayers, activeFloorSize, tables, senderIdentity: supervisorIdentity });
@@ -503,9 +549,9 @@ function stepActiveFloor(delta) {
 function stepMaxSeats(delta) {
   if(isClientMode) return; let target = globalMaxPlayers + delta; if(target < 2 || target > 9) return;
   const violationTable = tables.filter(t => t.active).find(t => t.seats.filter(s => s.id <= 10 && s.occ).length > target);
-  if (violationTable) { alert(`Table ${violationTable.tableName} headcount violates target boundary.`); return; }
-  globalMaxPlayers = target; document.getElementById('modal-lbl-seats').textContent = globalMaxPlayers;
-  document.getElementById('txt-seats').textContent = `Cap: ${globalMaxPlayers} Max`;
+  if (violationTable) { alert(`Table ${violationTable.tableName} headcount violates boundary.`); return; }
+  globalMaxPlayers = target; 
+  syncTopCapsuleLabels();
   tables.forEach(t => t.seats.forEach(s => { if (s.id > globalMaxPlayers) s.occ = false; }));
   renderGrid(); saveStateToLocalStorage();
   broadcastData({ type: "FULL_SYNC", globalMaxPlayers, activeFloorSize, tables, senderIdentity: supervisorIdentity });
@@ -596,7 +642,7 @@ function renderBalance(){
     loop++; vFloor.sort((a,b) => b.count - a.count); let maxT = vFloor[0], minT = vFloor[vFloor.length - 1];
     if ((maxT.count - minT.count) >= 2 && minT.count <= globalMaxPlayers - 1) { sugg.push({ fromId: maxT.id, toId: minT.id, fromName: maxT.tableName, toName: minT.tableName }); maxT.count--; minT.count++; } else { break; }
   }
-  document.getElementById('suggestions').innerHTML = sugg.length ? sugg.map(s => `<div class="move-row"><span>TDA Directive: Table <b>${s.fromName}</b> ➔ Table <b>${s.toName}</b></span><button class="exec-btn" onclick="executeMove(${s.fromId},${s.toId})">Execute</button></div>`).join('') : '<div class="info-box">✓ Optimal balance verified.</div>';
+  document.getElementById('suggestions').innerHTML = sugg.length ? sugg.map(s => `<div class="move-row"><span>TDA: Table <b>${s.fromName}</b> ➔ Table <b>${s.toName}</b></span><button class="exec-btn" onclick="executeMove(${s.fromId},${s.toId})">Execute</button></div>`).join('') : '<div class="info-box">✓ Optimal balance verified.</div>';
   const brk = at.filter(t => getCount(t) > 0 && getCount(t) <= 3);
   if(brk.length){ document.getElementById('break-wrap').style.display = 'block'; document.getElementById('break-list').innerHTML = brk.map(t => `<div class="move-row"><span>Short Table <b>${t.tableName}</b></span><button class="break-btn" style="height:42px;" onclick="breakTable(${t.id});renderBalance()">Break Table</button></div>`).join(''); } else { document.getElementById('break-wrap').style.display = 'none'; }
 }
@@ -611,23 +657,11 @@ function showTab(name){
   if(name === 'balance') renderBalance(); if(name === 'detail'){ populateSelect(); if(selectedTable) showDetail(selectedTable); }
 }
 
-document.getElementById('tourny-id').addEventListener('change', function() {
-  disconnectSync(); if(!loadStateFromLocalStorage()) {
-    tables = Array.from({length: 20}, (_, i) => { let seatsArray = []; for(let s = 0; s < 10; s++) seatsArray.push({ id: s + 1, occ: false }); return { id: i + 1, tableName: `${i + 1}`, active: i < 10, seats: seatsArray }; });
-    activeFloorSize = 10; globalMaxPlayers = 9;
-  }
-  document.getElementById('txt-tables').textContent = `Tables: ${activeFloorSize} Active`; document.getElementById('txt-seats').textContent = `Cap: ${globalMaxPlayers} Max`;
-  renderGrid(); if(selectedTable) showDetail(selectedTable);
-});
-
+/* ⚡ 终极启动器 */
 function bootstrap(){ 
   initTables(); 
   loadCachedLogs(); 
-  
-  // 核心修复：强制在首次启动时，把初始化后的开桌数和人数，回填给顶部的呼吸胶囊标签
-  document.getElementById('txt-tables').textContent = `Tables: ${activeFloorSize} Active`;
-  document.getElementById('txt-seats').textContent = `Cap: ${globalMaxPlayers} Max`;
-  
+  syncTopCapsuleLabels(); // 确保开机即完成标签回填
   renderGrid(); 
 }
 bootstrap();
