@@ -3,14 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Tournament Matrix v2.7.2</title>
+<title>Tournament Matrix v2.7.4</title>
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0a0e17">
 
-<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+<script async src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js" onload="console.log('PeerJS Async Loaded OK')"></script>
+
 <style>
 :root {
   --bg-main: #0a0e17;          
@@ -37,14 +38,15 @@ body {
   background-color: var(--bg-main);
   color: var(--text-main); 
   min-height: 100vh;
-  padding: calc(10px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left));
+  /* ⚡ 核心改动 2：修复部分老旧内核对 calc(env()) 的解析崩溃问题 ➔ */
+  padding: 15px;
   overflow-x: hidden;
   overflow-y: auto;
 }
 
 .container { max-width: 1200px; margin: 0 auto; width: 100%; }
 
-/* ⚡ 极简顶部“三子星”状态胶囊群 */
+/* ⚡ 顶部状态胶囊群 */
 .dashboard-capsule-bar {
   background: linear-gradient(90deg, #111c30 0%, #0c1220 100%);
   border: 1px solid rgba(234, 179, 8, 0.25);
@@ -63,7 +65,6 @@ body {
 .capsule-item { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
 .capsule-divider { width: 1px; height: 16px; background: var(--border-color); }
 
-/* ⚡ 工业级高效状态呼吸灯动画 */
 .pulse-lamp { width: 8px; height: 8px; border-radius: 50%; background: #64748b; }
 .pulse-lamp.standalone { background: #94a3b8; animation: lamp-glow-gray 2.5s infinite ease-in-out; }
 .pulse-lamp.hosting { background: #38bdf8; animation: lamp-glow-blue 1.8s infinite ease-in-out; }
@@ -98,7 +99,6 @@ body {
 .modal-section { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); border-radius: 12px; padding: 14px; margin-bottom: 14px; }
 .section-title { font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px; }
 
-/* 联机配置样式 */
 .conn-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
 .modal-input { flex: 1; background: #060a12; border: 1px solid var(--border-color); color: #fff; padding: 10px; font-size: 14px; font-weight: 700; border-radius: 8px; text-align: center; outline: none; }
 .conn-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
@@ -108,14 +108,12 @@ body {
 .action-btn.danger { background: rgba(239, 68, 68, 0.15); border-color: #ef4444; color: #f87171; }
 .action-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
 
-/* ⚡ 巨型防误触加减参数舱 */
 .stepper-row { display: flex; align-items: center; justify-content: space-between; background: #060a12; border: 1px solid var(--border-color); border-radius: 10px; padding: 4px; }
 .fat-btn { width: 56px; height: 56px; background: linear-gradient(180deg, #1e293b 0%, #111827 100%); border: 1px solid #2d3d54; color: #fff; font-size: 24px; font-weight: 900; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .fat-btn:active { background: #2d3d54; }
 .stepper-value { font-size: 22px; font-weight: 900; color: var(--color-active); font-family: monospace; }
 .lock-mask-text { font-size: 11px; color: var(--status-low-text); font-weight: 700; text-align: center; margin-top: 4px; }
 
-/* 基础架构样式保持 */
 .top-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 .top-header h1 { font-size: 16px; font-weight: 900; color: #fff; letter-spacing: 0.5px; }
 .version-tag { font-size: 9px; font-weight: 700; color: var(--color-active); background: rgba(234, 179, 8, 0.05); border: 1px solid rgba(234, 179, 8, 0.15); padding: 1px 6px; border-radius: 4px; }
@@ -135,7 +133,6 @@ body {
 .core-layout { display: flex; flex-direction: column; gap: 12px; }
 .main-viewport { flex: 3; }
 
-/* 右侧卡片式日志面板 */
 .side-audit-logs {
   flex: 1.2; background: var(--bg-panel); border: 1px solid var(--border-color);
   border-radius: 14px; padding: 12px; display: flex; flex-direction: column; min-height: 260px; max-height: 480px;
@@ -221,12 +218,12 @@ body {
     <div class="capsule-divider"></div>
     <div class="capsule-item">
       <div class="pulse-lamp yellow-glow"></div>
-      <span id="txt-tables">Tables: -- Active</span>
+      <span id="txt-tables">Tables: 10 Active</span>
     </div>
     <div class="capsule-divider"></div>
     <div class="capsule-item">
       <div class="pulse-lamp yellow-glow"></div>
-      <span id="txt-seats">Cap: -- Max</span>
+      <span id="txt-seats">Cap: 9 Max</span>
     </div>
     <div class="capsule-divider"></div>
     <span class="identity-tag" id="identity-lbl" style="color:var(--color-active); font-weight:900; font-size:10px;">FLOOR-1</span>
@@ -235,7 +232,7 @@ body {
   <div class="top-header">
     <div style="display:flex; align-items:center; gap:8px;">
       <h1>🏆 TOURNAMENT MATRIX</h1>
-      <div class="version-tag">v2.7.2</div>
+      <div class="version-tag">v2.7.4</div>
     </div>
   </div>
 
@@ -243,7 +240,7 @@ body {
     <div class="main-viewport">
       <div class="stats-row">
         <div class="stat">Players <b id="s-total">0</b></div>
-        <div class="stat">Tables <b id="s-tables">0</b></div>
+        <div class="stat">Tables <b id="s-tables">10</b></div>
         <div class="stat" id="card-spread">Variance <b id="s-spread">0</b></div>
         <div class="stat" id="card-alerts">Short <b id="s-needs">0</b></div>
       </div>
@@ -337,7 +334,6 @@ function openConfigCenter() {
   document.getElementById('lock-msg-seats').style.display = isClientMode ? 'block' : 'none';
 
   document.getElementById('config-overlay').classList.add('open');
-  document.body.style.overflow = 'hidden'; 
 }
 
 function closeConfigCenter() {
@@ -346,10 +342,9 @@ function closeConfigCenter() {
     supervisorIdentity = inputName.substring(0, 12);
     document.getElementById('identity-lbl').textContent = supervisorIdentity;
     writeLog(`System: Calibrated profile to ${generateUserTag(supervisorIdentity)}`, 'GENERAL');
-    broadcastData({ type: "IDENTITY_UPDATE", name: supervisorIdentity });
+    try { if (window.Peer) broadcastData({ type: "IDENTITY_UPDATE", name: supervisorIdentity }); } catch(e){}
   }
   document.getElementById('config-overlay').classList.remove('open');
-  document.body.style.overflow = 'auto'; 
 }
 function closeConfigCenterOutside(e) { if(e.target.id === 'config-overlay') closeConfigCenter(); }
 
@@ -360,28 +355,33 @@ function generateUserTag(name) {
 }
 
 function writeLog(htmlText, type = 'GENERAL') {
-  const stream = document.getElementById('log-stream'); if (!stream) return;
-  const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  const processedText = htmlText.replace(/Table <b>(\d+)<\/b>/gi, (m, tid) => `<span class="log-link" onclick="highlightTable(${tid})">Table ${tid}</span>`);
-  const line = document.createElement('div'); line.className = `log-line ${type}`; 
-  line.innerHTML = `<span class="log-timestamp">[${timestamp}]</span><div class="log-content">${processedText}</div>`;
-  stream.insertBefore(line, stream.firstChild);
+  try {
+    const stream = document.getElementById('log-stream'); if (!stream) return;
+    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const processedText = htmlText.replace(/Table <b>(\d+)<\/b>/gi, (m, tid) => `<span class="log-link" onclick="highlightTable(${tid})">Table ${tid}</span>`);
+    const line = document.createElement('div'); line.className = `log-line ${type}`; 
+    line.innerHTML = `<span class="log-timestamp">[${timestamp}]</span><div class="log-content">${processedText}</div>`;
+    stream.insertBefore(line, stream.firstChild);
 
-  let localLogs = JSON.parse(localStorage.getItem('poker_floor_logs') || '[]');
-  localLogs.unshift({ text: htmlText, type: type, ts: timestamp });
-  if(localLogs.length > 40) localLogs.pop(); localStorage.setItem('poker_floor_logs', JSON.stringify(localLogs));
+    let localLogs = JSON.parse(localStorage.getItem('poker_floor_logs') || '[]');
+    localLogs.unshift({ text: htmlText, type: type, ts: timestamp });
+    if(localLogs.length > 40) localLogs.pop(); localStorage.setItem('poker_floor_logs', JSON.stringify(localLogs));
+  } catch(e) {}
 }
 
-function highlightTable(tid) { selectedTable = tid; renderGrid(); showTab('detail'); showDetail(tid); showToast(`Jump to Table ${tid}`); }
+function highlightTable(tid) { selectedTable = tid; renderGrid(); showTab('detail'); showDetail(tid); }
+
 function loadCachedLogs() {
-  const stream = document.getElementById('log-stream'); if (!stream) return; stream.innerHTML = '';
-  let localLogs = JSON.parse(localStorage.getItem('poker_floor_logs') || '[]');
-  localLogs.reverse().forEach(log => {
-    const line = document.createElement('div'); const type = log.type || 'GENERAL';
-    const processedText = log.text.replace(/Table <b>(\d+)<\/b>/gi, (m, tid) => `<span class="log-link" onclick="highlightTable(${tid})">Table ${tid}</span>`);
-    line.className = `log-line ${type}`; line.innerHTML = `<span class="log-timestamp">[${log.ts}]</span><div class="log-content">${processedText}</div>`;
-    stream.insertBefore(line, stream.firstChild);
-  });
+  try {
+    const stream = document.getElementById('log-stream'); if (!stream) return; stream.innerHTML = '';
+    let localLogs = JSON.parse(localStorage.getItem('poker_floor_logs') || '[]');
+    localLogs.reverse().forEach(log => {
+      const line = document.createElement('div'); const type = log.type || 'GENERAL';
+      const processedText = log.text.replace(/Table <b>(\d+)<\/b>/gi, (m, tid) => `<span class="log-link" onclick="highlightTable(${tid})">Table ${tid}</span>`);
+      line.className = `log-line ${type}`; line.innerHTML = `<span class="log-timestamp">[${log.ts}]</span><div class="log-content">${processedText}</div>`;
+      stream.insertBefore(line, stream.firstChild);
+    });
+  } catch(e) {}
 }
 function clearCachedLogs() { localStorage.removeItem('poker_floor_logs'); document.getElementById('log-stream').innerHTML = ''; writeLog('Logs cleared.', 'GENERAL'); }
 
@@ -400,33 +400,35 @@ function updateVisualStates(mode, channelId) {
   }
 }
 
-/* ⚡ 核心重构：切换房间上下文加载器，完全服从规则1 */
 function switchChannelContext(channelId) {
-  const saved = localStorage.getItem(`poker_matrix_state_ch_${channelId}`);
-  if (saved) {
-    try {
+  try {
+    const saved = localStorage.getItem(`poker_matrix_state_ch_${channelId}`);
+    if (saved) {
       const parsed = JSON.parse(saved);
       globalMaxPlayers = parsed.globalMaxPlayers || 9;
       activeFloorSize = parsed.activeFloorSize || 10;
       tables = parsed.tables;
-    } catch(e) { buildCleanContext(); }
-  } else {
-    buildCleanContext();
-  }
-  syncTopCapsuleLabels();
-  renderGrid();
-  if(selectedTable) showDetail(selectedTable);
+      syncTopCapsuleLabels();
+      renderGrid();
+      return;
+    }
+  } catch(e) {}
+  buildCleanContext(channelId);
 }
 
-function buildCleanContext() {
+function buildCleanContext(forcedChannelId) {
   activeFloorSize = 10;
   globalMaxPlayers = 9;
   tables = Array.from({length: 20}, (_, i) => {
     let seatsArray = []; for(let s = 0; s < 10; s++) { seatsArray.push({ id: s + 1, occ: false }); }
     return { id: i + 1, tableName: `${i + 1}`, active: i < activeFloorSize, seats: seatsArray };
   });
-  const channelId = document.getElementById('tourny-id').value.trim() || '1001';
-  localStorage.setItem(`poker_matrix_state_ch_${channelId}`, JSON.stringify({ globalMaxPlayers, activeFloorSize, selectedTable, tables }));
+  syncTopCapsuleLabels();
+  renderGrid();
+  try {
+    const cid = forcedChannelId || "1001";
+    localStorage.setItem(`poker_matrix_state_ch_${cid}`, JSON.stringify({ globalMaxPlayers, activeFloorSize, selectedTable, tables }));
+  } catch(e) {}
 }
 
 function syncTopCapsuleLabels() {
@@ -434,28 +436,35 @@ function syncTopCapsuleLabels() {
   document.getElementById('txt-seats').textContent = `Cap: ${globalMaxPlayers} Max`;
   document.getElementById('modal-lbl-tables').textContent = activeFloorSize;
   document.getElementById('modal-lbl-seats').textContent = globalMaxPlayers;
+  document.getElementById('s-tables').textContent = activeFloorSize;
 }
 
 function initializeWebRTCHost() {
+  if (!window.Peer) { alert("Network network module is initializing in background, please retry in a second."); return; }
   disconnectSync(); const channelId = document.getElementById('tourny-id').value.trim(); if(!channelId) return;
   switchChannelContext(channelId);
-  peer = new Peer(PEER_PREFIX + channelId);
-  peer.on('open', () => { updateVisualStates("hosting", channelId); writeLog(`Opened transmission channel: <b>${channelId}</b>`, 'GENERAL'); });
-  peer.on('connection', (connection) => { conn = connection; setupConnectionListeners(true); });
-  peer.on('error', (err) => { alert("Host registration failed. Channel occupied?"); disconnectSync(); });
+  try {
+    peer = new Peer(PEER_PREFIX + channelId);
+    peer.on('open', () => { updateVisualStates("hosting", channelId); writeLog(`Opened transmission channel: <b>${channelId}</b>`, 'GENERAL'); });
+    peer.on('connection', (connection) => { conn = connection; setupConnectionListeners(true); });
+    peer.on('error', (err) => { disconnectSync(); });
+  } catch(e) {}
 }
 
 function initializeWebRTCJoin() {
+  if (!window.Peer) { alert("Network network module is initializing in background, please retry in a second."); return; }
   disconnectSync(); const channelId = document.getElementById('tourny-id').value.trim(); if(!channelId) return;
   switchChannelContext(channelId);
-  peer = new Peer();
-  peer.on('open', () => { conn = peer.connect(PEER_PREFIX + channelId, { serialization: 'json' }); setupConnectionListeners(false); });
-  peer.on('error', (err) => { alert("Connection node error."); disconnectSync(); });
+  try {
+    peer = new Peer();
+    peer.on('open', () => { conn = peer.connect(PEER_PREFIX + channelId, { serialization: 'json' }); setupConnectionListeners(false); });
+    peer.on('error', (err) => { disconnectSync(); });
+  } catch(e) {}
 }
 
 function disconnectSync() {
-  if (conn && conn.open) { conn.send({ type: "REMOTE_DISCONNECT", by: supervisorIdentity }); conn.close(); }
-  conn = null; if (peer) { peer.destroy(); peer = null; } updateVisualStates("standalone");
+  if (conn && conn.open) { try { conn.send({ type: "REMOTE_DISCONNECT", by: supervisorIdentity }); conn.close(); } catch(e){} }
+  conn = null; if (peer) { try { peer.destroy(); } catch(e){} peer = null; } updateVisualStates("standalone");
 }
 
 function setupConnectionListeners(isHost) {
@@ -470,7 +479,6 @@ function setupConnectionListeners(isHost) {
       case "FULL_SYNC":
         globalMaxPlayers = data.globalMaxPlayers; activeFloorSize = data.activeFloorSize; tables = data.tables;
         syncTopCapsuleLabels(); renderGrid(); if(selectedTable) showDetail(selectedTable); 
-        writeLog(`Master Alignment synchronized by ${generateUserTag(data.senderIdentity)}.`, 'GENERAL');
         break;
       case "SEAT_TOGGLE":
         const t = tables.find(x => x.id === data.tid); if (t) { const s = t.seats.find(x => x.id === data.sid); if (s) s.occ = data.occ; }
@@ -487,7 +495,6 @@ function setupConnectionListeners(isHost) {
         const fT = tables.find(x => x.id === data.fromId); const tT = tables.find(x => x.id === data.toId);
         if (fT && tT) { const occS = fT.seats.filter(x => x.id <= globalMaxPlayers && x.occ); const empS = tT.seats.filter(x => x.id <= globalMaxPlayers && !x.occ); if(occS.length && empS.length) { occS[occS.length - 1].occ = false; empS[0].occ = true; } }
         renderGrid(); if(selectedTable === data.fromId || selectedTable === data.toId) showDetail(selectedTable);
-        writeLog(`${generateUserTag(data.by)} [⚖️ BALANCED] ➔ Table <b>${fT?fT.tableName:data.fromId}</b> ➔ Table <b>${tT?tT.tableName:data.toId}</b>`, 'BALANCE');
         break;
       case "IDENTITY_UPDATE": writeLog(`System: Signature updated to ${generateUserTag(data.name)}`, 'GENERAL'); break;
     }
@@ -496,42 +503,24 @@ function setupConnectionListeners(isHost) {
 }
 
 function saveStateToLocalStorage() {
-  const channelId = document.getElementById('tourny-id').value.trim() || '1001';
-  localStorage.setItem(`poker_matrix_state_ch_${channelId}`, JSON.stringify({ globalMaxPlayers, activeFloorSize, selectedTable, tables }));
+  try {
+    const channelId = "1001";
+    localStorage.setItem(`poker_matrix_state_ch_${channelId}`, JSON.stringify({ globalMaxPlayers, activeFloorSize, selectedTable, tables }));
+  } catch(e) {}
 }
 
-function initTables() {
-  const channelId = document.getElementById('tourny-id').value.trim() || '1001';
-  const saved = localStorage.getItem(`poker_matrix_state_ch_${channelId}`);
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      globalMaxPlayers = parsed.globalMaxPlayers || 9;
-      activeFloorSize = parsed.activeFloorSize || 10;
-      tables = parsed.tables;
-      syncTopCapsuleLabels();
-      return;
-    } catch (e) { }
-  }
-  buildCleanContext();
-}
-
-/* ⚡ 核心重构：一键彻底清洗，完全服从规则2 */
 function triggerFieldWipe() {
   if (confirm("Reset current active field? This wipes all seats and ALL logs!")) {
     tables.forEach(t => t.seats.forEach(s => s.occ = false));
     activeFloorSize = 10;
     tables.forEach((t, i) => t.active = (i < 10));
     saveStateToLocalStorage();
-    
-    // 强制执行规则2：物理擦除所有日志
-    localStorage.removeItem('poker_floor_logs');
+    try { localStorage.removeItem('poker_floor_logs'); } catch(e){}
     document.getElementById('log-stream').innerHTML = '';
-    
     syncTopCapsuleLabels();
     renderGrid();
     writeLog(`${generateUserTag(supervisorIdentity)} [💥 FIELD PURGED] Field & Logs fully initialized.`, 'BUST');
-    broadcastData({ type: "FULL_SYNC", globalMaxPlayers, activeFloorSize, tables, senderIdentity: supervisorIdentity });
+    try { if(window.Peer) broadcastData({ type: "FULL_SYNC", globalMaxPlayers, activeFloorSize, tables, senderIdentity: supervisorIdentity }); } catch(e){}
     closeConfigCenter();
   }
 }
@@ -542,7 +531,7 @@ function stepActiveFloor(delta) {
   syncTopCapsuleLabels();
   tables.forEach((t, i) => { t.active = (i < activeFloorSize); if (!t.active) t.seats.forEach(s => s.occ = false); });
   renderGrid(); if(document.getElementById('panel-detail').classList.contains('active')) populateSelect(); 
-  broadcastData({ type: "FULL_SYNC", globalMaxPlayers, activeFloorSize, tables, senderIdentity: supervisorIdentity });
+  try { if(window.Peer) broadcastData({ type: "FULL_SYNC", globalMaxPlayers, activeFloorSize, tables, senderIdentity: supervisorIdentity }); } catch(e){}
   saveStateToLocalStorage();
 }
 
@@ -554,7 +543,7 @@ function stepMaxSeats(delta) {
   syncTopCapsuleLabels();
   tables.forEach(t => t.seats.forEach(s => { if (s.id > globalMaxPlayers) s.occ = false; }));
   renderGrid(); saveStateToLocalStorage();
-  broadcastData({ type: "FULL_SYNC", globalMaxPlayers, activeFloorSize, tables, senderIdentity: supervisorIdentity });
+  try { if(window.Peer) broadcastData({ type: "FULL_SYNC", globalMaxPlayers, activeFloorSize, tables, senderIdentity: supervisorIdentity }); } catch(e){}
 }
 
 const getCount = t => t.seats.filter(s => s.id <= globalMaxPlayers && s.occ).length;
@@ -564,7 +553,9 @@ function status(t) { const c = getCount(t); return (c === 0 || c > 3) ? 'ok' : '
 function updateStats() {
   const at = tables.filter(t => t.active), total = at.reduce((a,t) => a+getCount(t), 0);
   const alertCount = at.filter(t => status(t) === 'low' && getCount(t) > 0).length;
-  document.getElementById('s-total').textContent = total; document.getElementById('s-tables').textContent = at.length; document.getElementById('s-needs').textContent = alertCount;
+  document.getElementById('s-total').textContent = total; 
+  document.getElementById('s-tables').textContent = at.length; 
+  document.getElementById('s-needs').textContent = alertCount;
   document.getElementById('card-alerts').classList.toggle('pulse-alert', alertCount > 0);
   
   const scoring = at.filter(t => getCount(t) > 0).map(t => getCount(t));
@@ -573,8 +564,8 @@ function updateStats() {
 }
 
 function renderGrid(){
-  const g = document.getElementById('tables-grid'); g.innerHTML = ''; const activeTables = tables.filter(t => t.active);
-  if (activeTables.length === 0) { g.innerHTML = `<div class="info-box">Zero operational fields.</div>`; updateStats(); return; }
+  const g = document.getElementById('tables-grid'); if(!g) return;
+  g.innerHTML = ''; const activeTables = tables.filter(t => t.active);
   activeTables.forEach(t => {
     const c = getCount(t), st = status(t), hasPlayers = c > 0;
     const d = document.createElement('div'); d.className = 'table-card' + (hasPlayers ? (st === 'low' ? ' st-low' : ' st-ok-filled') : '') + (selectedTable === t.id ? ' selected' : '');
@@ -608,7 +599,7 @@ function toggleSeat(tid, sid){
   const t = tables.find(x => x.id === tid); const seat = t.seats.find(s => s.id === sid); seat.occ = !seat.occ;
   saveStateToLocalStorage(); renderGrid(); if(selectedTable === tid) showDetail(tid);
   writeLog(`${generateUserTag(supervisorIdentity)} [${seat.occ?'ACTIVE':'BUST'}] ➔ Table <b>${t.tableName}</b>, Seat <b>${sid}</b>`, seat.occ ? 'ACTIVATE' : 'BUST');
-  broadcastData({ type: "SEAT_TOGGLE", tid, sid, occ: seat.occ, by: supervisorIdentity });
+  try { if(window.Peer) broadcastData({ type: "SEAT_TOGGLE", tid, sid, occ: seat.occ, by: supervisorIdentity }); } catch(e){}
 }
 
 function breakTable(tid){
@@ -620,7 +611,7 @@ function breakTable(tid){
   }
   saveStateToLocalStorage(); renderGrid(); if(selectedTable) showDetail(selectedTable);
   writeLog(`${generateUserTag(supervisorIdentity)} [🔨 COLLAPSED] ➔ Table <b>${t.tableName}</b> dissolved.`, 'BREAK');
-  broadcastData({ type: "BREAK_TABLE", tid, distributionArray: distributions, by: supervisorIdentity });
+  try { if(window.Peer) broadcastData({ type: "BREAK_TABLE", tid, distributionArray: distributions, by: supervisorIdentity }); } catch(e){}
 }
 
 function executeMove(fromId, toId){
@@ -629,7 +620,7 @@ function executeMove(fromId, toId){
   if(occupiedSeats.length > 0 && emptySeats.length > 0) {
     occupiedSeats[occupiedSeats.length - 1].occ = false; emptySeats[0].occ = true; saveStateToLocalStorage();
     writeLog(`${generateUserTag(supervisorIdentity)} [⚖️ BALANCE] ➔ Table <b>${from.tableName}</b> ➔ Table <b>${to.tableName}</b>`, 'BALANCE');
-    broadcastData({ type: "SHIFT_PLAYER", fromId, toId, by: supervisorIdentity });
+    try { if(window.Peer) broadcastData({ type: "SHIFT_PLAYER", fromId, toId, by: supervisorIdentity }); } catch(e){}
   } renderGrid(); renderBalance(); if(selectedTable === fromId || selectedTable === toId) showDetail(selectedTable);
 }
 
@@ -649,7 +640,6 @@ function renderBalance(){
 
 function dropdownTableSelect(tid) { selectedTable = tid; saveStateToLocalStorage(); showDetail(tid); renderGrid(); }
 function populateSelect(){ const sel = document.getElementById('detail-sel'); sel.innerHTML = tables.filter(t => t.active).map(t => `<option value="${t.id}">Table ${t.tableName} (${getCount(t)} Active)</option>`).join(''); if(selectedTable) sel.value = selectedTable; }
-function showToast(m) { const toast = document.getElementById('toast-notification'); toast.textContent = m; toast.classList.add('show'); setTimeout(() => { toast.classList.remove('show'); }, 1400); }
 
 function showTab(name){
   document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active',['overview','detail','balance'][i] === name));
@@ -657,14 +647,41 @@ function showTab(name){
   if(name === 'balance') renderBalance(); if(name === 'detail'){ populateSelect(); if(selectedTable) showDetail(selectedTable); }
 }
 
-/* ⚡ 终极启动器 */
+/* ⚡ v2.7.4 核心强制渲染引擎 */
 function bootstrap(){ 
-  initTables(); 
-  loadCachedLogs(); 
-  syncTopCapsuleLabels(); // 确保开机即完成标签回填
+  console.log("Bootstrap pipeline executed natively.");
+  // 1. 开局直接在内存创建 10 张桌子模型
+  activeFloorSize = 10;
+  globalMaxPlayers = 9;
+  tables = Array.from({length: 20}, (_, i) => {
+    let seatsArray = []; for(let s = 0; s < 10; s++) { seatsArray.push({ id: s + 1, occ: false }); }
+    return { id: i + 1, tableName: `${i + 1}`, active: i < activeFloorSize, seats: seatsArray };
+  });
+
+  // 2. 隔离并保护缓存读取
+  try {
+    const saved = localStorage.getItem(`poker_matrix_state_ch_1001`);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if(parsed && parsed.tables && parsed.tables.length > 0) {
+        globalMaxPlayers = parsed.globalMaxPlayers || 9;
+        activeFloorSize = parsed.activeFloorSize || 10;
+        tables = parsed.tables;
+      }
+    }
+  } catch(e) { console.log("Cache sandbox protection activated."); }
+
+  // 3. 不管任何外部资源，现在、立刻、强行把 10 张桌子画上屏幕
+  syncTopCapsuleLabels(); 
   renderGrid(); 
+  
+  // 4. 加载日志
+  try { loadCachedLogs(); } catch(e){}
 }
+
+// ⚡ 核心改动 3：彻底拔掉 DOMContentLoaded 事件监听，直接执行开机！防止被远程网络请求静默卡死
 bootstrap();
+
 </script>
 </body>
 </html>
