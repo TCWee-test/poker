@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Tournament Matrix v2.7.5</title>
+<title>Tournament Matrix v2.8.0</title>
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -122,10 +122,17 @@ body {
 .stat.pulse-alert b { color: var(--status-low-text); }
 @keyframes card-alert-glow { 0%, 100% { border-color: rgba(239, 68, 68, 0.3); } 50% { border-color: rgba(239, 68, 68, 0.6); } }
 
-.nav-bar { display: flex; margin-bottom: 12px; }
-.tabs { display: flex; background: #090d16; padding: 2px; border-radius: 10px; border: 1px solid var(--border-color); width: 100%; }
+.nav-bar { display: flex; margin-bottom: 12px; gap: 8px; align-items: center; width: 100%; }
+.tabs { display: flex; background: #090d16; padding: 2px; border-radius: 10px; border: 1px solid var(--border-color); flex: 1; }
 .tab { flex: 1; text-align: center; padding: 10px 0; font-size: 11px; font-weight: 700; text-transform: uppercase; cursor: pointer; color: var(--text-muted); background: none; border: none; border-radius: 7px; }
 .tab.active { color: #fff; background: linear-gradient(135deg, #1e293b 0%, #111827 100%); border: 1px solid var(--color-active); }
+
+.undo-btn { 
+  background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); 
+  color: #f87171; font-size: 11px; font-weight: 800; padding: 10px 14px; 
+  border-radius: 10px; cursor: pointer; text-transform: uppercase; transition: all 0.15s ease;
+}
+.undo-btn:disabled { opacity: 0.25; cursor: not-allowed; border-color: var(--border-color); color: var(--text-muted); }
 
 .core-layout { display: flex; flex-direction: column; gap: 12px; }
 .main-viewport { flex: 3; }
@@ -176,6 +183,15 @@ body {
 .seat-btn { border-radius: 10px; height: 48px; font-size: 13px; cursor: pointer; border: 1px solid var(--border-color); font-weight: 900; display: flex; flex-direction: column; justify-content: center; align-items: center; }
 .sb-occ   { background: linear-gradient(135deg, rgba(234, 179, 8, 0.2) 0%, rgba(245, 158, 11, 0.1) 100%); color: #fff; border: 2px solid var(--color-seat-occ); }
 .sb-empty { background: #070a12; color: var(--text-muted); }
+
+/* 🛡️ 新增：独立手动调度控制面板样式 */
+.manual-dispatch-box {
+  margin-top: 12px; padding: 12px; background: rgba(255,255,255,0.02);
+  border: 1px dashed var(--border-color); border-radius: 10px; width: 100%;
+}
+.dispatch-flex { display: flex; gap: 8px; margin-top: 6px; }
+.dispatch-select { flex: 1; background: #060a12; border: 1px solid var(--border-color); color: #fff; border-radius: 6px; padding: 0 8px; font-weight: 700; font-size: 12px; }
+.dispatch-btn { background: #1e293b; border: 1px solid var(--border-color); color: var(--color-active); font-size: 11px; font-weight: 800; padding: 10px 14px; border-radius: 6px; cursor: pointer; }
 
 .break-btn { font-size: 12px; padding: 8px 14px; cursor: pointer; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 6px; color: #f87171; font-weight: 700; }
 .move-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; background: linear-gradient(145deg, #161f33 0%, var(--bg-card) 100%); border: 1px solid rgba(234, 179, 8, 0.3); border-radius: 12px; padding: 14px 18px; width: 100%; margin-bottom: 8px; }
@@ -229,7 +245,7 @@ body {
   <div class="top-header">
     <div style="display:flex; align-items:center; gap:8px;">
       <h1>🏆 TOURNAMENT MATRIX</h1>
-      <div class="version-tag">v2.7.5</div>
+      <div class="version-tag">v2.8.0</div>
     </div>
   </div>
 
@@ -248,6 +264,7 @@ body {
           <button class="tab" id="btn-detail" onclick="showTab('detail')">Configurator</button>
           <button class="tab" id="btn-balance" onclick="showTab('balance')">Balance Engine</button>
         </div>
+        <button class="undo-btn" id="btn-global-undo" onclick="executeUndoHistoryRollback()" disabled>↩️ Undo</button>
       </div>
 
       <div id="panel-overview" class="panel active"><div class="tables-grid" id="tables-grid"></div></div>
@@ -319,6 +336,48 @@ body {
 let globalMaxPlayers = 9, activeFloorSize = 10, selectedTable = 1, tables = [];
 let supervisorIdentity = "FLOOR-1", peer = null, conn = null, isClientMode = false;
 const PEER_PREFIX = "poker-tournament-matrix-v3-";
+
+// 🛡️ 新增：快照堆栈保护机制，最多存10步历史
+let undoHistoryStack = [];
+
+function saveHistorySnapshot() {
+  const snapshot = {
+    globalMaxPlayers: globalMaxPlayers,
+    activeFloorSize: activeFloorSize,
+    tables: JSON.parse(JSON.stringify(tables))
+  };
+  undoHistoryStack.push(snapshot);
+  if(undoHistoryStack.length > 10) undoHistoryStack.shift();
+  document.getElementById('btn-global-undo').disabled = false;
+}
+
+function executeUndoHistoryRollback() {
+  if (undoHistoryStack.length === 0) return;
+  const prevState = undoHistoryStack.pop();
+  
+  globalMaxPlayers = prevState.globalMaxPlayers;
+  activeFloorSize = prevState.activeFloorSize;
+  tables = prevState.tables;
+
+  if (undoHistoryStack.length === 0) document.getElementById('btn-global-undo').disabled = true;
+
+  syncTopCapsuleLabels();
+  renderGrid();
+  if(selectedTable) showDetail(selectedTable);
+  if(document.getElementById('panel-balance').classList.contains('active')) renderBalance();
+
+  writeLog(`↩️ ${generateUserTag(supervisorIdentity)} Triggered Undo Rollback`, 'GENERAL');
+  showToast("State Rolled Back");
+
+  // 多端同步快照
+  try { if(window.Peer) broadcastData({ type: "FULL_SYNC", globalMaxPlayers, activeFloorSize, tables, senderIdentity: supervisorIdentity }); } catch(e){}
+  saveStateToLocalStorage();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast-notification'); t.textContent = msg;
+  t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000);
+}
 
 function openConfigCenter() {
   document.getElementById('supervisor-id-input').value = supervisorIdentity;
@@ -437,7 +496,7 @@ function syncTopCapsuleLabels() {
 }
 
 function initializeWebRTCHost() {
-  if (!window.Peer) { alert("Network network module is initializing in background, please retry in a second."); return; }
+  if (!window.Peer) { alert("Network module initializing, please retry."); return; }
   disconnectSync(); const channelId = document.getElementById('tourny-id').value.trim(); if(!channelId) return;
   switchChannelContext(channelId);
   try {
@@ -449,7 +508,7 @@ function initializeWebRTCHost() {
 }
 
 function initializeWebRTCJoin() {
-  if (!window.Peer) { alert("Network network module is initializing in background, please retry in a second."); return; }
+  if (!window.Peer) { alert("Network module initializing, please retry."); return; }
   disconnectSync(); const channelId = document.getElementById('tourny-id').value.trim(); if(!channelId) return;
   switchChannelContext(channelId);
   try {
@@ -468,14 +527,23 @@ function setupConnectionListeners(isHost) {
   conn.on('open', () => {
     updateVisualStates(isHost ? "hosting" : "client", document.getElementById('tourny-id').value.trim());
     if(isHost) broadcastData({ type: "FULL_SYNC", globalMaxPlayers, activeFloorSize, tables, senderIdentity: supervisorIdentity });
+    else broadcastData({ type: "SYNC_REQUEST" }); // 🛡️ 断线自愈：连上瞬间向Host发同步请求
   });
   conn.on('data', (data) => {
     if (!data || !data.type) return;
     if (data.type === "REMOTE_DISCONNECT") { writeLog(`⚠️ Connection Node ${generateUserTag(data.by)} closed.`, 'BUST'); disconnectSync(); return; }
+    
+    // 🛡️ 增加：处理自愈同步请求
+    if (data.type === "SYNC_REQUEST" && isHost) {
+      broadcastData({ type: "FULL_SYNC", globalMaxPlayers, activeFloorSize, tables, senderIdentity: supervisorIdentity });
+      return;
+    }
+
     switch(data.type) {
       case "FULL_SYNC":
         globalMaxPlayers = data.globalMaxPlayers; activeFloorSize = data.activeFloorSize; tables = data.tables;
         syncTopCapsuleLabels(); renderGrid(); if(selectedTable) showDetail(selectedTable); 
+        showToast("Synchronized");
         break;
       case "SEAT_TOGGLE":
         const t = tables.find(x => x.id === data.tid); if (t) { const s = t.seats.find(x => x.id === data.sid); if (s) s.occ = data.occ; }
@@ -508,6 +576,7 @@ function saveStateToLocalStorage() {
 
 function triggerFieldWipe() {
   if (confirm("Reset current active field? This wipes all seats and ALL logs!")) {
+    saveHistorySnapshot();
     tables.forEach(t => t.seats.forEach(s => s.occ = false));
     activeFloorSize = 10;
     tables.forEach((t, i) => t.active = (i < 10));
@@ -524,6 +593,7 @@ function triggerFieldWipe() {
 
 function stepActiveFloor(delta) {
   if(isClientMode) return; let target = activeFloorSize + delta; if(target < 1 || target > 20) return;
+  saveHistorySnapshot();
   activeFloorSize = target; 
   syncTopCapsuleLabels();
   tables.forEach((t, i) => { t.active = (i < activeFloorSize); if (!t.active) t.seats.forEach(s => s.occ = false); });
@@ -535,7 +605,11 @@ function stepActiveFloor(delta) {
 function stepMaxSeats(delta) {
   if(isClientMode) return; let target = globalMaxPlayers + delta; if(target < 2 || target > 9) return;
   const violationTable = tables.filter(t => t.active).find(t => t.seats.filter(s => s.id <= 10 && s.occ).length > target);
-  if (violationTable) { alert(`Table ${violationTable.tableName} headcount violates boundary.`); return; }
+  
+  // 🛡️ 软拦截安全校验保护
+  if (violationTable) { alert(`🔒 Protection Triggered:\nTable ${violationTable.tableName} headcount (${getCount(violationTable)}P) violates the targeted boundary. Disperse players first.`); return; }
+  
+  saveHistorySnapshot();
   globalMaxPlayers = target; 
   syncTopCapsuleLabels();
   tables.forEach(t => t.seats.forEach(s => { if (s.id > globalMaxPlayers) s.occ = false; }));
@@ -588,11 +662,66 @@ function feltSVG(t) {
 function showDetail(tid){
   selectedTable = tid; const t = tables.find(x => x.id === tid); if(!t || !t.active) return; const c = getCount(t);
   const seatBtns = t.seats.filter(s => s.id <= globalMaxPlayers).map(s => `<div class="seat-btn ${s.occ ? 'sb-occ' : 'sb-empty'}" onclick="toggleSeat(${t.id},${s.id})"><span>SEAT ${s.id}</span></div>`).join('');
-  document.getElementById('detail-body').innerHTML = `<div class="detail-wrap"><div class="felt-container">${feltSVG(t)}</div><div class="seat-panel"><div class="seat-grid">${seatBtns}</div>${(c>0&&c<=3)?`<div class="alert-box"><span>⚠️ Short Field Warning.</span><button class="break-btn" onclick="breakTable(${tid})">Break Table</button></div>`:''}</div></div>`;
-  document.getElementById('detail-sel').value = tid;
+  
+  // 🛡️ 新增：为独立手动现场调度生成下拉菜单列表
+  const otherActiveTables = tables.filter(x => x.active && x.id !== tid);
+  const dropdownOptions = otherActiveTables.map(x => `<option value="${x.id}">Table ${x.tableName} (${getCount(x)}P)</option>`).join('');
+
+  document.getElementById('detail-body').innerHTML = `
+    <div class="detail-wrap">
+      <div class="felt-container">${feltSVG(t)}</div>
+      <div class="seat-panel">
+        <div class="seat-grid">${seatBtns}</div>
+        
+        <div class="manual-dispatch-box">
+          <div style="font-size:10px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px;">⚡ Live Table Change (Manual)</div>
+          <div class="dispatch-flex">
+            <select class="dispatch-select" id="manual-target-select">
+              <option value="" disabled selected>Target Table...</option>
+              ${dropdownOptions}
+            </select>
+            <button class="dispatch-btn" onclick="triggerManualDispatch(${tid})">Dispatch</button>
+          </div>
+        </div>
+
+        ${(c>0&&c<=3)?`<div class="alert-box"><span>⚠️ Short Field Warning.</span><button class="break-btn" onclick="breakTable(${tid})">Break Table</button></div>`:''}
+      </div>
+    </div>`;
+  document.getElementById('detail-select').value = tid;
+}
+
+// 🛡️ 新增：独立手动调度的核心驱动逻辑（完全不影响 Balance Engine 算法结构）
+function triggerManualDispatch(fromTableId) {
+  const selectEl = document.getElementById('manual-target-select'); if(!selectEl) return;
+  const toTableId = parseInt(selectEl.value);
+  if(!toTableId) { alert("Please select a target table."); return; }
+
+  const fromTable = tables.find(t => t.id === fromTableId);
+  const toTable = tables.find(t => t.id === toTableId);
+  
+  const occupiedSeats = fromTable.seats.filter(s => s.id <= globalMaxPlayers && s.occ);
+  const emptySeats = getEmpty(toTable);
+
+  if (occupiedSeats.length === 0) { alert("No active players available to dispatch."); return; }
+  if (emptySeats.length === 0) { alert(`Table ${toTable.tableName} is already maxed out.`); return; }
+
+  saveHistorySnapshot(); // 记录快照以支持 Undo
+
+  // 移出源桌最后一位，推入目标桌第一空位
+  occupiedSeats[occupiedSeats.length - 1].occ = false;
+  emptySeats[0].occ = true;
+
+  saveStateToLocalStorage();
+  writeLog(`${generateUserTag(supervisorIdentity)} [🔄 MANUAL SHIFT] ➔ Table <b>${fromTable.tableName}</b> ➔ Table <b>${toTable.tableName}</b>`, 'GENERAL');
+  
+  try { if(window.Peer) broadcastData({ type: "SHIFT_PLAYER", fromId: fromTableId, toId: toTableId, by: supervisorIdentity }); } catch(e){}
+  
+  renderGrid();
+  showDetail(fromTableId);
 }
 
 function toggleSeat(tid, sid){
+  saveHistorySnapshot();
   const t = tables.find(x => x.id === tid); const seat = t.seats.find(s => s.id === sid); seat.occ = !seat.occ;
   saveStateToLocalStorage(); renderGrid(); if(selectedTable === tid) showDetail(tid);
   writeLog(`${generateUserTag(supervisorIdentity)} [${seat.occ?'ACTIVE':'BUST'}] ➔ Table <b>${t.tableName}</b>, Seat <b>${sid}</b>`, seat.occ ? 'ACTIVATE' : 'BUST');
@@ -600,6 +729,7 @@ function toggleSeat(tid, sid){
 }
 
 function breakTable(tid){
+  saveHistorySnapshot();
   const t = tables.find(x => x.id === tid); const players = getCount(t); t.seats.forEach(s => s.occ = false); let distributions = [];
   for(let i = 0; i < players; i++){
     const validTargets = tables.filter(x => x.active && x.id !== tid && getCount(x) > 0 && getCount(x) < globalMaxPlayers); if(validTargets.length === 0) break;
@@ -612,6 +742,7 @@ function breakTable(tid){
 }
 
 function executeMove(fromId, toId){
+  saveHistorySnapshot();
   const from = tables.find(t => t.id === fromId), to = tables.find(t => t.id === toId);
   const occupiedSeats = from.seats.filter(s => s.id <= globalMaxPlayers && s.occ); const emptySeats = getEmpty(to);
   if(occupiedSeats.length > 0 && emptySeats.length > 0) {
@@ -630,7 +761,7 @@ function renderBalance(){
     loop++; vFloor.sort((a,b) => b.count - a.count); let maxT = vFloor[0], minT = vFloor[vFloor.length - 1];
     if ((maxT.count - minT.count) >= 2 && minT.count <= globalMaxPlayers - 1) { sugg.push({ fromId: maxT.id, toId: minT.id, fromName: maxT.tableName, toName: minT.tableName }); maxT.count--; minT.count++; } else { break; }
   }
-  // ⚡ v2.7.5 核心改动：完美整合方案 1+2，将冷冰冰的 TDA 改为行业质感极强的 FLOOR MOVE
+  // ⚡ v2.8.0 核心改动：完美结合方案 1+2，彻底弃用 TDA，改用极具娱乐场现场感的复合口令：⚡ FLOOR MOVE:
   document.getElementById('suggestions').innerHTML = sugg.length ? sugg.map(s => `<div class="move-row"><span>⚡ FLOOR MOVE: Table <b>${s.fromName}</b> ➔ Table <b>${s.toName}</b></span><button class="exec-btn" onclick="executeMove(${s.fromId},${s.toId})">Execute</button></div>`).join('') : '<div class="info-box">✓ Optimal balance verified.</div>';
   const brk = at.filter(t => getCount(t) > 0 && getCount(t) <= 3);
   if(brk.length){ document.getElementById('break-wrap').style.display = 'block'; document.getElementById('break-list').innerHTML = brk.map(t => `<div class="move-row"><span>Short Table <b>${t.tableName}</b></span><button class="break-btn" style="height:42px;" onclick="breakTable(${t.id});renderBalance()">Break Table</button></div>`).join(''); } else { document.getElementById('break-wrap').style.display = 'none'; }
